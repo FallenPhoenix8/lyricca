@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "composite": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationMap": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "stripInternal": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"]
+}
