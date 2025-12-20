@@ -26,9 +26,7 @@ export class UserController {
   }
 
   @Get(":id")
-  async findOne(
-    @Param("id", ParseUUIDPipe) id: string,
-  ): Promise<UserDTOImpl | null> {
+  async findOne(@Param("id", ParseUUIDPipe) id: string): Promise<UserDTOImpl> {
     return await this.userService.findOne(id)
   }
 

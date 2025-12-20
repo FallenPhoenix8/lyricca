@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from "@nestjs/common"
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common"
 import { UserCreateImpl, UserUpdateImpl, UserDTOImpl } from "./dto/user-dto"
 import { DatabaseService } from "../database/database.service"
 
@@ -30,9 +34,11 @@ export class UserService {
     return users.map((user) => new UserDTOImpl(user))
   }
 
-  async findOne(id: string): Promise<UserDTOImpl | null> {
+  async findOne(id: string): Promise<UserDTOImpl> {
     const user = await this.databaseService.users.findUnique({ where: { id } })
-    if (!user) return null
+    if (!user) {
+      throw new NotFoundException("User not found.")
+    }
     return new UserDTOImpl(user)
   }
 
