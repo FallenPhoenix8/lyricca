@@ -3,14 +3,19 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common"
-import { UserCreateImpl, UserUpdateImpl, UserDTOImpl } from "./dto/user-dto"
+import {
+  UserCreateImpl,
+  UserUpdateImpl,
+  UserDTOImpl,
+  UserImpl,
+} from "./dto/user-dto"
 import { DatabaseService } from "../database/database.service"
 
 @Injectable()
 export class UserService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async create(createUserDto: UserCreateImpl): Promise<UserDTOImpl> {
+  async create(createUserDto: UserCreateImpl): Promise<UserImpl> {
     // * MARK: - Check if username already exists
     const existingUser = await this.databaseService.users.findUnique({
       where: { username: createUserDto.username },
@@ -26,26 +31,36 @@ export class UserService {
       },
     })
 
-    return new UserDTOImpl(user)
+    return new UserImpl(user)
   }
 
-  async findAll(): Promise<UserDTOImpl[]> {
+  async findAll(): Promise<UserImpl[]> {
     const users = await this.databaseService.users.findMany()
-    return users.map((user) => new UserDTOImpl(user))
+    return users.map((user) => new UserImpl(user))
   }
 
-  async findOne(id: string): Promise<UserDTOImpl> {
-    const user = await this.databaseService.users.findUnique({ where: { id } })
-    if (!user) {
-      throw new NotFoundException("User not found.")
+  async findOne(properties: {
+    id?: string
+    username?: string
+  }): Promise<UserImpl | null> {
+    if (!properties.id && !properties.username) {
+      return null
     }
-    return new UserDTOImpl(user)
+
+    const user = properties.id
+      ? await this.databaseService.users.findUnique({
+          where: { id: properties.id },
+        })
+      : await this.databaseService.users.findUnique({
+          where: { username: properties.username },
+        })
+    if (!user) {
+      return null
+    }
+    return new UserImpl(user)
   }
 
-  async update(
-    id: string,
-    updateUserDto: UserUpdateImpl,
-  ): Promise<UserDTOImpl> {
+  async update(id: string, updateUserDto: UserUpdateImpl): Promise<UserImpl> {
     const user = await this.databaseService.users.update({
       where: { id },
       data: {
@@ -53,13 +68,13 @@ export class UserService {
         password: updateUserDto.password,
       },
     })
-    return new UserDTOImpl(user)
+    return new UserImpl(user)
   }
 
-  async remove(id: string): Promise<UserDTOImpl> {
+  async remove(id: string): Promise<UserImpl> {
     const user = await this.databaseService.users.delete({
       where: { id },
     })
-    return new UserDTOImpl(user)
+    return new UserImpl(user)
   }
 }

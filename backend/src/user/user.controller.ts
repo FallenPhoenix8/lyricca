@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
+  NotFoundException,
 } from "@nestjs/common"
 import { UserService } from "./user.service"
 import { UserCreateImpl, UserUpdateImpl, UserDTOImpl } from "./dto/user-dto"
@@ -17,17 +18,23 @@ export class UserController {
 
   @Post()
   async create(@Body() createUserDto: UserCreateImpl): Promise<UserDTOImpl> {
-    return await this.userService.create(createUserDto)
+    const user = await this.userService.create(createUserDto)
+    return new UserDTOImpl(user)
   }
 
   @Get()
   async findAll(): Promise<UserDTOImpl[]> {
-    return await this.userService.findAll()
+    const users = await this.userService.findAll()
+    return users.map((user) => new UserDTOImpl(user))
   }
 
   @Get(":id")
   async findOne(@Param("id", ParseUUIDPipe) id: string): Promise<UserDTOImpl> {
-    return await this.userService.findOne(id)
+    const user = await this.userService.findOne({ id })
+    if (!user) {
+      throw new NotFoundException("User not found.")
+    }
+    return new UserDTOImpl(user)
   }
 
   @Patch(":id")
@@ -35,11 +42,13 @@ export class UserController {
     @Param("id", ParseUUIDPipe) id: string,
     @Body() updateUserDto: UserUpdateImpl,
   ): Promise<UserDTOImpl> {
-    return await this.userService.update(id, updateUserDto)
+    const user = await this.userService.update(id, updateUserDto)
+    return new UserDTOImpl(user)
   }
 
   @Delete(":id")
   async remove(@Param("id", ParseUUIDPipe) id: string): Promise<UserDTOImpl> {
-    return await this.userService.remove(id)
+    const user = await this.userService.remove(id)
+    return new UserDTOImpl(user)
   }
 }
