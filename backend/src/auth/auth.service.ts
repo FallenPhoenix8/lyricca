@@ -49,7 +49,7 @@ export class AuthService {
     return { token: this.generateToken(newUser.id, newUser.username) }
   }
 
-  private generateToken(userId: string, username: string): string {
+  generateToken(userId: string, username: string): string {
     return this.jwtService.sign({ sub: userId, username })
   }
 }
