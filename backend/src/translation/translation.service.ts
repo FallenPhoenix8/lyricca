@@ -1,10 +1,13 @@
-import { Injectable } from "@nestjs/common"
+import { Inject, Injectable } from "@nestjs/common"
 import axios from "axios"
 import { v4 as uuidv4 } from "uuid"
 import type { LanguageDTO, TranslationOutputDTO } from "@shared/ts-types"
+import { Cache, CACHE_MANAGER } from "@nestjs/cache-manager"
 
 @Injectable()
 export class TranslationService {
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+
   readonly key = process.env.TRANSLATION_API_KEY
   readonly baseUrl = "https://api.cognitive.microsofttranslator.com"
   readonly location = "westeurope"
@@ -15,9 +18,23 @@ export class TranslationService {
     "Content-type": "application/json",
     "X-ClientTraceId": uuidv4().toString(),
   }
-  languages: LanguageDTO[] | null = null
+  /**
+   * Cache key for available languages
+   */
+  readonly availableLanguagesCacheKey = "availableLanguages"
+  /**
+   * Cache TTL in milliseconds (7 days in this case)
+   */
+  readonly availableLanguagesCacheTTL = 24 * 60 * 60 * 7 * 1000 // 7 days
 
   async availableLanguages(): Promise<LanguageDTO[]> {
+    // * MARK: - Try to retrieve languages from cache
+    let languages = await this.retrieveAvailableLanguagesFromCache()
+    if (languages) {
+      return languages
+    }
+
+    // * MARK: - If cache is empty, fetch languages from API and update cache
     const response = await axios({
       baseURL: this.baseUrl,
       url: "/languages",
@@ -27,16 +44,16 @@ export class TranslationService {
       },
       headers: this.headers,
     })
-    const languages: LanguageDTO[] = Object.keys(response.data.translation).map(
-      (key) => {
-        const current = response.data.translation[key]
-        return {
-          code: key,
-          name: current.name,
-          nativeName: current.nativeName,
-        }
-      },
-    )
+    languages = Object.keys(response.data.translation).map((key) => {
+      const current = response.data.translation[key]
+      return {
+        code: key,
+        name: current.name,
+        nativeName: current.nativeName,
+      }
+    })
+    // * MARK: - Update cache
+    await this.storeAvailableLanguagesInCache(languages)
     return languages
   }
 
@@ -83,28 +100,34 @@ export class TranslationService {
         }
   }
 
-  private async languageDetails(code: string): Promise<LanguageDTO | null> {
-    if (!this.languages) {
-      this.languages = await this.availableLanguages()
-    }
-    const language = this.languages.find((l) => l.code === code)
-    return language || null
+  private async retrieveAvailableLanguagesFromCache(): Promise<
+    LanguageDTO[] | null
+  > {
+    const cachedLanguages: LanguageDTO[] | null = (await this.cacheManager.get(
+      this.availableLanguagesCacheKey,
+    )) as LanguageDTO[] | null
+    return cachedLanguages
+  }
+  private async storeAvailableLanguagesInCache(languages: LanguageDTO[]) {
+    await this.cacheManager.set(
+      this.availableLanguagesCacheKey,
+      languages,
+      this.availableLanguagesCacheTTL,
+    )
   }
 
-  /*
-  [
-    {
-        "detectedLanguage": {
-            "language": "pl",
-            "score": 1
-        },
-        "translations": [
-            {
-                "text": "Let's translate something!",
-                "to": "en"
-            }
-        ]
+  private async languageDetails(code: string): Promise<LanguageDTO | null> {
+    if (!(await this.retrieveAvailableLanguagesFromCache())) {
+      await this.availableLanguages()
     }
-]
-  */
+    const languages = (await this.retrieveAvailableLanguagesFromCache()) ?? []
+    if (!languages) {
+      // It should never happen, but just in case
+      console.error(
+        "No languages found in cache, probably an issue with the API",
+      )
+    }
+    const language = languages.find((l) => l.code === code)
+    return language || null
+  }
 }
