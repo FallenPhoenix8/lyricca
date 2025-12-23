@@ -1,8 +1,9 @@
-import { Inject, Injectable, Logger } from "@nestjs/common"
+import { HttpException, Inject, Injectable, Logger } from "@nestjs/common"
 import axios from "axios"
 import { v4 as uuidv4 } from "uuid"
 import type { LanguageDTO, TranslationOutputDTO } from "@shared/ts-types"
 import { Cache, CACHE_MANAGER } from "@nestjs/cache-manager"
+import type { ErrorResponseDTO } from "@shared/ts-types"
 
 @Injectable()
 export class TranslationService {
@@ -46,6 +47,9 @@ export class TranslationService {
       },
       headers: this.headers,
     })
+    if (response.data.error) {
+      throw this.parseErrorFromAPIResponse(response)
+    }
     languages = Object.keys(response.data.translation).map((key) => {
       const current = response.data.translation[key]
       return {
@@ -65,6 +69,7 @@ export class TranslationService {
     from?: string
   }): Promise<TranslationOutputDTO> {
     const tempParams = properties.from ? { from: properties.from } : {}
+    // * MARK: - Make request to API
     const response = await axios({
       baseURL: this.baseUrl,
       url: "/translate",
@@ -82,6 +87,10 @@ export class TranslationService {
       ],
       responseType: "json",
     })
+    if (response.data.error) {
+      throw this.parseErrorFromAPIResponse(response)
+    }
+    // * MARK: - Parse and return response
     const data = response.data[0]
     const translatedText = data.translations[0]?.text
     if (properties.from) {
@@ -132,5 +141,17 @@ export class TranslationService {
     }
     const language = languages.find((l) => l.code === code)
     return language || null
+  }
+
+  private parseErrorFromAPIResponse(
+    response: axios.AxiosResponse<any, any, {}>,
+  ): HttpException {
+    const error = response.data.error
+    const errorResponse: ErrorResponseDTO = {
+      statusCode: response.status,
+      error: error.code,
+      message: [error.message],
+    }
+    return new HttpException(errorResponse, response.status)
   }
 }
