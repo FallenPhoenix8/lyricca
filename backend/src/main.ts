@@ -2,10 +2,14 @@ import "dotenv/config"
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
 import cookieParser from "cookie-parser"
-import { ValidationPipe } from "@nestjs/common"
+import { ConsoleLogger, ValidationPipe } from "@nestjs/common"
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create(AppModule, {
+    logger: new ConsoleLogger({
+      timestamp: true,
+    }),
+  })
 
   app.useGlobalPipes(
     new ValidationPipe({

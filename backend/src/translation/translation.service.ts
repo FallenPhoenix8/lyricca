@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common"
+import { Inject, Injectable, Logger } from "@nestjs/common"
 import axios from "axios"
 import { v4 as uuidv4 } from "uuid"
 import type { LanguageDTO, TranslationOutputDTO } from "@shared/ts-types"
@@ -8,11 +8,13 @@ import { Cache, CACHE_MANAGER } from "@nestjs/cache-manager"
 export class TranslationService {
   constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
 
-  readonly key = process.env.TRANSLATION_API_KEY
-  readonly baseUrl = "https://api.cognitive.microsofttranslator.com"
-  readonly location = "westeurope"
-  readonly apiVersion = "3.0"
-  readonly headers = {
+  private readonly logger = new Logger(TranslationService.name)
+
+  private readonly key = process.env.TRANSLATION_API_KEY
+  private readonly baseUrl = "https://api.cognitive.microsofttranslator.com"
+  private readonly location = "westeurope"
+  private readonly apiVersion = "3.0"
+  private readonly headers = {
     "Ocp-Apim-Subscription-Key": this.key,
     "Ocp-Apim-Subscription-Region": this.location,
     "Content-type": "application/json",
@@ -21,11 +23,11 @@ export class TranslationService {
   /**
    * Cache key for available languages
    */
-  readonly availableLanguagesCacheKey = "availableLanguages"
+  private readonly availableLanguagesCacheKey = "availableLanguages"
   /**
    * Cache TTL in milliseconds (7 days in this case)
    */
-  readonly availableLanguagesCacheTTL = 24 * 60 * 60 * 7 * 1000 // 7 days
+  private readonly availableLanguagesCacheTTL = 24 * 60 * 60 * 7 * 1000 // 7 days
 
   async availableLanguages(): Promise<LanguageDTO[]> {
     // * MARK: - Try to retrieve languages from cache
@@ -109,6 +111,7 @@ export class TranslationService {
     return cachedLanguages
   }
   private async storeAvailableLanguagesInCache(languages: LanguageDTO[]) {
+    this.logger.log(`Storing ${languages.length} languages in cache...`)
     await this.cacheManager.set(
       this.availableLanguagesCacheKey,
       languages,
@@ -123,7 +126,7 @@ export class TranslationService {
     const languages = (await this.retrieveAvailableLanguagesFromCache()) ?? []
     if (!languages) {
       // It should never happen, but just in case
-      console.error(
+      this.logger.error(
         "No languages found in cache, probably an issue with the API",
       )
     }
