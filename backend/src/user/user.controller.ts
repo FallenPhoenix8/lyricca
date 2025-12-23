@@ -20,12 +20,6 @@ import { Request } from "@nestjs/common"
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
-  async create(@Body() createUserDto: UserCreateImpl): Promise<UserDTOImpl> {
-    const user = await this.userService.create(createUserDto)
-    return new UserDTOImpl(user)
-  }
-
   @Get()
   async findAll(): Promise<UserDTOImpl[]> {
     const users = await this.userService.findAll()

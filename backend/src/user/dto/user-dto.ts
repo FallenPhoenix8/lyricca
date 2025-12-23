@@ -1,5 +1,10 @@
 import type { UserCreate, UserUpdate, UserDTO, User } from "@shared/ts-types"
-import { IsNotEmpty, IsStrongPassword, IsString } from "class-validator"
+import {
+  IsNotEmpty,
+  IsStrongPassword,
+  IsString,
+  IsOptional,
+} from "class-validator"
 
 class UserCreateImpl implements UserCreate {
   @IsNotEmpty()
@@ -12,13 +17,14 @@ class UserCreateImpl implements UserCreate {
 }
 
 class UserUpdateImpl implements UserUpdate {
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  username: string
-
   @IsNotEmpty()
+  username?: string
+
+  @IsOptional()
   @IsStrongPassword()
-  password: string
+  password?: string
 }
 
 class UserDTOImpl implements UserDTO {

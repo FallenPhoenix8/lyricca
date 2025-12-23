@@ -40,9 +40,10 @@ export class AuthService {
     if (existingUser) {
       throw usernameExistsException
     }
+    const hashedPassword = await hash(password, this.saltOrRounds)
     const newUser = await this.userService.create({
       username,
-      password: await hash(password, this.saltOrRounds),
+      password: hashedPassword,
     })
 
     return { token: this.generateToken(newUser.id, newUser.username) }
