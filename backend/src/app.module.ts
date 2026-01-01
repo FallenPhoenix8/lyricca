@@ -7,7 +7,9 @@ import { DatabaseModule } from "./database/database.module"
 import { AuthModule } from "./auth/auth.module"
 import { TranslationModule } from "./translation/translation.module"
 import { CacheModule } from "@nestjs/cache-manager"
+import { SongsModule } from "./songs/songs.module"
 import { UserService } from "./user/user.service"
+
 @Module({
   imports: [
     UserModule,
@@ -15,8 +17,9 @@ import { UserService } from "./user/user.service"
     AuthModule,
     TranslationModule,
     CacheModule.register(),
+    SongsModule,
   ],
   controllers: [AppController],
-  providers: [AppService, DatabaseService],
+  providers: [AppService, DatabaseService, UserService],
 })
 export class AppModule {}

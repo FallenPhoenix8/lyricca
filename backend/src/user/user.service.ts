@@ -17,25 +17,28 @@ export class UserService {
 
   async create(createUserDto: UserCreateImpl): Promise<UserImpl> {
     // * MARK: - Check if username already exists
-    const existingUser = await this.databaseService.users.findUnique({
+    const existingUser = await this.databaseService.user.findUnique({
       where: { username: createUserDto.username },
     })
     if (existingUser) {
       throw new ConflictException("Username already exists.")
     }
     // * MARK: - Create user in database
-    const user = await this.databaseService.users.create({
+    const user = await this.databaseService.user.create({
       data: {
         username: createUserDto.username,
         password: createUserDto.password,
       },
+      include: { songs: true },
     })
 
     return new UserImpl(user)
   }
 
   async findAll(): Promise<UserImpl[]> {
-    const users = await this.databaseService.users.findMany()
+    const users = await this.databaseService.user.findMany({
+      include: { songs: true },
+    })
     return users.map((user) => new UserImpl(user))
   }
 
@@ -48,11 +51,13 @@ export class UserService {
     }
 
     const user = properties.id
-      ? await this.databaseService.users.findUnique({
+      ? await this.databaseService.user.findUnique({
           where: { id: properties.id },
+          include: { songs: true },
         })
-      : await this.databaseService.users.findUnique({
+      : await this.databaseService.user.findUnique({
           where: { username: properties.username },
+          include: { songs: true },
         })
     if (!user) {
       return null
@@ -61,19 +66,21 @@ export class UserService {
   }
 
   async update(id: string, updateUserDto: UserUpdateImpl): Promise<UserImpl> {
-    const user = await this.databaseService.users.update({
+    const user = await this.databaseService.user.update({
       where: { id },
       data: {
         username: updateUserDto.username,
         password: updateUserDto.password,
       },
+      include: { songs: true },
     })
     return new UserImpl(user)
   }
 
   async remove(id: string): Promise<UserImpl> {
-    const user = await this.databaseService.users.delete({
+    const user = await this.databaseService.user.delete({
       where: { id },
+      include: { songs: true },
     })
     return new UserImpl(user)
   }

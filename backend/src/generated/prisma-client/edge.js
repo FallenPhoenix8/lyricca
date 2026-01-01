@@ -92,12 +92,28 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
-exports.Prisma.UsersScalarFieldEnum = {
+exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   username: 'username',
   password: 'password',
   created_at: 'created_at',
   updated_at: 'updated_at'
+};
+
+exports.Prisma.SongScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  artist: 'artist',
+  album: 'album',
+  original_lyrics: 'original_lyrics',
+  translated_lyrics: 'translated_lyrics',
+  created_at: 'created_at',
+  updated_at: 'updated_at',
+  user_id: 'user_id'
+};
+
+exports.Prisma.KeepAliveScalarFieldEnum = {
+  id: 'id'
 };
 
 exports.Prisma.SortOrder = {
@@ -110,9 +126,16 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 
 exports.Prisma.ModelName = {
-  users: 'users'
+  User: 'User',
+  Song: 'Song',
+  KeepAlive: 'KeepAlive'
 };
 /**
  * Create the Client
@@ -122,10 +145,10 @@ const config = {
   "clientVersion": "7.2.0",
   "engineVersion": "0c8ef2ce45c83248ab3df073180d5eda9e8be7a3",
   "activeProvider": "postgresql",
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma-client\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\n/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.\nmodel users {\n  id         String   @id @default(dbgenerated(\"gen_random_uuid()\")) @db.Uuid\n  username   String   @unique\n  password   String\n  created_at DateTime @default(now()) @db.Timestamptz(6)\n  updated_at DateTime @updatedAt\n}\n"
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma-client\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\n/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.\nmodel User {\n  id         String   @id @default(dbgenerated(\"gen_random_uuid()\")) @db.Uuid\n  username   String   @unique\n  password   String\n  created_at DateTime @default(now()) @db.Timestamptz(6)\n  updated_at DateTime @updatedAt\n  songs      Song[]\n\n  @@map(\"users\")\n}\n\nmodel Song {\n  id                String   @id @default(dbgenerated(\"gen_random_uuid()\")) @db.Uuid\n  title             String\n  artist            String?\n  album             String?\n  original_lyrics   String\n  translated_lyrics String\n  created_at        DateTime @default(now()) @db.Timestamptz(6)\n  updated_at        DateTime @updatedAt\n  user_id           String   @db.Uuid\n  user              User     @relation(fields: [user_id], references: [id])\n\n  @@map(\"songs\")\n}\n\nmodel KeepAlive {\n  id Int @id @default(autoincrement())\n\n  @@map(\"keepalive_ping\")\n}\n"
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"users\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"songs\",\"kind\":\"object\",\"type\":\"Song\",\"relationName\":\"SongToUser\"}],\"dbName\":\"users\"},\"Song\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"artist\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"album\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"original_lyrics\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"translated_lyrics\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"SongToUser\"}],\"dbName\":\"songs\"},\"KeepAlive\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"}],\"dbName\":\"keepalive_ping\"}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.compilerWasm = {
   getRuntime: async () => require('./query_compiler_bg.js'),

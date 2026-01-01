@@ -120,12 +120,28 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
-exports.Prisma.UsersScalarFieldEnum = {
+exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   username: 'username',
   password: 'password',
   created_at: 'created_at',
   updated_at: 'updated_at'
+};
+
+exports.Prisma.SongScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  artist: 'artist',
+  album: 'album',
+  original_lyrics: 'original_lyrics',
+  translated_lyrics: 'translated_lyrics',
+  created_at: 'created_at',
+  updated_at: 'updated_at',
+  user_id: 'user_id'
+};
+
+exports.Prisma.KeepAliveScalarFieldEnum = {
+  id: 'id'
 };
 
 exports.Prisma.SortOrder = {
@@ -138,9 +154,16 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 
 exports.Prisma.ModelName = {
-  users: 'users'
+  User: 'User',
+  Song: 'Song',
+  KeepAlive: 'KeepAlive'
 };
 
 /**

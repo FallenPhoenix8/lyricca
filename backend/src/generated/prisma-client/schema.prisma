@@ -8,10 +8,34 @@ datasource db {
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model users {
+model User {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   username   String   @unique
   password   String
   created_at DateTime @default(now()) @db.Timestamptz(6)
   updated_at DateTime @updatedAt
+  songs      Song[]
+
+  @@map("users")
+}
+
+model Song {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title             String
+  artist            String?
+  album             String?
+  original_lyrics   String
+  translated_lyrics String
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime @updatedAt
+  user_id           String   @db.Uuid
+  user              User     @relation(fields: [user_id], references: [id])
+
+  @@map("songs")
+}
+
+model KeepAlive {
+  id Int @id @default(autoincrement())
+
+  @@map("keepalive_ping")
 }

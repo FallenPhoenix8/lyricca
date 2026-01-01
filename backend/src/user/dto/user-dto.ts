@@ -5,6 +5,7 @@ import {
   IsString,
   IsOptional,
 } from "class-validator"
+import { SongDTOImpl } from "../../songs/dto/song-dto"
 
 class UserCreateImpl implements UserCreate {
   @IsNotEmpty()
@@ -47,12 +48,14 @@ class UserImpl implements User {
     this.password = user.password
     this.created_at = user.created_at
     this.updated_at = user.updated_at
+    this.songs = user.songs
   }
   id: string
   username: string
   password: string
   created_at: Date
   updated_at: Date
+  songs: SongDTOImpl[]
 }
 
 export { UserCreateImpl, UserUpdateImpl, UserDTOImpl, UserImpl }
