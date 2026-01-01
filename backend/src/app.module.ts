@@ -7,6 +7,7 @@ import { DatabaseModule } from "./database/database.module"
 import { AuthModule } from "./auth/auth.module"
 import { TranslationModule } from "./translation/translation.module"
 import { CacheModule } from "@nestjs/cache-manager"
+import { UserService } from "./user/user.service"
 @Module({
   imports: [
     UserModule,

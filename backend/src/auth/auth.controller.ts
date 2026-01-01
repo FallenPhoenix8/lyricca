@@ -56,7 +56,7 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @Get("me")
   async me(@Req() req: any): Promise<UserDTOImpl> {
-    return new UserDTOImpl(req.user)
+    return new UserDTOImpl(await req.user())
   }
 
   @UseGuards(AuthGuard)
