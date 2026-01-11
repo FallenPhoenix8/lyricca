@@ -21,4 +21,15 @@ type SongCreateDTO = Omit<
 >
 type SongUpdateDTO = Partial<SongCreateDTO>
 
-export type { SongDTO, SongCreateDTO, SongUpdateDTO, Song }
+// Schemas for checking if the data is up to date
+type SongCheckOutput =
+  | {
+      isUpToDate: true
+      data: null
+    }
+  | {
+      isUpToDate: false
+      data: SongDTO
+    }
+
+export type { SongDTO, SongCreateDTO, SongUpdateDTO, SongCheckOutput, Song }

@@ -3,8 +3,18 @@ import type {
   SongUpdateDTO,
   SongDTO,
   Song,
-} from "@shared/ts-types"
-import { IsString, IsNotEmpty, IsEmpty, IsOptional } from "class-validator"
+  SongCheckOutput,
+} from "@shared/ts-types/song-dto"
+import {
+  IsString,
+  IsNotEmpty,
+  IsEmpty,
+  IsOptional,
+  IsUUID,
+  IsDateString,
+  IsObject,
+  IsBoolean,
+} from "class-validator"
 import { UserDTOImpl } from "../../user/dto/user-dto"
 
 class SongImpl implements Song {

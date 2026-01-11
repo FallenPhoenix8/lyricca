@@ -6,9 +6,11 @@ import {
   Get,
   NotFoundException,
   Param,
+  ParseDatePipe,
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from "@nestjs/common"
@@ -19,6 +21,7 @@ import {
   SongImpl,
   SongUpdateDTOImpl,
 } from "./dto/song-dto"
+import type { SongCheckOutput } from "@shared/ts-types/song-dto"
 import { SongsService } from "./songs.service"
 
 @Controller("songs")
@@ -30,6 +33,16 @@ export class SongsController {
   async findAll(@Req() req: any): Promise<SongDTOImpl[]> {
     const user = await req.user()
     return user.songs.map((song: SongImpl) => new SongDTOImpl(song))
+  }
+
+  @UseGuards(AuthGuard)
+  @Get(":id")
+  async findOne(@Param("id", ParseUUIDPipe) id: string): Promise<SongDTOImpl> {
+    const song = await this.songsService.findOne({ id })
+    if (!song) {
+      throw new NotFoundException("Song not found.")
+    }
+    return new SongDTOImpl(song)
   }
 
   @UseGuards(AuthGuard)
@@ -87,5 +100,29 @@ export class SongsController {
 
     const song = await this.songsService.remove(id)
     return new SongDTOImpl(song)
+  }
+
+  @UseGuards(AuthGuard)
+  @Get(":id/check")
+  async check(
+    @Query("updated_at", new ParseDatePipe()) updatedAt: Date,
+    @Param("id", ParseUUIDPipe) id: string,
+  ): Promise<SongCheckOutput> {
+    const song = await this.songsService.findOne({ id })
+    if (!song) {
+      throw new NotFoundException("Song not found.")
+    }
+
+    if (song.updated_at.getTime() === updatedAt.getTime()) {
+      return {
+        isUpToDate: true,
+        data: null,
+      }
+    } else {
+      return {
+        isUpToDate: false,
+        data: new SongDTOImpl(song),
+      }
+    }
   }
 }
