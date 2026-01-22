@@ -1,8 +1,9 @@
 import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common"
 import { TranslationService } from "./translation.service"
-import { LanguageDTO, TranslationOutputDTO } from "@shared/ts-types"
+import { AvailableLanguages, TranslationOutputDTO } from "@shared/ts-types"
 import { TranslationInputDTOImpl } from "./dto/translation-dto"
 import { AuthGuard } from "../auth/auth.guard"
+import { SourceLanguageCode, TargetLanguageCode } from "deepl-node"
 
 @Controller("translate")
 export class TranslationController {
@@ -10,7 +11,7 @@ export class TranslationController {
 
   @UseGuards(AuthGuard)
   @Get("languages")
-  async availableLanguages(): Promise<LanguageDTO[]> {
+  async availableLanguages(): Promise<AvailableLanguages> {
     return await this.translationService.availableLanguages()
   }
 
@@ -19,6 +20,10 @@ export class TranslationController {
   async translate(
     @Body() body: TranslationInputDTOImpl,
   ): Promise<TranslationOutputDTO> {
-    return await this.translationService.translate(body)
+    return await this.translationService.translate({
+      text: body.text,
+      from: body.from as SourceLanguageCode | undefined,
+      to: body.to as TargetLanguageCode,
+    })
   }
 }

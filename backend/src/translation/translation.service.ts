@@ -1,63 +1,58 @@
-import { HttpException, Inject, Injectable, Logger } from "@nestjs/common"
-import axios from "axios"
-import { v4 as uuidv4 } from "uuid"
-import type { LanguageDTO, TranslationOutputDTO } from "@shared/ts-types"
+import { Inject, Injectable, Logger } from "@nestjs/common"
+import type {
+  LanguageDTO,
+  AvailableLanguages,
+  TranslationOutputDTO,
+} from "@shared/ts-types"
 import { Cache, CACHE_MANAGER } from "@nestjs/cache-manager"
-import type { ErrorResponseDTO } from "@shared/ts-types"
+import * as deepl from "deepl-node"
 
 @Injectable()
 export class TranslationService {
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
+    if (!this.key) {
+      throw new Error(
+        "DEEPL_TRANSLATION_API_KEY environment variable is not set.",
+      )
+    }
+  }
 
   private readonly logger = new Logger(TranslationService.name)
 
-  private readonly key = process.env.TRANSLATION_API_KEY
-  private readonly baseUrl = "https://api.cognitive.microsofttranslator.com"
-  private readonly location = "westeurope"
-  private readonly apiVersion = "3.0"
-  private readonly headers = {
-    "Ocp-Apim-Subscription-Key": this.key,
-    "Ocp-Apim-Subscription-Region": this.location,
-    "Content-type": "application/json",
-    "X-ClientTraceId": uuidv4().toString(),
-  }
+  private readonly key = process.env.DEEPL_TRANSLATION_API_KEY || ""
+  private readonly client = new deepl.DeepLClient(this.key)
+
   /**
    * Cache key for available languages
    */
-  private readonly availableLanguagesCacheKey = "availableLanguages"
+  private readonly availableSourceLanguagesCacheKey = "availableSourceLanguages"
+  private readonly availableTargetLanguagesCacheKey = "availableTargetLanguages"
   /**
    * Cache TTL in milliseconds (7 days in this case)
    */
   private readonly availableLanguagesCacheTTL = 24 * 60 * 60 * 7 * 1000 // 7 days
 
-  async availableLanguages(): Promise<LanguageDTO[]> {
+  async availableLanguages(): Promise<AvailableLanguages> {
     // * MARK: - Try to retrieve languages from cache
     let languages = await this.retrieveAvailableLanguagesFromCache()
-    if (languages) {
+    if (
+      languages?.sourceLanguages.length &&
+      languages?.targetLanguages.length
+    ) {
       return languages
     }
 
     // * MARK: - If cache is empty, fetch languages from API and update cache
-    const response = await axios({
-      baseURL: this.baseUrl,
-      url: "/languages",
-      method: "GET",
-      params: {
-        "api-version": this.apiVersion,
-      },
-      headers: this.headers,
-    })
-    if (response.data.error) {
-      throw this.parseErrorFromAPIResponse(response)
+    languages = {
+      sourceLanguages: (await this.client.getSourceLanguages()).map((l) => ({
+        code: l.code,
+        name: l.name,
+      })),
+      targetLanguages: (await this.client.getTargetLanguages()).map((l) => ({
+        code: l.code,
+        name: l.name,
+      })),
     }
-    languages = Object.keys(response.data.translation).map((key) => {
-      const current = response.data.translation[key]
-      return {
-        code: key,
-        name: current.name,
-        nativeName: current.nativeName,
-      }
-    })
     // * MARK: - Update cache
     await this.storeAvailableLanguagesInCache(languages)
     return languages
@@ -65,93 +60,89 @@ export class TranslationService {
 
   async translate(properties: {
     text: string
-    to: string
-    from?: string
+    to: deepl.TargetLanguageCode
+    from?: deepl.SourceLanguageCode
   }): Promise<TranslationOutputDTO> {
-    const tempParams = properties.from ? { from: properties.from } : {}
     // * MARK: - Make request to API
-    const response = await axios({
-      baseURL: this.baseUrl,
-      url: "/translate",
-      method: "POST",
-      headers: this.headers,
-      params: {
-        ...tempParams,
-        "api-version": this.apiVersion,
-        to: properties.to,
-      },
-      data: [
-        {
-          text: properties.text,
-        },
-      ],
-      responseType: "json",
-    })
-    if (response.data.error) {
-      throw this.parseErrorFromAPIResponse(response)
-    }
+    const result = await this.client.translateText(
+      properties.text,
+      properties.from ?? null,
+      properties.to,
+    )
+
     // * MARK: - Parse and return response
-    const data = response.data[0]
-    const translatedText = data.translations[0]?.text
-    if (properties.from) {
-      return {
-        translatedText,
-      }
+    const detectedLanguageCode: string = result.detectedSourceLang
+    console.log(detectedLanguageCode)
+    const detectedLanguage = await this.getLanguageDetails(detectedLanguageCode)
+
+    return {
+      translatedText: result.text,
+      detectedLanguage: detectedLanguage!,
     }
-    const detectedLanguageCode: string = data.detectedLanguage?.language
-    const detectedLanguage = await this.languageDetails(detectedLanguageCode)
-
-    return detectedLanguage
-      ? {
-          translatedText,
-          detectedLanguage,
-        }
-      : {
-          translatedText,
-        }
   }
 
-  private async retrieveAvailableLanguagesFromCache(): Promise<
-    LanguageDTO[] | null
-  > {
-    const cachedLanguages: LanguageDTO[] | null = (await this.cacheManager.get(
-      this.availableLanguagesCacheKey,
-    )) as LanguageDTO[] | null
-    return cachedLanguages
+  private async retrieveAvailableLanguagesFromCache(): Promise<AvailableLanguages | null> {
+    const cachedSourceLanguages: LanguageDTO[] | null =
+      (await this.cacheManager.get(this.availableSourceLanguagesCacheKey)) as
+        | LanguageDTO[]
+        | null
+
+    const cachedTargetLanguages: LanguageDTO[] | null =
+      (await this.cacheManager.get(this.availableTargetLanguagesCacheKey)) as
+        | LanguageDTO[]
+        | null
+
+    return {
+      sourceLanguages: cachedSourceLanguages ?? [],
+      targetLanguages: cachedTargetLanguages ?? [],
+    }
   }
-  private async storeAvailableLanguagesInCache(languages: LanguageDTO[]) {
-    this.logger.log(`Storing ${languages.length} languages in cache...`)
+  private async storeAvailableLanguagesInCache(languages: AvailableLanguages) {
+    this.logger.log(
+      `Storing ${languages.sourceLanguages.length} source languages and ${languages.targetLanguages.length} target languages in cache...`,
+    )
     await this.cacheManager.set(
-      this.availableLanguagesCacheKey,
-      languages,
+      this.availableSourceLanguagesCacheKey,
+      languages.sourceLanguages,
+      this.availableLanguagesCacheTTL,
+    )
+    await this.cacheManager.set(
+      this.availableTargetLanguagesCacheKey,
+      languages.targetLanguages,
       this.availableLanguagesCacheTTL,
     )
   }
 
-  private async languageDetails(code: string): Promise<LanguageDTO | null> {
-    if (!(await this.retrieveAvailableLanguagesFromCache())) {
+  private async getLanguageDetails(code: string): Promise<LanguageDTO | null> {
+    let availableLanguages = await this.retrieveAvailableLanguagesFromCache()
+    if (
+      !availableLanguages?.sourceLanguages.length ||
+      !availableLanguages?.targetLanguages.length
+    ) {
       await this.availableLanguages()
     }
-    const languages = (await this.retrieveAvailableLanguagesFromCache()) ?? []
-    if (!languages) {
+
+    availableLanguages = await this.retrieveAvailableLanguagesFromCache()
+    if (
+      !availableLanguages ||
+      !availableLanguages.sourceLanguages.length ||
+      !availableLanguages.targetLanguages.length
+    ) {
       // It should never happen, but just in case
       this.logger.error(
         "No languages found in cache, probably an issue with the API",
       )
+      this.logger.log(availableLanguages)
     }
-    const language = languages.find((l) => l.code === code)
-    return language || null
-  }
+    let language = availableLanguages?.sourceLanguages.find(
+      (l) => l.code === code,
+    )
+    if (!language) {
+      language = availableLanguages?.targetLanguages.find(
+        (l) => l.code === code,
+      )
+    }
 
-  private parseErrorFromAPIResponse(
-    response: axios.AxiosResponse<any, any, {}>,
-  ): HttpException {
-    const error = response.data.error
-    const errorResponse: ErrorResponseDTO = {
-      statusCode: response.status,
-      error: error.code,
-      message: [error.message],
-    }
-    return new HttpException(errorResponse, response.status)
+    return language || null
   }
 }

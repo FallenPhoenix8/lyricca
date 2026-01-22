@@ -1,7 +1,11 @@
 type LanguageDTO = {
   code: string
   name: string
-  nativeName: string
+}
+
+type AvailableLanguages = {
+  sourceLanguages: LanguageDTO[]
+  targetLanguages: LanguageDTO[]
 }
 
 type TranslationInputDTO = {
@@ -12,7 +16,12 @@ type TranslationInputDTO = {
 
 type TranslationOutputDTO = {
   translatedText: string
-  detectedLanguage?: LanguageDTO
+  detectedLanguage: LanguageDTO
 }
 
-export type { LanguageDTO, TranslationInputDTO, TranslationOutputDTO }
+export type {
+  LanguageDTO,
+  AvailableLanguages,
+  TranslationInputDTO,
+  TranslationOutputDTO,
+}
