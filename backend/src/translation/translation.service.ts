@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from "@nestjs/common"
+import { BadRequestException, Inject, Injectable, Logger } from "@nestjs/common"
 import type {
   LanguageDTO,
   AvailableLanguages,
@@ -10,17 +10,18 @@ import * as deepl from "deepl-node"
 @Injectable()
 export class TranslationService {
   constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
-    if (!this.key) {
+    if (this.key.length === 0) {
       throw new Error(
         "DEEPL_TRANSLATION_API_KEY environment variable is not set.",
       )
     }
+    this.client = new deepl.DeepLClient(this.key)
   }
 
   private readonly logger = new Logger(TranslationService.name)
 
-  private readonly key = process.env.DEEPL_TRANSLATION_API_KEY || ""
-  private readonly client = new deepl.DeepLClient(this.key)
+  private readonly key: string = process.env.DEEPL_TRANSLATION_API_KEY || ""
+  private readonly client: deepl.DeepLClient
 
   /**
    * Cache key for available languages
@@ -44,14 +45,18 @@ export class TranslationService {
 
     // * MARK: - If cache is empty, fetch languages from API and update cache
     languages = {
-      sourceLanguages: (await this.client.getSourceLanguages()).map((l) => ({
-        code: l.code,
-        name: l.name,
-      })),
-      targetLanguages: (await this.client.getTargetLanguages()).map((l) => ({
-        code: l.code,
-        name: l.name,
-      })),
+      sourceLanguages: (await this.client.getSourceLanguages())
+        .filter((l) => l.code != "en")
+        .map((l) => ({
+          code: l.code,
+          name: l.name,
+        })),
+      targetLanguages: (await this.client.getTargetLanguages())
+        .filter((l) => l.code != "en")
+        .map((l) => ({
+          code: l.code,
+          name: l.name,
+        })),
     }
     // * MARK: - Update cache
     await this.storeAvailableLanguagesInCache(languages)
@@ -63,21 +68,47 @@ export class TranslationService {
     to: deepl.TargetLanguageCode
     from?: deepl.SourceLanguageCode
   }): Promise<TranslationOutputDTO> {
+    // * MARK: - Check if language code exists
+    if (!(await this.isLanguageCodeExists(properties.to))) {
+      throw new BadRequestException(
+        `Language code "${properties.to}" does not exist.`,
+      )
+    }
+
+    if (
+      properties.from &&
+      !(await this.isLanguageCodeExists(properties.from))
+    ) {
+      throw new BadRequestException(
+        `Language code "${properties.from}" does not exist.`,
+      )
+    }
+
     // * MARK: - Make request to API
+    const lines = properties.text.split("\n")
     const result = await this.client.translateText(
-      properties.text,
+      lines,
       properties.from ?? null,
       properties.to,
     )
 
     // * MARK: - Parse and return response
-    const detectedLanguageCode: string = result.detectedSourceLang
-    console.log(detectedLanguageCode)
-    const detectedLanguage = await this.getLanguageDetails(detectedLanguageCode)
+    const detectedLanguageCodes = new Set<deepl.SourceLanguageCode>(
+      result.map((r) => r.detectedSourceLang),
+    )
+    const detectedLanguages = await Promise.all(
+      Array.from(detectedLanguageCodes).map((code) =>
+        this.getLanguageDetails(code),
+      ),
+    )
+    const filteredDetectedLanguages = detectedLanguages.filter(
+      (l) => l !== null,
+    ) as LanguageDTO[]
+    const translatedTextLines = result.map((r) => r.text)
 
     return {
-      translatedText: result.text,
-      detectedLanguage: detectedLanguage!,
+      translatedTextLines,
+      detectedLanguages: filteredDetectedLanguages,
     }
   }
 
@@ -101,6 +132,8 @@ export class TranslationService {
     this.logger.log(
       `Storing ${languages.sourceLanguages.length} source languages and ${languages.targetLanguages.length} target languages in cache...`,
     )
+
+    // * MARK: - Store languages in cache
     await this.cacheManager.set(
       this.availableSourceLanguagesCacheKey,
       languages.sourceLanguages,
@@ -114,6 +147,7 @@ export class TranslationService {
   }
 
   private async getLanguageDetails(code: string): Promise<LanguageDTO | null> {
+    // * MARK: - Try to retrieve languages from cache, if not, update cache
     let availableLanguages = await this.retrieveAvailableLanguagesFromCache()
     if (
       !availableLanguages?.sourceLanguages.length ||
@@ -121,7 +155,6 @@ export class TranslationService {
     ) {
       await this.availableLanguages()
     }
-
     availableLanguages = await this.retrieveAvailableLanguagesFromCache()
     if (
       !availableLanguages ||
@@ -130,10 +163,12 @@ export class TranslationService {
     ) {
       // It should never happen, but just in case
       this.logger.error(
-        "No languages found in cache, probably an issue with the API",
+        "No languages found in cache, probably an issue with the API (getLanguageDetails)",
       )
       this.logger.log(availableLanguages)
     }
+
+    // * MARK: - Find language in cache
     let language = availableLanguages?.sourceLanguages.find(
       (l) => l.code === code,
     )
@@ -144,5 +179,35 @@ export class TranslationService {
     }
 
     return language || null
+  }
+
+  private async isLanguageCodeExists(languageCode: string): Promise<boolean> {
+    // * MARK: - Try to retrieve languages from cache, if not, update cache
+    let availableLanguages = await this.retrieveAvailableLanguagesFromCache()
+    if (
+      !availableLanguages?.sourceLanguages.length ||
+      !availableLanguages?.targetLanguages.length
+    ) {
+      await this.availableLanguages()
+    }
+    availableLanguages = await this.retrieveAvailableLanguagesFromCache()
+    if (
+      !availableLanguages ||
+      !availableLanguages.sourceLanguages.length ||
+      !availableLanguages.targetLanguages.length
+    ) {
+      // It should never happen, but just in case
+      this.logger.error(
+        "No languages found in cache, probably an issue with the API (isLanguageCodeExists)",
+      )
+      this.logger.log(availableLanguages)
+      return false
+    }
+
+    // * MARK: - Check if language code exists in cache
+    return (
+      availableLanguages.sourceLanguages.some((l) => l.code === languageCode) ||
+      availableLanguages.targetLanguages.some((l) => l.code === languageCode)
+    )
   }
 }

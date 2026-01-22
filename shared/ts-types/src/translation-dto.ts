@@ -15,8 +15,8 @@ type TranslationInputDTO = {
 }
 
 type TranslationOutputDTO = {
-  translatedText: string
-  detectedLanguage: LanguageDTO
+  translatedTextLines: string[]
+  detectedLanguages: LanguageDTO[]
 }
 
 export type {

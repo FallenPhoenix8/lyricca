@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common"
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from "@nestjs/common"
 import { TranslationService } from "./translation.service"
 import { AvailableLanguages, TranslationOutputDTO } from "@shared/ts-types"
 import { TranslationInputDTOImpl } from "./dto/translation-dto"
@@ -17,6 +25,7 @@ export class TranslationController {
 
   @UseGuards(AuthGuard)
   @Post()
+  @HttpCode(HttpStatus.OK)
   async translate(
     @Body() body: TranslationInputDTOImpl,
   ): Promise<TranslationOutputDTO> {
