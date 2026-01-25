@@ -28,12 +28,14 @@ import { SongsService } from "./songs.service"
 import { FileInterceptor } from "@nestjs/platform-express"
 import { UploadedFile } from "@nestjs/common"
 import { CoversService } from "../covers/covers.service"
+import { ImageService } from "../image/image.service"
 
 @Controller("songs")
 export class SongsController {
   constructor(
     private readonly songsService: SongsService,
     private readonly coversService: CoversService,
+    private readonly imageService: ImageService,
   ) {}
 
   @UseGuards(AuthGuard)
@@ -55,31 +57,7 @@ export class SongsController {
 
   @UseGuards(AuthGuard)
   @Post()
-  @UseInterceptors(
-    FileInterceptor("cover", {
-      fileFilter: (req, file, cb) => {
-        /**
-         * Allowed cover mime types. Most common image formats.
-         * @note Used in cover file upload validation
-         */
-        const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp"]
-        const isAllowedMimeType = allowedMimeTypes.includes(file.mimetype)
-        if (!isAllowedMimeType) {
-          const allowedFileExtensions: string[] = allowedMimeTypes.map((mt) => {
-            return mt.split("/")[1]
-          })
-          cb(
-            new BadRequestException(
-              `Invalid file type. Allowed file types: ${allowedFileExtensions.join(", ")}`,
-            ),
-            false,
-          )
-        } else {
-          cb(null, true)
-        }
-      },
-    }),
-  )
+  @UseInterceptors(FileInterceptor("cover"))
   async create(
     @Req() req: any,
     @Body() body: SongCreateDTOImpl,
@@ -89,11 +67,15 @@ export class SongsController {
     const user = await req.user()
 
     // * MARK: - Convert `Express.Multer.File` to `File` object
-    const bytes = Uint8Array.from(coverFile.buffer)
-    const blob = new Blob([bytes], { type: coverFile.mimetype })
+    const optimizedFile =
+      await this.imageService.validateAndOptimizeImage(coverFile)
+    const bytes = Uint8Array.from(optimizedFile.buffer)
+    const blob = new Blob([bytes], { type: optimizedFile.mimeType })
 
     const cover = await this.coversService.create(
-      new File([blob], coverFile.originalname, { type: coverFile.mimetype }),
+      new File([blob], coverFile.originalname, {
+        type: optimizedFile.mimeType,
+      }),
     )
 
     // * MARK: - Create song

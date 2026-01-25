@@ -12,6 +12,7 @@ import { UserService } from "./user/user.service"
 import { CoversService } from './covers/covers.service';
 import { CoversModule } from './covers/covers.module';
 import { SupabaseModule } from './supabase/supabase.module';
+import { ImageModule } from './image/image.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { SupabaseModule } from './supabase/supabase.module';
     SongsModule,
     CoversModule,
     SupabaseModule,
+    ImageModule,
   ],
   controllers: [AppController],
   providers: [AppService, DatabaseService, UserService, CoversService],
