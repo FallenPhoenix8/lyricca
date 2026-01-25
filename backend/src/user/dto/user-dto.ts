@@ -48,7 +48,7 @@ class UserImpl implements User {
     this.password = user.password
     this.created_at = user.created_at
     this.updated_at = user.updated_at
-    this.songs = user.songs
+    this.songs = user.songs.map((song) => new SongDTOImpl(song))
   }
   id: string
   username: string

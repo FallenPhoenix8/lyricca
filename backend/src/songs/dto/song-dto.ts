@@ -16,6 +16,7 @@ import {
   IsBoolean,
 } from "class-validator"
 import { UserDTOImpl } from "../../user/dto/user-dto"
+import { CoverDTOImpl } from "../../covers/dto/cover-dto"
 
 class SongImpl implements Song {
   constructor(song: Song) {
@@ -29,6 +30,8 @@ class SongImpl implements Song {
     this.updated_at = song.updated_at
     this.user_id = song.user_id
     this.user = song.user
+    this.cover_id = song.cover_id
+    this.cover = song.cover ? new CoverDTOImpl(song.cover) : null
   }
   id: string
   title: string
@@ -40,6 +43,8 @@ class SongImpl implements Song {
   updated_at: Date
   user_id: string
   user: UserDTOImpl
+  cover_id: string | null
+  cover: CoverDTOImpl | null
 }
 
 class SongCreateDTOImpl implements SongCreateDTO {
@@ -96,6 +101,7 @@ class SongDTOImpl implements SongDTO {
     this.translated_lyrics = song.translated_lyrics
     this.created_at = song.created_at
     this.updated_at = song.updated_at
+    this.cover = song.cover ? new CoverDTOImpl(song.cover) : null
   }
   id: string
   title: string
@@ -105,6 +111,9 @@ class SongDTOImpl implements SongDTO {
   translated_lyrics: string
   created_at: Date
   updated_at: Date
+  user_id: string
+  user: UserDTOImpl
+  cover: CoverDTOImpl | null
 }
 
 export { SongImpl, SongCreateDTOImpl, SongUpdateDTOImpl, SongDTOImpl }

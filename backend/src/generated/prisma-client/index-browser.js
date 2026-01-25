@@ -128,6 +128,13 @@ exports.Prisma.UserScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
+exports.Prisma.CoverScalarFieldEnum = {
+  id: 'id',
+  url: 'url',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
 exports.Prisma.SongScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -137,7 +144,8 @@ exports.Prisma.SongScalarFieldEnum = {
   translated_lyrics: 'translated_lyrics',
   created_at: 'created_at',
   updated_at: 'updated_at',
-  user_id: 'user_id'
+  user_id: 'user_id',
+  cover_id: 'cover_id'
 };
 
 exports.Prisma.KeepAliveScalarFieldEnum = {
@@ -162,6 +170,7 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  Cover: 'Cover',
   Song: 'Song',
   KeepAlive: 'KeepAlive'
 };

@@ -9,6 +9,9 @@ import { TranslationModule } from "./translation/translation.module"
 import { CacheModule } from "@nestjs/cache-manager"
 import { SongsModule } from "./songs/songs.module"
 import { UserService } from "./user/user.service"
+import { CoversService } from './covers/covers.service';
+import { CoversModule } from './covers/covers.module';
+import { SupabaseModule } from './supabase/supabase.module';
 
 @Module({
   imports: [
@@ -18,8 +21,10 @@ import { UserService } from "./user/user.service"
     TranslationModule,
     CacheModule.register(),
     SongsModule,
+    CoversModule,
+    SupabaseModule,
   ],
   controllers: [AppController],
-  providers: [AppService, DatabaseService, UserService],
+  providers: [AppService, DatabaseService, UserService, CoversService],
 })
 export class AppModule {}

@@ -29,7 +29,13 @@ export class UserService {
         username: createUserDto.username,
         password: createUserDto.password,
       },
-      include: { songs: true },
+      include: {
+        songs: {
+          include: {
+            cover: true,
+          },
+        },
+      },
     })
 
     return new UserImpl(user)
@@ -37,7 +43,13 @@ export class UserService {
 
   async findAll(): Promise<UserImpl[]> {
     const users = await this.databaseService.user.findMany({
-      include: { songs: true },
+      include: {
+        songs: {
+          include: {
+            cover: true,
+          },
+        },
+      },
     })
     return users.map((user) => new UserImpl(user))
   }
@@ -53,11 +65,23 @@ export class UserService {
     const user = properties.id
       ? await this.databaseService.user.findUnique({
           where: { id: properties.id },
-          include: { songs: true },
+          include: {
+            songs: {
+              include: {
+                cover: true,
+              },
+            },
+          },
         })
       : await this.databaseService.user.findUnique({
           where: { username: properties.username },
-          include: { songs: true },
+          include: {
+            songs: {
+              include: {
+                cover: true,
+              },
+            },
+          },
         })
     if (!user) {
       return null
@@ -72,7 +96,13 @@ export class UserService {
         username: updateUserDto.username,
         password: updateUserDto.password,
       },
-      include: { songs: true },
+      include: {
+        songs: {
+          include: {
+            cover: true,
+          },
+        },
+      },
     })
     return new UserImpl(user)
   }
@@ -80,7 +110,13 @@ export class UserService {
   async remove(id: string): Promise<UserImpl> {
     const user = await this.databaseService.user.delete({
       where: { id },
-      include: { songs: true },
+      include: {
+        songs: {
+          include: {
+            cover: true,
+          },
+        },
+      },
     })
     return new UserImpl(user)
   }

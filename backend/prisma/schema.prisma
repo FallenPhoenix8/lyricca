@@ -19,6 +19,15 @@ model User {
   @@map("users")
 }
 
+model Cover {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  url         String
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @updatedAt
+  song        Song?
+  @@map("covers")
+}
+
 model Song {
   id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title             String
@@ -28,8 +37,10 @@ model Song {
   translated_lyrics String
   created_at        DateTime @default(now()) @db.Timestamptz(6)
   updated_at        DateTime @updatedAt
-  user_id         String   @db.Uuid
-  user            User     @relation(fields: [user_id], references: [id])
+  user_id           String   @db.Uuid
+  user              User     @relation(fields: [user_id], references: [id])
+  cover_id          String?  @db.Uuid @unique
+  cover             Cover?   @relation(fields: [cover_id], references: [id])
 
   @@map("songs")
 }

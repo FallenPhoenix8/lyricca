@@ -1,3 +1,4 @@
+import { CoverDTO } from "./cover-dto"
 import { UserDTO } from "./user-dto"
 
 type Song = {
@@ -11,13 +12,15 @@ type Song = {
   updated_at: Date
   user_id: string
   user: UserDTO
+  cover_id: string | null
+  cover: CoverDTO | null
 }
 
-type SongDTO = Omit<Song, "user" | "user_id">
+type SongDTO = Omit<Song, "user_id" | "user" | "cover_id">
 
 type SongCreateDTO = Omit<
   SongDTO,
-  "id" | "created_at" | "updated_at" | "user_id" | "user"
+  "id" | "created_at" | "updated_at" | "user" | "cover" | "cover_id"
 >
 type SongUpdateDTO = Partial<SongCreateDTO>
 
