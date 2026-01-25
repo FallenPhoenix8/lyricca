@@ -6,6 +6,7 @@ import {
   ForbiddenException,
   Get,
   NotFoundException,
+  NotImplementedException,
   Param,
   ParseDatePipe,
   ParseUUIDPipe,
@@ -91,10 +92,12 @@ export class SongsController {
   // TODO: Implement UPDATE for cover
   @UseGuards(AuthGuard)
   @Patch(":id")
+  @UseInterceptors(FileInterceptor("cover"))
   async update(
     @Req() req: any,
     @Body() body: SongUpdateDTOImpl,
     @Param("id", ParseUUIDPipe) id: string,
+    @UploadedFile() coverFile?: Express.Multer.File,
   ): Promise<SongDTOImpl> {
     const user = await req.user()
     const existingSong = await this.songsService.findOne({ id: id })
@@ -106,9 +109,39 @@ export class SongsController {
       throw new ForbiddenException("You can only update your own songs.")
     }
 
+    if (coverFile) {
+      // * MARK: - Convert `Express.Multer.File` to `File` object
+      const optimizedFile =
+        await this.imageService.validateAndOptimizeImage(coverFile)
+      const bytes = Uint8Array.from(optimizedFile.buffer)
+      const blob = new Blob([bytes], { type: optimizedFile.mimeType })
+
+      //* MARK: - Update song cover
+      //*   1) Create new cover
+      //*   2) Remove previous cover
+      //*   3) Update song with new cover ID
+
+      const cover = await this.coversService.create(
+        new File([blob], coverFile.originalname, {
+          type: optimizedFile.mimeType,
+        }),
+      )
+
+      await this.songsService.update(id, {
+        cover_id: cover.id,
+      })
+
+      const previousCover = existingSong.cover
+      if (previousCover) {
+        await this.coversService.remove(previousCover.id)
+      }
+    }
+
+    //* MARK: - Update song with remaining details
     const song = await this.songsService.update(id, {
       ...body,
     })
+
     return new SongDTOImpl(song)
   }
 

@@ -37,7 +37,7 @@ export class SongsService {
 
   async update(
     id: string,
-    updateSongDto: SongUpdateDTOImpl,
+    updateSongDto: SongUpdateDTOImpl & { cover_id?: string },
   ): Promise<SongImpl> {
     const song = await this.databaseService.song.update({
       where: { id },
@@ -47,6 +47,7 @@ export class SongsService {
         album: updateSongDto.album,
         original_lyrics: updateSongDto.original_lyrics,
         translated_lyrics: updateSongDto.translated_lyrics,
+        cover_id: updateSongDto.cover_id,
       },
       include: { user: true, cover: true },
     })

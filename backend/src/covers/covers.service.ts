@@ -52,9 +52,22 @@ export class CoversService {
   }
 
   async remove(id: string): Promise<CoverDTOImpl> {
+    //* MARK: - Remove cover from database
     const cover = await this.databaseService.cover.delete({
       where: { id },
     })
+
+    //* MARK: - Remove cover from storage
+    let path = cover.url.split(this.bucketName)[1]
+    path = path.startsWith("/") ? path.slice(1) : path
+    const { error } = await this.supabaseService.storage
+      .from(this.bucketName)
+      .remove([path])
+
+    if (error) {
+      throw new Error(`Failed to remove cover: ${error.message}`)
+    }
+
     return new CoverDTOImpl(cover)
   }
 }
