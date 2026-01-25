@@ -62,12 +62,7 @@ export class SongsController {
          * Allowed cover mime types. Most common image formats.
          * @note Used in cover file upload validation
          */
-        const allowedMimeTypes = [
-          "image/jpeg",
-          "image/png",
-          "image/gif",
-          "image/webp",
-        ]
+        const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp"]
         const isAllowedMimeType = allowedMimeTypes.includes(file.mimetype)
         if (!isAllowedMimeType) {
           const allowedFileExtensions: string[] = allowedMimeTypes.map((mt) => {
