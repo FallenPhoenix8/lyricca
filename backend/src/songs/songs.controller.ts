@@ -56,11 +56,11 @@ export class SongsController {
   @UseGuards(AuthGuard)
   @Post()
   @UseInterceptors(
-    FileInterceptor("file", {
+    FileInterceptor("cover", {
       fileFilter: (req, file, cb) => {
         /**
          * Allowed cover mime types. Most common image formats.
-         * @note Used in file upload validation
+         * @note Used in cover file upload validation
          */
         const allowedMimeTypes = [
           "image/jpeg",
@@ -88,17 +88,17 @@ export class SongsController {
   async create(
     @Req() req: any,
     @Body() body: SongCreateDTOImpl,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() coverFile: Express.Multer.File,
   ): Promise<SongDTOImpl> {
     //* MARK: - Get user from request
     const user = await req.user()
 
     // * MARK: - Convert `Express.Multer.File` to `File` object
-    const bytes = Uint8Array.from(file.buffer)
-    const blob = new Blob([bytes], { type: file.mimetype })
+    const bytes = Uint8Array.from(coverFile.buffer)
+    const blob = new Blob([bytes], { type: coverFile.mimetype })
 
     const cover = await this.coversService.create(
-      new File([blob], file.originalname, { type: file.mimetype }),
+      new File([blob], coverFile.originalname, { type: coverFile.mimetype }),
     )
 
     // * MARK: - Create song
