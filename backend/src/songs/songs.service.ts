@@ -1,6 +1,12 @@
 import { Injectable } from "@nestjs/common"
 import { DatabaseService } from "../database/database.service"
-import { SongCreateDTOImpl, SongImpl, SongUpdateDTOImpl } from "./dto/song-dto"
+import {
+  SongCheckAllInputImpl,
+  SongCheckAllOutputImpl,
+  SongCreateDTOImpl,
+  SongImpl,
+  SongUpdateDTOImpl,
+} from "./dto/song-dto"
 import { SongCreateDTO } from "@shared/ts-types"
 import { CoverDTOImpl } from "../covers/dto/cover-dto"
 
@@ -63,5 +69,50 @@ export class SongsService {
       return null
     }
     return new SongImpl(song)
+  }
+
+  async checkAll(
+    input: SongCheckAllInputImpl,
+    userId: string,
+  ): Promise<SongCheckAllOutputImpl> {
+    // * MARK: - Get all songs of the user
+    const userSongsMap: Map<string, Date> = new Map(
+      (
+        await this.databaseService.song.findMany({
+          where: { user_id: userId },
+          include: { user: true, cover: true },
+        })
+      ).map((song) => [song.id, song.updated_at]),
+    )
+    // * Compare songs with input
+    const inputSongsMap: Map<string, Date> = new Map(
+      input.items.map((item) => [item.id, item.updated_at]),
+    )
+    let toBeUpdated: string[] = []
+    let toBeCreated: string[] = []
+    let toBeDeleted: string[] = []
+
+    inputSongsMap.forEach((updatedAt, id) => {
+      // Check if songs are missing in the database, then mark for deletion
+      if (!userSongsMap.has(id)) {
+        toBeDeleted.push(id)
+        // Check if existing songs are up to date
+      } else if (updatedAt.getTime() !== userSongsMap.get(id)!.getTime()) {
+        toBeUpdated.push(id)
+      }
+    })
+
+    // Check if songs are missing in the input
+    userSongsMap.forEach((_, id) => {
+      if (!inputSongsMap.has(id)) {
+        toBeCreated.push(id)
+      }
+    })
+
+    return new SongCheckAllOutputImpl({
+      toBeUpdated,
+      toBeCreated,
+      toBeDeleted,
+    })
   }
 }

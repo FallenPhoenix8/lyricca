@@ -3,7 +3,9 @@ import type {
   SongUpdateDTO,
   SongDTO,
   Song,
-  SongCheckOutput,
+  SongCheckAllInputItem,
+  SongCheckAllInput,
+  SongCheckAllOutput,
 } from "@shared/ts-types/song-dto"
 import {
   IsString,
@@ -14,7 +16,11 @@ import {
   IsDateString,
   IsObject,
   IsBoolean,
+  IsDate,
+  IsArray,
+  ValidateNested,
 } from "class-validator"
+import { Type } from "class-transformer"
 import { UserDTOImpl } from "../../user/dto/user-dto"
 import { CoverDTOImpl } from "../../covers/dto/cover-dto"
 
@@ -116,4 +122,41 @@ class SongDTOImpl implements SongDTO {
   cover: CoverDTOImpl | null
 }
 
-export { SongImpl, SongCreateDTOImpl, SongUpdateDTOImpl, SongDTOImpl }
+class SongCheckAllInputItemImpl implements SongCheckAllInputItem {
+  @IsNotEmpty()
+  @IsUUID()
+  id: string
+
+  @IsNotEmpty()
+  @IsDate()
+  @Type(() => Date)
+  updated_at: Date
+}
+
+class SongCheckAllInputImpl implements SongCheckAllInput {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SongCheckAllInputItemImpl)
+  items: SongCheckAllInputItemImpl[]
+}
+
+class SongCheckAllOutputImpl implements SongCheckAllOutput {
+  constructor(output: SongCheckAllOutput) {
+    this.toBeUpdated = output.toBeUpdated
+    this.toBeCreated = output.toBeCreated
+    this.toBeDeleted = output.toBeDeleted
+  }
+  toBeUpdated: string[]
+  toBeCreated: string[]
+  toBeDeleted: string[]
+}
+
+export {
+  SongImpl,
+  SongCreateDTOImpl,
+  SongUpdateDTOImpl,
+  SongDTOImpl,
+  SongCheckAllInputItemImpl,
+  SongCheckAllInputImpl,
+  SongCheckAllOutputImpl,
+}

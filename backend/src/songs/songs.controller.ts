@@ -5,9 +5,11 @@ import {
   Delete,
   ForbiddenException,
   Get,
+  HttpCode,
   NotFoundException,
   NotImplementedException,
   Param,
+  ParseArrayPipe,
   ParseDatePipe,
   ParseUUIDPipe,
   Patch,
@@ -19,12 +21,17 @@ import {
 } from "@nestjs/common"
 import { AuthGuard } from "../auth/auth.guard"
 import {
+  SongCheckAllInputImpl,
   SongCreateDTOImpl,
   SongDTOImpl,
   SongImpl,
   SongUpdateDTOImpl,
 } from "./dto/song-dto"
-import type { SongCheckOutput } from "@shared/ts-types/song-dto"
+import type {
+  SongCheckAllInputItem,
+  SongCheckAllOutput,
+  SongCheckOutput,
+} from "@shared/ts-types/song-dto"
 import { SongsService } from "./songs.service"
 import { FileInterceptor } from "@nestjs/platform-express"
 import { UploadedFile } from "@nestjs/common"
@@ -89,7 +96,6 @@ export class SongsController {
     return new SongDTOImpl(song)
   }
 
-  // TODO: Implement UPDATE for cover
   @UseGuards(AuthGuard)
   @Patch(":id")
   @UseInterceptors(FileInterceptor("cover"))
@@ -187,5 +193,16 @@ export class SongsController {
         data: new SongDTOImpl(song),
       }
     }
+  }
+
+  @UseGuards(AuthGuard)
+  @Post("check-all")
+  @HttpCode(200)
+  async checkAll(
+    @Body() input: SongCheckAllInputImpl,
+    @Req() req: any,
+  ): Promise<SongCheckAllOutput> {
+    const user = await req.user()
+    return this.songsService.checkAll(input, user.id)
   }
 }

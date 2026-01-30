@@ -15,6 +15,10 @@ type Song = {
   cover_id: string | null
   cover: CoverDTO | null
 }
+/**
+ * Song ID type
+ */
+type SongIDType = Song["id"]
 
 type SongDTO = Omit<Song, "user_id" | "user" | "cover_id">
 
@@ -35,4 +39,25 @@ type SongCheckOutput =
       data: SongDTO
     }
 
-export type { SongDTO, SongCreateDTO, SongUpdateDTO, SongCheckOutput, Song }
+type SongCheckAllInputItem = Pick<Song, "id" | "updated_at">
+type SongCheckAllInput = {
+  items: SongCheckAllInputItem[]
+}
+
+type SongCheckAllOutput = {
+  toBeUpdated: SongIDType[]
+  toBeCreated: SongIDType[]
+  toBeDeleted: SongIDType[]
+}
+
+export type {
+  SongDTO,
+  SongCreateDTO,
+  SongUpdateDTO,
+  SongCheckOutput,
+  Song,
+  SongIDType,
+  SongCheckAllOutput,
+  SongCheckAllInputItem,
+  SongCheckAllInput,
+}
