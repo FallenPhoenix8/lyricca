@@ -15,6 +15,11 @@ class UserCreateImpl implements UserCreate {
   @IsNotEmpty()
   @IsStrongPassword()
   password: string
+
+  constructor(dto: UserCreate) {
+    this.username = dto.username
+    this.password = dto.password
+  }
 }
 
 class UserUpdateImpl implements UserUpdate {

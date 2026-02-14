@@ -73,6 +73,14 @@ class SongCreateDTOImpl implements SongCreateDTO {
   @IsOptional()
   @IsString()
   album: string | null
+
+  constructor(dto: SongCreateDTO) {
+    this.title = dto.title
+    this.original_lyrics = dto.original_lyrics
+    this.translated_lyrics = dto.translated_lyrics
+    this.artist = dto.artist
+    this.album = dto.album
+  }
 }
 
 class SongUpdateDTOImpl implements SongUpdateDTO {
@@ -117,8 +125,6 @@ class SongDTOImpl implements SongDTO {
   translated_lyrics: string
   created_at: Date
   updated_at: Date
-  user_id: string
-  user: UserDTOImpl
   cover: CoverDTOImpl | null
 }
 
@@ -131,6 +137,11 @@ class SongCheckAllInputItemImpl implements SongCheckAllInputItem {
   @IsDate()
   @Type(() => Date)
   updated_at: Date
+
+  constructor(item: SongCheckAllInputItem) {
+    this.id = item.id
+    this.updated_at = item.updated_at
+  }
 }
 
 class SongCheckAllInputImpl implements SongCheckAllInput {
@@ -138,6 +149,10 @@ class SongCheckAllInputImpl implements SongCheckAllInput {
   @ValidateNested({ each: true })
   @Type(() => SongCheckAllInputItemImpl)
   items: SongCheckAllInputItemImpl[]
+
+  constructor(input: SongCheckAllInput) {
+    this.items = input.items.map((item) => new SongCheckAllInputItemImpl(item))
+  }
 }
 
 class SongCheckAllOutputImpl implements SongCheckAllOutput {

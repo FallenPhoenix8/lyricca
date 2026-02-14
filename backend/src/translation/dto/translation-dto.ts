@@ -14,6 +14,12 @@ class TranslationInputDTOImpl implements TranslationInputDTO {
   @IsNotEmpty()
   @IsString()
   from?: string
+
+  constructor(dto: TranslationInputDTO) {
+    this.text = dto.text
+    this.to = dto.to
+    this.from = dto.from
+  }
 }
 
 export { TranslationInputDTOImpl }
