@@ -18,6 +18,9 @@ class APIClient {
       "Content-Type": "application/json",
     }
   }
+  static get shared() {
+    return new APIClient()
+  }
 
   protected async request<T>(
     path: string,
@@ -62,4 +65,3 @@ class APIClient {
 }
 
 export default APIClient
-export const sharedAPIClient = new APIClient()
