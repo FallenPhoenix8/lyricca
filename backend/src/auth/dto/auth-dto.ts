@@ -10,9 +10,9 @@ class LoginDTOImpl implements LoginDTO {
   @IsString()
   password: string
 
-  constructor(dto: LoginDTO) {
-    this.username = dto.username
-    this.password = dto.password
+  constructor(username: string, password: string) {
+    this.username = username
+    this.password = password
   }
 }
 

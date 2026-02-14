@@ -16,9 +16,9 @@ class UserCreateImpl implements UserCreate {
   @IsStrongPassword()
   password: string
 
-  constructor(dto: UserCreate) {
-    this.username = dto.username
-    this.password = dto.password
+  constructor(username: string, password: string) {
+    this.username = username
+    this.password = password
   }
 }
 

@@ -15,10 +15,10 @@ class TranslationInputDTOImpl implements TranslationInputDTO {
   @IsString()
   from?: string
 
-  constructor(dto: TranslationInputDTO) {
-    this.text = dto.text
-    this.to = dto.to
-    this.from = dto.from
+  constructor(text: string, to: string, from?: string) {
+    this.text = text
+    this.to = to
+    this.from = from
   }
 }
 
