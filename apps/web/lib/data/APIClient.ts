@@ -23,11 +23,11 @@ class APIClient {
   }
 
   protected async request<T>(
-    path: string,
+    endpoint: string,
     method: "GET" | "POST" | "PUT" | "DELETE",
     body?: any,
   ): Promise<Result<T, AxiosError>> {
-    const url = `${this.baseURL}/${trimString(path, "/")}`
+    const url = `${this.baseURL}/${trimString(endpoint, "/")}`
     const headers = this.getHeaders()
     try {
       const response = await fetch(url, {
@@ -47,20 +47,20 @@ class APIClient {
     }
   }
 
-  async get<T>(path: string): Promise<Result<T, AxiosError>> {
-    return this.request<T>(path, "GET")
+  async get<T>(endpoint: string): Promise<Result<T, AxiosError>> {
+    return this.request<T>(endpoint, "GET")
   }
 
-  async post<T>(path: string, body: any): Promise<Result<T, AxiosError>> {
-    return this.request<T>(path, "POST", body)
+  async post<T>(endpoint: string, body: any): Promise<Result<T, AxiosError>> {
+    return this.request<T>(endpoint, "POST", body)
   }
 
-  async put<T>(path: string, body: any): Promise<Result<T, AxiosError>> {
-    return this.request<T>(path, "PUT", body)
+  async put<T>(endpoint: string, body: any): Promise<Result<T, AxiosError>> {
+    return this.request<T>(endpoint, "PUT", body)
   }
 
-  async delete<T>(path: string): Promise<Result<T, AxiosError>> {
-    return this.request<T>(path, "DELETE")
+  async delete<T>(endpoint: string): Promise<Result<T, AxiosError>> {
+    return this.request<T>(endpoint, "DELETE")
   }
 }
 
