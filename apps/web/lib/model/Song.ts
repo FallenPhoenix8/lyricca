@@ -39,5 +39,9 @@ const SongUpateSchema = type({
 })
 const TSongUpdate = SongUpateSchema.infer satisfies SongUpdateDTO
 
-export type { TSongDTO, TSongCreate, TSongUpdate }
+type TypeSongDTO = typeof TSongDTO
+type TypeSongCreate = typeof TSongCreate
+type TypeSongUpdate = typeof TSongUpdate
+
+export type { TypeSongDTO, TypeSongCreate, TypeSongUpdate }
 export { SongSchema, SongCreateSchema, SongUpateSchema }

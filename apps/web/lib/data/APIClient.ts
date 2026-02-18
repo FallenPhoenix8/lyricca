@@ -24,7 +24,7 @@ class APIClient {
 
   protected async request<T>(
     endpoint: string,
-    method: "GET" | "POST" | "PUT" | "DELETE",
+    method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
     body?: any,
   ): Promise<Result<T, AxiosError>> {
     const url = `${this.baseURL}/${trimString(endpoint, "/")}`
@@ -57,6 +57,10 @@ class APIClient {
 
   async put<T>(endpoint: string, body: any): Promise<Result<T, AxiosError>> {
     return this.request<T>(endpoint, "PUT", body)
+  }
+
+  async patch<T>(endpoint: string, body: any): Promise<Result<T, AxiosError>> {
+    return this.request<T>(endpoint, "PATCH", body)
   }
 
   async delete<T>(endpoint: string): Promise<Result<T, AxiosError>> {

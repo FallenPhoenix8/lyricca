@@ -26,5 +26,9 @@ const TUserCreate = UserCreateSchema.infer satisfies UserCreate
 const UserUpateSchema = UserCreateSchema.partial()
 const TUserUpdate = UserUpateSchema.infer satisfies UserUpdate
 
-export type { TUserDTO, TUserCreate, TUserUpdate }
+type TypeUserDTO = typeof TUserDTO
+type TypeUserCreate = typeof TUserCreate
+type TypeUserUpdate = typeof TUserUpdate
+
+export type { TypeUserDTO, TypeUserCreate, TypeUserUpdate }
 export { UserSchema, UserCreateSchema, UserUpateSchema }

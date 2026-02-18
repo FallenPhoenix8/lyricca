@@ -15,5 +15,8 @@ const CoverUpdateSchema = type({
 })
 const TCoverUpdate = CoverUpdateSchema.infer satisfies CoverUpdateDTO
 
-export type { TCoverDTO, TCoverUpdate }
+type TypeCoverDTO = typeof TCoverDTO
+type TypeCoverUpdate = typeof TCoverUpdate
+
+export type { TypeCoverDTO, TypeCoverUpdate }
 export { CoverSchema, CoverUpdateSchema }
