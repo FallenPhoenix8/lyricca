@@ -9,6 +9,7 @@ import type {
 } from "@/lib/model/Song"
 import { useCallback } from "react"
 import { Err, Ok, Result } from "@/types/Result"
+import { useQuery } from "react-query"
 
 async function getDetails(id: string): Promise<TypeSongDTO | null> {
   const endpoint = `songs/${id}`
@@ -130,9 +131,36 @@ export default function useSongs() {
   checkAndUpdateAllLocally(songsCheckAllInput())
 
   return {
+    /**
+     * Provides a list of songs from the local database. This allows components to access and display the songs without needing to make API calls, improving performance and responsiveness. The local database is kept in sync with the API through the `checkAndUpdateAllLocally` function, ensuring that the data is always up-to-date.
+     */
     songs,
-    create,
-    update,
-    remove,
+    /**
+     * This function creates a new song by sending a request to the API and then updates the local database with the new song. It returns a query that can be used to track the status of the creation process and handle any errors that may occur.
+     * @param input Input for adding a song
+     * @returns Query for added song
+     */
+    create: (input: TypeSongCreate) => {
+      return useQuery(["create", input], () => create(input))
+    },
+
+    /**
+     * This function updates an existing song by sending a request to the API and then updates the local database with the updated song. It returns a query that can be used to track the status of the update process and handle any errors that may occur.
+     * @param id The ID of the song to update
+     * @param input Input for updating a song
+     * @returns Query for updated song
+     */
+    update: (id: string, input: TypeSongUpdate) => {
+      return useQuery(["update", id, input], () => update(id, input))
+    },
+
+    /**
+     * This function removes a song by sending a request to the API and then updates the local database with the deleted song. It returns a query that can be used to track the status of the removal process and handle any errors that may occur.
+     * @param id The ID of the song to remove
+     * @returns Query for deleted song
+     */
+    remove: (id: string) => {
+      return useQuery(["remove", id], () => remove(id))
+    },
   }
 }
