@@ -4,15 +4,6 @@ import { trimString } from "@/lib/util/string"
 import { AxiosError } from "axios"
 
 class APIClient {
-  constructor() {
-    const baseURL = process.env.NEXT_PUBLIC_API_URL
-    if (!baseURL) {
-      throw new Error("NEXT_PUBLIC_API_URL is not defined")
-    }
-    this.baseURL = trimString(baseURL, "/")
-  }
-
-  private readonly baseURL: string
   protected getHeaders(): Record<string, string> {
     return {
       "Content-Type": "application/json",
@@ -27,7 +18,7 @@ class APIClient {
     method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
     body?: any,
   ): Promise<Result<T, AxiosError>> {
-    const url = `${this.baseURL}/${trimString(endpoint, "/")}`
+    const url = `/api/backend/${trimString(endpoint, "/")}`
     const headers = this.getHeaders()
     try {
       const response = await fetch(url, {

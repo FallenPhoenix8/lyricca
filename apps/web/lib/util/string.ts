@@ -14,3 +14,8 @@ export function trimString(str: string, character?: string): string {
 
   return result
 }
+
+export function joinAsPathForUrl(...paths: string[]): string {
+  const trimmedPaths = paths.map((path) => trimString(path, "/"))
+  return trimmedPaths.join("/")
+}
