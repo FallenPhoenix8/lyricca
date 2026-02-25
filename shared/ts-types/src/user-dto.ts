@@ -12,4 +12,9 @@ type UserCreate = Omit<User, "id" | "created_at" | "updated_at" | "songs">
 type UserUpdate = Partial<UserCreate>
 type UserDTO = Omit<User, "password" | "songs">
 
-export type { User, UserCreate, UserUpdate, UserDTO }
+type AvailabilityCheckDTO = {
+  username: string
+  available: boolean
+}
+
+export type { User, UserCreate, UserUpdate, UserDTO, AvailabilityCheckDTO }

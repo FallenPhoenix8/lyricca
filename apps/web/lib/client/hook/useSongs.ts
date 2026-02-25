@@ -1,5 +1,9 @@
 import { useLiveQuery } from "dexie-react-hooks"
-import { SongCheckAllInput, SongCheckAllOutput } from "@shared/ts-types"
+import {
+  ErrorResponseDTO,
+  SongCheckAllInput,
+  SongCheckAllOutput,
+} from "@shared/ts-types"
 import db from "../db"
 import APIClient from "@/lib/data/APIClient"
 import type {
@@ -10,6 +14,7 @@ import type {
 import { useCallback } from "react"
 import { Err, Ok, Result } from "@/types/Result"
 import { useQuery } from "react-query"
+import { ApiError } from "next/dist/server/api-utils"
 
 async function getDetails(id: string): Promise<TypeSongDTO | null> {
   const endpoint = `songs/${id}`
@@ -23,7 +28,7 @@ async function getDetails(id: string): Promise<TypeSongDTO | null> {
 
 async function create(
   input: TypeSongCreate,
-): Promise<Result<TypeSongDTO, Error>> {
+): Promise<Result<TypeSongDTO, ErrorResponseDTO>> {
   // * MARK: - Create song in the API
   const endpoint = "songs"
   const result = await APIClient.shared.post<TypeSongDTO>(endpoint, input)
@@ -43,7 +48,7 @@ async function create(
 async function update(
   id: string,
   input: TypeSongUpdate,
-): Promise<Result<TypeSongDTO, Error>> {
+): Promise<Result<TypeSongDTO, ErrorResponseDTO>> {
   // * MARK: - Update song in the API
   const endpoint = `songs/${id}`
   const result = await APIClient.shared.patch<TypeSongDTO>(endpoint, input)
@@ -60,7 +65,9 @@ async function update(
   return Ok(song)
 }
 
-async function remove(id: string): Promise<Result<TypeSongDTO, Error>> {
+async function remove(
+  id: string,
+): Promise<Result<TypeSongDTO, ErrorResponseDTO>> {
   // * MARK: - Remove song from the API
   const endpoint = `songs/${id}`
   const result = await APIClient.shared.delete<TypeSongDTO>(endpoint)

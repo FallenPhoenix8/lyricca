@@ -11,9 +11,15 @@ import {
   UseGuards,
   Req,
   ForbiddenException,
+  Query,
 } from "@nestjs/common"
 import { UserService } from "./user.service"
-import { UserCreateImpl, UserUpdateImpl, UserDTOImpl } from "./dto/user-dto"
+import {
+  UserCreateImpl,
+  UserUpdateImpl,
+  UserDTOImpl,
+  AvailabilityCheckDTOImpl,
+} from "./dto/user-dto"
 import { AuthGuard } from "../auth/auth.guard"
 import { Request } from "@nestjs/common"
 @Controller("users")
@@ -24,6 +30,14 @@ export class UserController {
   async findAll(): Promise<UserDTOImpl[]> {
     const users = await this.userService.findAll()
     return users.map((user) => new UserDTOImpl(user))
+  }
+
+  @Get("availability")
+  async checkAvailability(
+    @Query("username") username: string,
+  ): Promise<AvailabilityCheckDTOImpl> {
+    const isAvailable = await this.userService.checkAvailability(username)
+    return new AvailabilityCheckDTOImpl(username, isAvailable)
   }
 
   @Get(":id")

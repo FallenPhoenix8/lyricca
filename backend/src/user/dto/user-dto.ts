@@ -1,4 +1,10 @@
-import type { UserCreate, UserUpdate, UserDTO, User } from "@shared/ts-types"
+import type {
+  UserCreate,
+  UserUpdate,
+  UserDTO,
+  User,
+  AvailabilityCheckDTO,
+} from "@shared/ts-types"
 import {
   IsNotEmpty,
   IsStrongPassword,
@@ -63,4 +69,19 @@ class UserImpl implements User {
   songs: SongDTOImpl[]
 }
 
-export { UserCreateImpl, UserUpdateImpl, UserDTOImpl, UserImpl }
+class AvailabilityCheckDTOImpl implements AvailabilityCheckDTO {
+  constructor(username: string, available: boolean) {
+    this.username = username
+    this.available = available
+  }
+  username: string
+  available: boolean
+}
+
+export {
+  UserCreateImpl,
+  UserUpdateImpl,
+  UserDTOImpl,
+  UserImpl,
+  AvailabilityCheckDTOImpl,
+}

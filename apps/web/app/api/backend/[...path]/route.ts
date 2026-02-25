@@ -2,7 +2,12 @@ import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { joinAsPathForUrl } from "@/lib/util/string"
 
-const ALLOWED_PREFIXES = ["/songs"]
+const ALLOWED_PREFIXES = [
+  "/songs",
+  "/auth/sign-in",
+  "/auth/sign-up",
+  "/users/availability",
+]
 
 function isAllowedPrefix(path: string) {
   return ALLOWED_PREFIXES.some((prefix) => path.startsWith(prefix))
@@ -19,6 +24,7 @@ async function makeRequest(props: {
     body: props.body,
     headers: { ...props.headers, "x-from-next-gate": "1" },
     cache: "no-store",
+    credentials: "include",
   })
 }
 
@@ -28,15 +34,20 @@ async function handler(
 ) {
   // * MARK: - Prepare backend URL and check if it's allowed
   const { path } = await ctx.params
-  const backendPath = `${joinAsPathForUrl(...path)}`
+  const backendPath = `/${joinAsPathForUrl(...path)}`
+  console.log(`Received request for backend path: ${backendPath}`)
   if (!isAllowedPrefix(backendPath)) {
-    return NextResponse.json({ error: "forbidden" }, { status: 403 })
+    return NextResponse.json(
+      { error: "forbidden for forwarding" },
+      { status: 403 },
+    )
   }
   const url = new URL(req.url)
-  const apiURL = process.env.NEXT_PUBLIC_BACKEND_URL
-  if (!apiURL || URL.parse(apiURL)) {
+  const apiURL = process.env.NEXT_PUBLIC_API_URL
+  console.log(`API URL: ${apiURL}`)
+  if (!apiURL || !URL.parse(apiURL)) {
     return NextResponse.json(
-      { error: "NEXT_PUBLIC_BACKEND_URL is not set" },
+      { error: "NEXT_PUBLIC_API_URL is not set" },
       { status: 500 },
     )
   }
@@ -50,6 +61,8 @@ async function handler(
   backendFullURL.search = url.search
 
   const cookieHeader = (await cookies()).toString()
+  console.log("Cookies: ", cookieHeader)
+  console.log("Headers: ", req.headers)
 
   // Forward body only when present
   const hasBody = !["GET", "HEAD"].includes(req.method)
@@ -68,13 +81,16 @@ async function handler(
   })
 
   // * MARK: - Prepare response
-  const contentType = response.headers.get("content-type") ?? "application/json"
   const buffer = await response.arrayBuffer()
-
-  return new NextResponse(buffer, {
+  const res = new NextResponse(buffer, {
     status: response.status,
-    headers: { "content-type": contentType },
   })
+
+  const contentType = response.headers.get("content-type") ?? "application/json"
+  res.headers.set("content-type", contentType)
+
+  console.log("Response headers:", res.headers)
+  return res
 }
 
 export const GET = handler

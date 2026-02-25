@@ -70,4 +70,12 @@ export class AuthController {
     response.cookie("token", token)
     return { token }
   }
+
+  @UseGuards(AuthGuard)
+  @Get("check")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async check() {
+    // If the request reaches this point, it means the user is authenticated, returning 204 No Content is sufficient
+    // Otherwise, if the user is not authenticated, the AuthGuard will throw an UnauthorizedException and return a 401 response before reaching this point
+  }
 }

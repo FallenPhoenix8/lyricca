@@ -120,4 +120,11 @@ export class UserService {
     })
     return new UserImpl(user)
   }
+
+  async checkAvailability(username: string): Promise<boolean> {
+    const user = await this.databaseService.user.findUnique({
+      where: { username },
+    })
+    return user ? false : true
+  }
 }
