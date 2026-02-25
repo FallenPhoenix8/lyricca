@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import BlobScene from "@/components/ui/svg/BlobScene"
 import clsx from "clsx"
+import { VStack } from "@/components/ui/layout"
 
 function UsernameInput({
   value,
@@ -136,7 +137,10 @@ export default function SignInPage() {
       >
         <BlobScene className="h-full w-xs lg:w-sm transform-[scaleX(-1)] rounded-lg hidden md:block border-r-2 border-border" />
         <main className="flex flex-col gap-4 p-4 max-w-sm lg:w-md">
-          <h2 className="text-3xl font-semibold">Sign In</h2>
+          <VStack>
+            <h2 className="text-3xl font-semibold">Sign In</h2>
+            <p>Welcome back! Sign in to continue using Lyricca.</p>
+          </VStack>
           <UsernameInput value={username} setValue={setUsername} />
           <PasswordInput value={password} setValue={setPassword} />
           <p>

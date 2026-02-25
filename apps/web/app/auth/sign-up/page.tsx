@@ -22,6 +22,7 @@ import { HStack, VStack } from "@/components/ui/layout"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 const queryClient = new QueryClient()
 
@@ -328,6 +329,15 @@ export default function SignUpPage() {
               onValidityChange={setIsValidPassword}
             />
 
+            <p>
+              Already have an account?{" "}
+              <Link
+                href="/auth/sign-in"
+                className="underline underline-offset-4"
+              >
+                Sign In!
+              </Link>
+            </p>
             <Button
               type="submit"
               variant="default"
