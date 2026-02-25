@@ -23,6 +23,7 @@ import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import BlobSceneNarrow from "@/components/ui/svg/BlobSceneNarrow"
 
 const queryClient = new QueryClient()
 
@@ -314,7 +315,8 @@ export default function SignUpPage() {
           className="flex md:border-2 border-border mx-auto rounded-lg h-fit mt-10"
           aria-describedby="sign-in-error"
         >
-          <main className="flex flex-col gap-4 p-4 max-w-xl">
+          <BlobSceneNarrow className="h-full shrink transform-[scaleX(-1)] rounded-lg hidden lg:block border-r-2 border-border" />
+          <main className="flex flex-col gap-4 max-w-xl p-10 lg:p-4">
             <h2 className="text-3xl font-semibold">Sign Up</h2>
             <p>Sign up to create an account and start using Lyricca!</p>
 

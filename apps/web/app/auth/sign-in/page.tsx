@@ -135,8 +135,8 @@ export default function SignInPage() {
         className="flex md:border-2 border-border mx-auto rounded-lg h-fit mt-10"
         aria-describedby="sign-in-error"
       >
-        <BlobScene className="h-full w-xs lg:w-sm transform-[scaleX(-1)] rounded-lg hidden md:block border-r-2 border-border" />
-        <main className="flex flex-col gap-4 p-4 max-w-sm lg:w-md">
+        <BlobScene className="h-full w-sm transform-[scaleX(-1)] rounded-lg hidden md:block border-r-2 border-border" />
+        <main className="flex flex-col gap-4 p-4 max-w-xl">
           <VStack>
             <h2 className="text-3xl font-semibold">Sign In</h2>
             <p>Welcome back! Sign in to continue using Lyricca.</p>
