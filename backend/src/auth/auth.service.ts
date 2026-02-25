@@ -7,6 +7,8 @@ import { UserService } from "../user/user.service"
 import { AuthPayload } from "@shared/ts-types"
 import { hash, compare } from "bcrypt"
 import { JwtService } from "@nestjs/jwt"
+import { jwtConstants } from "./constants"
+import type { VerifiedTokenPayload } from "./auth.guard"
 
 @Injectable()
 export class AuthService {
@@ -47,6 +49,21 @@ export class AuthService {
     })
 
     return { token: this.generateToken(newUser.id, newUser.username) }
+  }
+
+  async refresh(request: any): Promise<AuthPayload | "long-ttl"> {
+    const token: string = request["token"]
+    const payload = (await this.jwtService.verifyAsync(token, {
+      secret: jwtConstants.secret,
+    })) as VerifiedTokenPayload
+
+    const remainingTime = payload.exp - Date.now() / 1000
+    const isLongTTL = remainingTime > 60 * 60 * 24 * 7 // 7 days
+
+    if (isLongTTL) {
+      return "long-ttl"
+    }
+    return { token: this.generateToken(payload.sub, payload.username) }
   }
 
   generateToken(userId: string, username: string): string {

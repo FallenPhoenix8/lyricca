@@ -9,6 +9,21 @@ import { jwtConstants } from "./constants"
 import { Request } from "express"
 import { UserService } from "../user/user.service"
 
+export type VerifiedTokenPayload = {
+  /**
+   * Subject (user ID)
+   */
+  sub: string
+  username: string
+  /**
+   * Issued at (seconds since Epoch)
+   */
+  iat: number
+  /**
+   * Expiration time (seconds since Epoch)
+   */
+  exp: number
+}
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
@@ -24,12 +39,14 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException()
     }
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
+      const payload = (await this.jwtService.verifyAsync(token, {
         secret: jwtConstants.secret,
-      })
+      })) as VerifiedTokenPayload
+
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
       request["user"] = () => this.userService.findOne({ id: payload.sub })
+      request["token"] = token
     } catch {
       throw new UnauthorizedException()
     }

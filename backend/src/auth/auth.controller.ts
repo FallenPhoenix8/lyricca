@@ -65,10 +65,14 @@ export class AuthController {
   async refresh(
     @Res({ passthrough: true }) response: Response,
     @Req() req: any,
-  ): Promise<AuthPayload> {
-    const token = this.authService.generateToken(req.user.id, req.user.username)
-    response.cookie("token", token)
-    return { token }
+  ): Promise<AuthPayload | void> {
+    const refreshResult = await this.authService.refresh(req)
+    if (refreshResult === "long-ttl") {
+      response.status(HttpStatus.NO_CONTENT)
+    } else {
+      response.cookie("token", refreshResult.token)
+      return { token: refreshResult.token }
+    }
   }
 
   @UseGuards(AuthGuard)
