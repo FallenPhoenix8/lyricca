@@ -82,6 +82,7 @@ function PasswordInput({
         variant="outline"
         size="icon-xs"
         onClick={() => setIsVisible(!isVisible)}
+        type="button"
       >
         {isVisible ? (
           <EyeIcon className="w-5 h-5" weight="bold" />

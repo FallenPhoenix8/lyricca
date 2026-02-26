@@ -3,7 +3,7 @@ import AnimatedButtonGroup, {
   ButtonGroupItem,
 } from "@/components/ui/animated-button-group"
 import { usePathname } from "next/navigation"
-import { PlusIcon, BooksIcon, SignInIcon } from "@phosphor-icons/react"
+import { PlusIcon, BooksIcon, GearSixIcon } from "@phosphor-icons/react"
 import { Button } from "../button"
 import Link from "next/link"
 
@@ -11,6 +11,13 @@ export default function NavLinks({ origin }: { origin: "app" | "guest" }) {
   const pathname = usePathname()
   function getAppLinks(): ButtonGroupItem[] {
     return [
+      {
+        role: "link",
+        label: "Preferences",
+        icon: <GearSixIcon className="w-5 h-5" />,
+        href: "/app/preferences",
+        isInitialActive: pathname === "/app/preferences",
+      },
       {
         role: "link",
         label: "Library",
@@ -29,7 +36,7 @@ export default function NavLinks({ origin }: { origin: "app" | "guest" }) {
   }
 
   return (
-    <div className="pt-2 px-4">
+    <div>
       {origin === "app" && <AnimatedButtonGroup buttons={getAppLinks()} />}
       {origin === "guest" && (
         <Link href="/auth/sign-in">

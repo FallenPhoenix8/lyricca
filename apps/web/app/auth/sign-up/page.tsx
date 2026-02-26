@@ -207,6 +207,7 @@ function PasswordInput({
         variant="outline"
         size="icon-xs"
         onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+        type="button"
       >
         {isPasswordVisible ? (
           <EyeIcon className="w-5 h-5" weight="bold" />
@@ -225,6 +226,7 @@ function PasswordInput({
         onClick={() =>
           setIsPasswordConfirmationVisible(!isPasswordConfirmationVisible)
         }
+        type="button"
       >
         {isPasswordConfirmationVisible ? (
           <EyeIcon className="w-5 h-5" weight="bold" />
