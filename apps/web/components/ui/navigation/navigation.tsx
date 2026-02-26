@@ -8,7 +8,7 @@ export default function Navigation({ origin }: { origin: "app" | "guest" }) {
     <nav className="sticky z-50 top-0 border-b border-border backdrop-blur-md bg-background/60 backdrop-saturate-200 backdrop-brightness-110 shadow-sm shadow-border/50">
       <HStack className="items-center px-4 py-2">
         <Link href="/landing">
-          <LogoFull className="text-primary h-9" />
+          <LogoFull className="h-9" />
         </Link>
         <Spacer />
         <NavLinks origin={origin} />
