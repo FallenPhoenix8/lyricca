@@ -9,13 +9,7 @@ export default function BlobScene({ className }: { className?: string }) {
       version="1.1"
       className={className}
     >
-      <rect
-        x="0"
-        y="0"
-        width="675"
-        height="900"
-        fill="var(--background)"
-      ></rect>
+      <rect x="0" y="0" width="675" height="900" fill="transparent"></rect>
       <defs>
         <linearGradient id="grad1_0" x1="0%" y1="100%" x2="100%" y2="0%">
           <stop offset="30%" stopColor="var(--primary)" stopOpacity="1"></stop>

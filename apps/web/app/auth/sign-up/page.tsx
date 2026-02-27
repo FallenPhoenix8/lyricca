@@ -314,10 +314,10 @@ export default function SignUpPage() {
             formAction(formData)
             setIsPending(false)
           }}
-          className="flex md:border-2 border-border mx-auto rounded-lg h-fit mt-10 md:shadow-lg shadow-muted-foreground/10"
+          className="flex md:border-2 border-border mx-auto rounded-lg h-fit mt-10 md:shadow-lg shadow-muted-foreground/10 bg-secondary/20"
           aria-describedby="sign-in-error"
         >
-          <BlobSceneNarrow className="h-full shrink transform-[scaleX(-1)] rounded-lg hidden lg:block border-r-2 border-border" />
+          <BlobSceneNarrow className="transform-[scaleX(-1)] h-full shrink rounded-r-lg rounded-tl-lg hidden lg:block border-l border-border" />
           <main className="flex flex-col gap-4 max-w-xl p-10 lg:p-4">
             <h2 className="text-3xl font-semibold">Sign Up</h2>
             <p>Sign up to create an account and start using Lyricca!</p>
