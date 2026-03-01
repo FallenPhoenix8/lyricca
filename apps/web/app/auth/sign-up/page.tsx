@@ -314,7 +314,7 @@ export default function SignUpPage() {
             formAction(formData)
             setIsPending(false)
           }}
-          className="flex md:border-2 border-border mx-auto rounded-lg h-fit mt-10 md:shadow-lg shadow-muted-foreground/10 bg-secondary/20"
+          className="flex md:border-2 border-border mx-auto rounded-lg h-fit mt-10 md:shadow-lg shadow-muted-foreground/10 bg-background dark:bg-secondary/10"
           aria-describedby="sign-in-error"
         >
           <BlobSceneNarrow className="transform-[scaleX(-1)] h-full shrink rounded-r-lg rounded-tl-lg hidden lg:block border-l border-border" />
