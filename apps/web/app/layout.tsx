@@ -1,17 +1,15 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Noto_Sans } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const notoSans = Noto_Sans({
   subsets: ["latin"],
+  display: "swap",
+  variable: "--font-noto-sans",
 })
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-})
+const fontFamily = `system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, var(--${notoSans.variable}), sans-serif`
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -26,7 +24,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-secondary dark:bg-background`}
+        className={`antialiased bg-secondary dark:bg-background`}
+        style={{
+          fontFamily,
+        }}
       >
         <ThemeProvider
           attribute="class"
