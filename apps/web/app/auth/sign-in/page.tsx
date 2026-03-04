@@ -139,7 +139,7 @@ export default function SignInPage() {
         <BlobScene className="transform-[scaleX(-1)] h-full w-sm rounded-r-lg rounded-tl-lg hidden md:block border-l border-border" />
         <main className="flex flex-col gap-4 p-4 max-w-xl">
           <VStack>
-            <h2 className="text-3xl font-semibold">Sign In</h2>
+            <h2 className="app-title-heading">Sign In</h2>
             <p>Welcome back! Sign in to continue using Lyricca.</p>
           </VStack>
           <UsernameInput value={username} setValue={setUsername} />

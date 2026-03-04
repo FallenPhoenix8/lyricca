@@ -319,7 +319,7 @@ export default function SignUpPage() {
         >
           <BlobSceneNarrow className="transform-[scaleX(-1)] h-full shrink rounded-r-lg rounded-tl-lg hidden lg:block border-l border-border" />
           <main className="flex flex-col gap-4 max-w-xl p-10 lg:p-4">
-            <h2 className="text-3xl font-semibold">Sign Up</h2>
+            <h2 className="app-title-heading">Sign Up</h2>
             <p>Sign up to create an account and start using Lyricca!</p>
 
             <UsernameInput
