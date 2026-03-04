@@ -150,9 +150,9 @@ class SongCheckAllInputImpl implements SongCheckAllInput {
   @Type(() => SongCheckAllInputItemImpl)
   items: SongCheckAllInputItemImpl[]
 
-  constructor(input: SongCheckAllInput) {
-    this.items = input.items.map((item) => new SongCheckAllInputItemImpl(item))
-  }
+  // constructor(input: SongCheckAllInput) {
+  //   this.items = input.items.map((item) => new SongCheckAllInputItemImpl(item))
+  // }
 }
 
 class SongCheckAllOutputImpl implements SongCheckAllOutput {

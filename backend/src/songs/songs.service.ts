@@ -75,6 +75,7 @@ export class SongsService {
     input: SongCheckAllInputImpl,
     userId: string,
   ): Promise<SongCheckAllOutputImpl> {
+    console.log("\n\n\n\nReceived input: ", input)
     // * MARK: - Get all songs of the user
     const userSongsMap: Map<string, Date> = new Map(
       (

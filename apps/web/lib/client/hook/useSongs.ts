@@ -3,6 +3,7 @@ import {
   ErrorResponseDTO,
   SongCheckAllInput,
   SongCheckAllOutput,
+  SongDTO,
 } from "@shared/ts-types"
 import db from "../db"
 import APIClient from "@/lib/data/APIClient"
@@ -11,7 +12,7 @@ import type {
   TypeSongDTO,
   TypeSongUpdate,
 } from "@/lib/model/Song"
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 import { Err, Ok, Result } from "@/types/Result"
 import { useQuery } from "react-query"
 import { ApiError } from "next/dist/server/api-utils"
@@ -118,7 +119,7 @@ async function checkAndUpdateAllLocally(input: SongCheckAllInput) {
   })
 }
 
-export default function useSongs() {
+export function useSongs() {
   const songs =
     useLiveQuery(() => {
       return db.songs.toArray()
@@ -135,7 +136,12 @@ export default function useSongs() {
   /**
    * Initialize by checking all songs in the API and updating local database accordingly. This ensures that the local database is always in sync with the API, even if there are changes made from other clients or the server itself.
    */
-  checkAndUpdateAllLocally(songsCheckAllInput())
+  useEffect(() => {
+    if (songs.length === 0) {
+      return
+    }
+    checkAndUpdateAllLocally(songsCheckAllInput())
+  }, [])
 
   return {
     /**
@@ -168,6 +174,16 @@ export default function useSongs() {
      */
     remove: (id: string) => {
       return useQuery(["remove", id], () => remove(id))
+    },
+
+    /**
+     * This function finds a song in the local database by its ID. It returns the song if found, or null otherwise.
+     *
+     * @param id The ID of the song to find
+     * @returns song with the given ID, or null if not found
+     */
+    findOneLocally: (id: string): SongDTO | null => {
+      return songs.find((song) => song.id === id) ?? null
     },
   }
 }
