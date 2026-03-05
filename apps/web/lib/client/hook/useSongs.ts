@@ -202,7 +202,6 @@ export function useSongs() {
   /**
    * Query client for managing queries and mutations
    */
-  const qc = useQueryClient()
   const createMutation = useMutation((input: TypeSongCreate) => create(input), {
     onSuccess: (res) => {
       if (!res.ok) return
