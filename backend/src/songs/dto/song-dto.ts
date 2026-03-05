@@ -73,14 +73,6 @@ class SongCreateDTOImpl implements SongCreateDTO {
   @IsOptional()
   @IsString()
   album: string | null
-
-  constructor(dto: SongCreateDTO) {
-    this.title = dto.title
-    this.original_lyrics = dto.original_lyrics
-    this.translated_lyrics = dto.translated_lyrics
-    this.artist = dto.artist
-    this.album = dto.album
-  }
 }
 
 class SongUpdateDTOImpl implements SongUpdateDTO {

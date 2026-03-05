@@ -28,7 +28,8 @@
     "react-dom": "19.2.3",
     "react-query": "^3.39.3",
     "tailwind-merge": "^3.5.0",
-    "use-debounce": "^10.1.0"
+    "use-debounce": "^10.1.0",
+    "web-haptics": "^0.0.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
