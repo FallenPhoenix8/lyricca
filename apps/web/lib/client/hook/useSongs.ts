@@ -12,10 +12,9 @@ import type {
   TypeSongDTO,
   TypeSongUpdate,
 } from "@/lib/model/Song"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { Err, Ok, Result } from "@/types/Result"
-import { useQuery } from "react-query"
-import { ApiError } from "next/dist/server/api-utils"
+import { useMutation, useQuery, useQueryClient } from "react-query"
 
 async function getDetails(id: string): Promise<TypeSongDTO | null> {
   const endpoint = `songs/${id}`
@@ -145,14 +144,14 @@ export function useSongs() {
   }, [songs])
 
   // MARK: - Prevent overlapping sync calls
-  const [isSyncing, setIsSyncing] = useState(false)
+  const isSyncingRef = useRef(false)
 
   const syncNow = useCallback(async () => {
-    if (isSyncing) return
-    setIsSyncing(true)
+    if (isSyncingRef.current) return
+    isSyncingRef.current = true
 
     if (!songsRef.current) {
-      setIsSyncing(false)
+      isSyncingRef.current = false
       return
     }
 
@@ -165,18 +164,18 @@ export function useSongs() {
 
     try {
       await checkAndUpdateAllLocally(songCheckAllInput)
-      setIsSyncing(false)
+      isSyncingRef.current = false
     } finally {
-      setIsSyncing(false)
+      isSyncingRef.current = false
     }
-  }, [])
+  }, [songsRef])
 
   /**
    * Initialize by checking all songs in the API and updating local database accordingly. This ensures that the local database is always in sync with the API, even if there are changes made from other clients or the server itself.
    */
   useEffect(() => {
     syncNow()
-  }, [syncNow, songsRef])
+  }, [syncNow, songs])
 
   // * MARK: - Sync songs when the user comes back to tab
   useEffect(() => {
@@ -199,6 +198,30 @@ export function useSongs() {
     }
   }, [syncNow, songs])
 
+  // * MARK: - Mutations
+  /**
+   * Query client for managing queries and mutations
+   */
+  const qc = useQueryClient()
+  const createMutation = useMutation((input: TypeSongCreate) => create(input), {
+    onSuccess: (res) => {
+      if (!res.ok) return
+    },
+  })
+  const updateMutation = useMutation(
+    ({ id, input }: { id: string; input: TypeSongUpdate }) => update(id, input),
+    {
+      onSuccess: (res) => {
+        if (!res.ok) return
+      },
+    },
+  )
+  const removeMutation = useMutation(({ id }: { id: string }) => remove(id), {
+    onSuccess: (res) => {
+      if (!res.ok) return
+    },
+  })
+
   return {
     /**
      * Provides a list of songs from the local database. This allows components to access and display the songs without needing to make API calls, improving performance and responsiveness. The local database is kept in sync with the API through the `checkAndUpdateAllLocally` function, ensuring that the data is always up-to-date.
@@ -209,9 +232,7 @@ export function useSongs() {
      * @param input Input for adding a song
      * @returns Query for added song
      */
-    create: (input: TypeSongCreate) => {
-      return useQuery(["create", input], () => create(input))
-    },
+    create: createMutation,
 
     /**
      * This function updates an existing song by sending a request to the API and then updates the local database with the updated song. It returns a query that can be used to track the status of the update process and handle any errors that may occur.
@@ -219,18 +240,14 @@ export function useSongs() {
      * @param input Input for updating a song
      * @returns Query for updated song
      */
-    update: (id: string, input: TypeSongUpdate) => {
-      return useQuery(["update", id, input], () => update(id, input))
-    },
+    update: updateMutation,
 
     /**
      * This function removes a song by sending a request to the API and then updates the local database with the deleted song. It returns a query that can be used to track the status of the removal process and handle any errors that may occur.
      * @param id The ID of the song to remove
      * @returns Query for deleted song
      */
-    remove: (id: string) => {
-      return useQuery(["remove", id], () => remove(id))
-    },
+    remove: removeMutation,
 
     /**
      * This function finds a song in the local database by its ID. It returns the song if found, or null otherwise.
