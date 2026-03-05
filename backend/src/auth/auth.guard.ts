@@ -45,12 +45,22 @@ export class AuthGuard implements CanActivate {
 
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
-      request["user"] = () => this.userService.findOne({ id: payload.sub })
+
+      request["user"] = async () => {
+        return await this.retrieveUser(payload.sub)
+      }
       request["token"] = token
     } catch {
       throw new UnauthorizedException()
     }
     return true
+  }
+  private async retrieveUser(id: string) {
+    const user = await this.userService.findOne({ id })
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+    return user
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {

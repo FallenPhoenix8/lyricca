@@ -137,11 +137,6 @@ class SongCheckAllInputItemImpl implements SongCheckAllInputItem {
   @IsDate()
   @Type(() => Date)
   updated_at: Date
-
-  constructor(item: SongCheckAllInputItem) {
-    this.id = item.id
-    this.updated_at = item.updated_at
-  }
 }
 
 class SongCheckAllInputImpl implements SongCheckAllInput {
@@ -149,10 +144,6 @@ class SongCheckAllInputImpl implements SongCheckAllInput {
   @ValidateNested({ each: true })
   @Type(() => SongCheckAllInputItemImpl)
   items: SongCheckAllInputItemImpl[]
-
-  // constructor(input: SongCheckAllInput) {
-  //   this.items = input.items.map((item) => new SongCheckAllInputItemImpl(item))
-  // }
 }
 
 class SongCheckAllOutputImpl implements SongCheckAllOutput {

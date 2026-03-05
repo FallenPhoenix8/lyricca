@@ -35,7 +35,7 @@ async function handler(
   // * MARK: - Prepare backend URL and check if it's allowed
   const { path } = await ctx.params
   const backendPath = `/${joinAsPathForUrl(...path)}`
-  console.log(`Received request for backend path: ${backendPath}`)
+
   if (!isAllowedPrefix(backendPath)) {
     return NextResponse.json(
       { error: "forbidden for forwarding" },
@@ -44,7 +44,7 @@ async function handler(
   }
   const url = new URL(req.url)
   const apiURL = process.env.NEXT_PUBLIC_API_URL
-  console.log(`API URL: ${apiURL}`)
+
   if (!apiURL || !URL.parse(apiURL)) {
     return NextResponse.json(
       { error: "NEXT_PUBLIC_API_URL is not set" },
@@ -61,8 +61,6 @@ async function handler(
   backendFullURL.search = url.search
 
   const cookieHeader = (await cookies()).toString()
-  console.log("Cookies: ", cookieHeader)
-  console.log("Headers: ", req.headers)
 
   // Forward body only when present
   const hasBody = !["GET", "HEAD"].includes(req.method)
@@ -89,7 +87,6 @@ async function handler(
   const contentType = response.headers.get("content-type") ?? "application/json"
   res.headers.set("content-type", contentType)
 
-  console.log("Response headers:", res.headers)
   return res
 }
 

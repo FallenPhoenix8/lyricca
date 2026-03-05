@@ -23,7 +23,7 @@ class APIClient {
   ): Promise<Result<T, ErrorResponseDTO>> {
     let baseURL: string = "/api/backend"
     if (typeof window === "undefined") {
-      console.log("Running in server")
+      console.log("Making request on server...")
       if (!process.env.SELF_URL) {
         throw new Error("`SELF_URL` environment variable is not set")
       }

@@ -12,7 +12,7 @@ import type {
   TypeSongDTO,
   TypeSongUpdate,
 } from "@/lib/model/Song"
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Err, Ok, Result } from "@/types/Result"
 import { useQuery } from "react-query"
 import { ApiError } from "next/dist/server/api-utils"
@@ -84,6 +84,7 @@ async function remove(
 }
 
 async function checkAndUpdateAllLocally(input: SongCheckAllInput) {
+  console.log("Syncing local songs...")
   // * Check all songs in the API
   const endpoint = "songs/check-all"
   const result = await APIClient.shared.post<SongCheckAllOutput>(
@@ -97,6 +98,16 @@ async function checkAndUpdateAllLocally(input: SongCheckAllInput) {
   }
 
   const upToDateSongs = result.value
+  const countTotalToSync =
+    upToDateSongs.toBeCreated.length +
+    upToDateSongs.toBeUpdated.length +
+    upToDateSongs.toBeDeleted.length
+
+  console.log(
+    countTotalToSync === 0
+      ? "Songs are up to date."
+      : `Syncing ${countTotalToSync} songs...`,
+  )
   // * Update songs in local database
   await db.transaction("rw", db.songs, async () => {
     for (const songId of upToDateSongs.toBeCreated) {
@@ -117,31 +128,76 @@ async function checkAndUpdateAllLocally(input: SongCheckAllInput) {
       await db.songs.delete(songId)
     }
   })
+  if (countTotalToSync > 0) {
+    console.log("Syncing songs completed.")
+  }
 }
 
 export function useSongs() {
-  const songs =
-    useLiveQuery(() => {
-      return db.songs.toArray()
-    }) ?? []
+  const songs = useLiveQuery(() => {
+    return db.songs.toArray()
+  })
 
-  const songsCheckAllInput = useCallback(() => {
-    return {
-      items: songs.map((song) => ({
+  // * MARK: - Keep latest songs without re-binding listeners
+  const songsRef = useRef(songs)
+  useEffect(() => {
+    songsRef.current = songs
+  }, [songs])
+
+  // MARK: - Prevent overlapping sync calls
+  const [isSyncing, setIsSyncing] = useState(false)
+
+  const syncNow = useCallback(async () => {
+    if (isSyncing) return
+    setIsSyncing(true)
+
+    if (!songsRef.current) {
+      setIsSyncing(false)
+      return
+    }
+
+    const songCheckAllInput = {
+      items: songsRef.current.map((song) => ({
         id: song.id,
         updated_at: song.updated_at,
       })),
     }
-  }, [songs])
+
+    try {
+      await checkAndUpdateAllLocally(songCheckAllInput)
+      setIsSyncing(false)
+    } finally {
+      setIsSyncing(false)
+    }
+  }, [])
+
   /**
    * Initialize by checking all songs in the API and updating local database accordingly. This ensures that the local database is always in sync with the API, even if there are changes made from other clients or the server itself.
    */
   useEffect(() => {
-    if (songs.length === 0) {
-      return
+    syncNow()
+  }, [syncNow, songsRef])
+
+  // * MARK: - Sync songs when the user comes back to tab
+  useEffect(() => {
+    const handler = () => {
+      if (document.visibilityState === "visible") syncNow()
     }
-    checkAndUpdateAllLocally(songsCheckAllInput())
-  }, [])
+
+    document.addEventListener("visibilitychange", handler)
+    window.addEventListener("focus", handler)
+    window.addEventListener("pageshow", handler) // helps with bfcache restore
+
+    // optional: also when connection comes back
+    window.addEventListener("online", handler)
+
+    return () => {
+      document.removeEventListener("visibilitychange", handler)
+      window.removeEventListener("focus", handler)
+      window.removeEventListener("pageshow", handler)
+      window.removeEventListener("online", handler)
+    }
+  }, [syncNow, songs])
 
   return {
     /**
@@ -183,7 +239,7 @@ export function useSongs() {
      * @returns song with the given ID, or null if not found
      */
     findOneLocally: (id: string): SongDTO | null => {
-      return songs.find((song) => song.id === id) ?? null
+      return songs?.find((song) => song.id === id) ?? null
     },
   }
 }
