@@ -13,31 +13,54 @@ import { SongDTO } from "@shared/ts-types"
 import Image from "next/image"
 import { Spacer } from "./layout"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
+import { easeOvershootClassName } from "./constants"
 
 export function SongCard(props: { song: SongDTO; className?: string }) {
   return (
     <Card
       className={cn(
-        "relative max-w-sm pt-0 shadow-sm shadow-muted/50 hover:shadow-lg hover:-translate-1 transition duration-300",
+        "relative max-w-52 min-h-96 pt-0 shadow-sm shadow-muted/50 hover:shadow-lg hover:-translate-y-1 transition-[shadow, transition, border-radius] duration-300 group hover:rounded-2xl ",
+        easeOvershootClassName,
         props.className,
       )}
     >
-      <div className="absolute inset-0 z-10 aspect-video bg-background/50 rounded-xl" />
-      {props.song.cover ? (
-        <Image
-          src={props.song.cover.url}
-          alt={props.song.title}
-          className="relative z-20 aspect-video object-cover rounded-t-xl w-full"
-          width={206}
-          height={115}
-        />
-      ) : (
-        <ImageRosetta className="relative z-20 aspect-video -mt-6 rounded-xl" />
-      )}
+      <div
+        className={cn(
+          "absolute inset-0 z-10 aspect-square bg-background/50 rounded-t-xl shadow-muted/50 shadow-none group-hover:shadow-sm transition-[border-radius, shadow] duration-300 group-hover:rounded-b-xl group-hover:rounded-t-2xl",
+          easeOvershootClassName,
+        )}
+      />
+      <Link href={`/app/library/${props.song.id}`} className="w-full">
+        {props.song.cover ? (
+          <Image
+            src={props.song.cover.url}
+            alt={props.song.title}
+            className={cn(
+              "relative z-20 aspect-square object-cover rounded-t-xl group-hover:rounded-b-xl w-full transition-[border-radius, scale] duration-300 group-hover:scale-95 group-hover:rounded-t-2xl",
+              easeOvershootClassName,
+            )}
+            width={224}
+            height={224}
+          />
+        ) : (
+          <ImageRosetta
+            className={cn(
+              "relative z-20 aspect-square -mt-6 rounded-xl transition-[border-radius, scale] duration-300 group-hover:scale-95 group-hover:rounded-t-2xl",
+              easeOvershootClassName,
+            )}
+          />
+        )}
+      </Link>
 
       <CardHeader>
-        <CardTitle className="line-clamp-1 leading-normal">
-          {props.song.title}
+        <CardTitle className="leading-normal">
+          <Link
+            href={`/app/library/${props.song.id}`}
+            className="w-full font-semibold line-clamp-2 underline-offset-4 hover:underline"
+          >
+            {props.song.title}
+          </Link>
         </CardTitle>
         <CardDescription className="flex flex-wrap gap-2">
           {props.song.artist ? (
@@ -52,13 +75,20 @@ export function SongCard(props: { song: SongDTO; className?: string }) {
           )}
         </CardDescription>
       </CardHeader>
-      <Spacer />
+      {/* <Spacer />
       <hr />
       <CardFooter>
-        <Button variant="default" className="w-full">
-          View Lyrics
-        </Button>
-      </CardFooter>
+        <Link href={`/app/library/${props.song.id}`} className="w-full">
+          <Button
+            variant="default"
+            tabIndex={-1}
+            className="w-full"
+            onClick={() => console.log("test")}
+          >
+            View Lyrics
+          </Button>
+        </Link>
+      </CardFooter> */}
     </Card>
   )
 }

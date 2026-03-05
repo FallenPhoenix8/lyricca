@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { Slot } from "radix-ui"
-
+import { useWebHaptics } from "web-haptics/react"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
@@ -49,6 +49,7 @@ function Button({
     asChild?: boolean
   }) {
   const Comp = asChild ? Slot.Root : "button"
+  const { trigger } = useWebHaptics({ debug: true })
 
   return (
     <Comp
@@ -57,6 +58,10 @@ function Button({
       data-size={size}
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
+      onClick={(event) => {
+        trigger([{ duration: 15 }], { intensity: 0.4 }) // Trigger light haptic feedback on click
+        props.onClick?.(event)
+      }}
     />
   )
 }
