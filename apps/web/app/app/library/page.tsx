@@ -9,11 +9,14 @@ import {
 import { HStack } from "@/components/ui/layout"
 import { SongCard } from "@/components/ui/song-card"
 import { useSongs } from "@/lib/client/hook/useSongs"
+import { useWindowDimensions } from "@/lib/client/hook/useWindowDimensions"
 import Link from "next/link"
 import { useEffect } from "react"
 
 export default function LibraryPage() {
   const { songs } = useSongs()
+  const { width } = useWindowDimensions() ?? { width: 0 }
+  const isCompact = width < 460
 
   useEffect(() => {
     console.log(songs)
@@ -27,10 +30,15 @@ export default function LibraryPage() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <div className="flex flex-wrap gap-2 place-items-center my-3">
+      <div className="flex flex-wrap gap-2 place-items-center my-3 mx-auto">
         {songs &&
           songs.map((song) => (
-            <SongCard key={song.id} song={song} className="h-full" />
+            <SongCard
+              key={song.id}
+              song={song}
+              className="h-full"
+              isCompact={isCompact}
+            />
           ))}
       </div>
     </>
