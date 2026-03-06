@@ -3,8 +3,7 @@ export const COOKIE_OPTIONS = {
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict",
   path: "/",
-  maxAge:
-    process.env.NODE_ENV === "production" ? 60 * 60 * 24 * 30 : 60 * 60 * 2, // 30 days in production, 2 hours in development
+  maxAge: 60 * 60 * 24 * 30, // 30 days
 } as {
   httpOnly: boolean
   secure: boolean
