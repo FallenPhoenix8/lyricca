@@ -4,14 +4,11 @@ import {
   SongCheckAllInput,
   SongCheckAllOutput,
   SongDTO,
+  SongUpdateDTO,
 } from "@shared/ts-types"
 import db from "../db"
 import APIClient from "@/lib/data/APIClient"
-import type {
-  TypeSongCreate,
-  TypeSongDTO,
-  TypeSongUpdate,
-} from "@/lib/model/Song"
+import type { TypeSongCreate, TypeSongDTO } from "@/lib/model/Song"
 import { useCallback, useEffect, useRef } from "react"
 import { Err, Ok, Result } from "@/types/Result"
 import { useMutation, useQuery, useQueryClient } from "react-query"
@@ -47,7 +44,7 @@ async function create(
 
 async function update(
   id: string,
-  input: TypeSongUpdate,
+  input: SongUpdateDTO,
 ): Promise<Result<TypeSongDTO, ErrorResponseDTO>> {
   // * MARK: - Update song in the API
   const endpoint = `songs/${id}`
@@ -208,7 +205,7 @@ export function useSongs() {
     },
   })
   const updateMutation = useMutation(
-    ({ id, input }: { id: string; input: TypeSongUpdate }) => update(id, input),
+    ({ id, input }: { id: string; input: SongUpdateDTO }) => update(id, input),
     {
       onSuccess: (res) => {
         if (!res.ok) return

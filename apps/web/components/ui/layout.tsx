@@ -8,15 +8,14 @@ export function VStack(
     className?: string
   } & React.HTMLAttributes<HTMLDivElement>,
 ) {
+  const { justifyContent, alignItems, ...rest } = props
   return (
     <div
-      {...props}
+      {...rest}
       className={cn(
         "flex flex-col",
-        props.justifyContent
-          ? `justify-${props.justifyContent}`
-          : "justify-start",
-        props.alignItems ? `items-${props.alignItems}` : "items-start",
+        justifyContent ? `justify-${justifyContent}` : "justify-start",
+        alignItems ? `items-${alignItems}` : "items-start",
         props.className,
       )}
     >
@@ -33,15 +32,15 @@ export function HStack(
     ref?: React.Ref<HTMLDivElement>
   } & React.HTMLAttributes<HTMLDivElement>,
 ) {
+  let { justifyContent, alignItems, ...rest } = props
+
   return (
     <div
-      {...props}
+      {...rest}
       className={cn(
         "flex flex-row",
-        props.justifyContent
-          ? `justify-${props.justifyContent}`
-          : "justify-start",
-        props.alignItems ? `items-${props.alignItems}` : "items-start",
+        justifyContent ? `justify-${justifyContent}` : "justify-start",
+        alignItems ? `items-${alignItems}` : "items-start",
         props.className,
       )}
       ref={props.ref}

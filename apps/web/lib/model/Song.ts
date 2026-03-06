@@ -36,12 +36,10 @@ const SongUpateSchema = type({
   translated_lyrics: "string > 0",
   artist: "string > 0",
   album: "string > 0",
-})
-const TSongUpdate = SongUpateSchema.infer satisfies SongUpdateDTO
+}).partial()
 
 type TypeSongDTO = typeof TSongDTO
 type TypeSongCreate = typeof TSongCreate
-type TypeSongUpdate = typeof TSongUpdate
 
-export type { TypeSongDTO, TypeSongCreate, TypeSongUpdate }
+export type { TypeSongDTO, TypeSongCreate }
 export { SongSchema, SongCreateSchema, SongUpateSchema }

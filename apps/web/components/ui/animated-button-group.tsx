@@ -79,6 +79,13 @@ export default function AnimatedButtonGroup({
       }
     }
   }, [activeButtonIndex, buttons, width])
+
+  useLayoutEffect(() => {
+    const activeIndex = buttons.findIndex((btn) => btn.isInitialActive)
+    if (activeIndex !== -1) {
+      updateActiveButtonIndex(activeIndex)
+    }
+  }, [buttons])
   return (
     <ZStack className="bg-secondary/20 rounded-sm w-min shadow-md">
       {/* MARK: - Render selection background */}
