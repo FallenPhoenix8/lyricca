@@ -10,6 +10,7 @@ import { easeOvershootClassName, easeBezierClassName } from "./constants"
 import { HStack, VStack } from "./layout"
 import { useState } from "react"
 import { Skeleton } from "./skeleton"
+import { PlaceholderImage } from "./svg/PlaceholderImage"
 
 function SongCardRegular(props: { song: SongDTO; className?: string }) {
   return (
@@ -101,7 +102,7 @@ function SongCardCompact(props: { song: SongDTO; className?: string }) {
             height={40}
           />
         ) : (
-          <ImageRosetta className="h-8 rounded-xs squircle" />
+          <PlaceholderImage className="h-8 aspect-square rounded-xs squircle" />
         )}
       </div>
       <VStack className="px-2 justify-around">

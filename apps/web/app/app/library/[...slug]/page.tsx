@@ -19,6 +19,7 @@ import { LyricsView } from "@/components/ui/lyrics-view"
 import { SongUpateSchema } from "@/lib/model/Song"
 import { useDebounce, useDebouncedCallback } from "use-debounce"
 import { Skeleton } from "@/components/ui/skeleton"
+import { PlaceholderImage } from "@/components/ui/svg/PlaceholderImage"
 
 export default function SongLyricsPage({
   params,
@@ -109,7 +110,7 @@ export default function SongLyricsPage({
           )}
           {song && !song.cover && (
             <div className="w-full aspect-video object-contain rounded-xl border-2">
-              <ImageRosetta className="w-3/4 h-3/4 rounded-xl" />
+              <PlaceholderImage className="w-full h-full rounded-xl" />
             </div>
           )}
         </div>
