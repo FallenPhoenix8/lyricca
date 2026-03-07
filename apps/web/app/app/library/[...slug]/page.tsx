@@ -15,53 +15,10 @@ import { use, useMemo } from "react"
 import Image from "next/image"
 import { ImageRosetta } from "@/components/ui/svg/ImageRosetta"
 import { Badge } from "@/components/ui/badge"
-import { LyricsView, SkeletonLyricsView } from "@/components/ui/lyrics-view"
+import { LyricsView } from "@/components/ui/lyrics-view"
 import { SongUpateSchema } from "@/lib/model/Song"
 import { useDebounce, useDebouncedCallback } from "use-debounce"
 import { Skeleton } from "@/components/ui/skeleton"
-
-function SkeletonSongLyricsPage() {
-  return (
-    <>
-      <Breadcrumb className="my-2">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/app/library">Library</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Lyrics</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
-      <ZStack className="block md:hidden">
-        <Skeleton className="w-full rounded-xl aspect-video mr-2" />
-      </ZStack>
-
-      <HStack className="w-[90vw]">
-        <VStack
-          className="h-[90vh] max-w-sm hidden md:flex"
-          justifyContent="center"
-        >
-          <Skeleton className="h-96 w-80 rounded-xl" />
-        </VStack>
-        <VStack className="pl-4 gap-4">
-          <VStack className="gap-1">
-            <Skeleton className="h-8 w-[85vw] md:w-[50vw] mt-3" />
-            <HStack className="gap-2">
-              <Skeleton className="h-6 w-20 rounded-full" />
-              <Skeleton className="h-6 w-24 rounded-full" />
-            </HStack>
-          </VStack>
-          <SkeletonLyricsView />
-        </VStack>
-      </HStack>
-    </>
-  )
-}
 
 export default function SongLyricsPage({
   params,
@@ -120,8 +77,8 @@ export default function SongLyricsPage({
     updateOriginalLyrics,
     1000,
   )
-
-  return song ? (
+  // song ? (
+  return (
     <>
       <Breadcrumb className="my-2">
         <BreadcrumbList>
@@ -136,62 +93,61 @@ export default function SongLyricsPage({
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-
-      <ZStack className="block md:hidden">
-        {song.cover ? (
-          <Image
-            src={song.cover.url}
-            alt={song.title}
-            width={330}
-            height={180}
-            className="w-full aspect-video object-cover rounded-xl"
-          />
-        ) : (
-          <div className="w-full aspect-video object-contain">
-            <ImageRosetta className="h-1/2 rounded-xl" />
-          </div>
-        )}
-      </ZStack>
-
-      <HStack>
-        <VStack
-          className="h-[90vh] max-w-sm hidden md:flex"
-          justifyContent="center"
-        >
-          {song.cover ? (
+      <div className="grid grid-cols-12 grid-rows-[200px 200px] gap-4">
+        <div className="col-span-12 md:col-span-4 row-span-1 md:h-screen flex justify-center items-center">
+          {!song && (
+            <Skeleton className="w-full aspect-video md:aspect-square rounded-xl border-2" />
+          )}
+          {song && song.cover && (
             <Image
               src={song.cover.url}
               alt={song.title}
-              width={384}
-              height={384}
-              className="h-96 aspect-square object-cover rounded-xl"
+              className="w-full aspect-video md:aspect-square object-cover rounded-xl border-2"
+              width={330}
+              height={180}
             />
-          ) : (
-            <div className="h-96 aspect-square object-contain">
-              <ImageRosetta className="h-96 rounded-xl" />
+          )}
+          {song && !song.cover && (
+            <div className="w-full aspect-video object-contain rounded-xl border-2">
+              <ImageRosetta className="w-3/4 h-3/4 rounded-xl" />
             </div>
           )}
-        </VStack>
-        <VStack className="pl-4 gap-4">
-          <VStack className="gap-1">
-            <h2 className="app-title-heading mt-3">{song.title}</h2>
-            <HStack className="gap-2">
-              <Badge variant="secondary">
-                {song.artist ?? "Unknown Artist"}
-              </Badge>
-              <Badge variant="secondary">{song.album ?? "Unknown Album"}</Badge>
-            </HStack>
+        </div>
+        <div className="col-span-12 md:col-span-8 row-span-2 md:col-start-5">
+          <VStack className="pl-4 gap-4">
+            <VStack className="gap-1">
+              {song ? (
+                <h2 className="app-title-heading mt-3">{song.title}</h2>
+              ) : (
+                <Skeleton className="h-8 w-[50vw] mt-3" />
+              )}
+              <HStack className="gap-2">
+                {song ? (
+                  <Badge variant="secondary">
+                    {song.artist ?? "Unknown Artist"}
+                  </Badge>
+                ) : (
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                )}
+                {song ? (
+                  <Badge variant="secondary">
+                    {song.album ?? "Unknown Album"}
+                  </Badge>
+                ) : (
+                  <Skeleton className="h-5 w-24 rounded-full" />
+                )}
+              </HStack>
+            </VStack>
+            <LyricsView
+              translatedLyrics={translatedLyrics}
+              originalLyrics={originalLyrics}
+              handleTranslatedLyricsChange={debouncedUpdateTranslatedLyrics}
+              handleOriginalLyricsChange={debouncedUpdateOriginalLyrics}
+              isLoading={!song}
+            />
           </VStack>
-          <LyricsView
-            translatedLyrics={translatedLyrics}
-            originalLyrics={originalLyrics}
-            handleTranslatedLyricsChange={debouncedUpdateTranslatedLyrics}
-            handleOriginalLyricsChange={debouncedUpdateOriginalLyrics}
-          />
-        </VStack>
-      </HStack>
+        </div>
+      </div>
     </>
-  ) : (
-    <SkeletonSongLyricsPage />
   )
 }

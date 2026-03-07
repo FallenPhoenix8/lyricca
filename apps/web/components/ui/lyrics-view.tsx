@@ -8,9 +8,9 @@ import { easeOvershootClassName } from "./constants"
 
 function SkeletonLyricsPair() {
   return (
-    <VStack className="gap-2 w-full px-4">
-      <Skeleton className="h-4 w-full rounded-sm" />
-      <Skeleton className="h-4 w-full rounded-sm" />
+    <VStack className="gap-1 px-4 w-full">
+      <Skeleton className="h-4 w-3/4 rounded-xs px-2 py-1 mx-0.5" />
+      <Skeleton className="h-4 w-3/4 rounded-xs px-2 py-1 mx-0.5" />
     </VStack>
   )
 }
@@ -76,28 +76,12 @@ function LyricsPair({
   )
 }
 
-export function SkeletonLyricsView() {
-  const skeletonLyricsPairs: null[] = new Array(10).fill(null)
-  return (
-    <VStack className="py-2 shadow-lg drop-shadow-card-foreground gap-6 w-[90vw] md:w-[60vw] bg-card rounded-xl overflow-y-hidden">
-      <HStack className="gap-2 w-full border-b pb-2" alignItems="center">
-        <Skeleton className="ml-4 h-5 w-16 rounded-sm" />
-        <Spacer />
-        <Skeleton className="mr-4 h-6 w-24 rounded-sm" />
-      </HStack>
-
-      {skeletonLyricsPairs.map((_, index) => (
-        <SkeletonLyricsPair key={`skeleton-lyrics-pair-${index}`} />
-      ))}
-    </VStack>
-  )
-}
-
 export function LyricsView({
   translatedLyrics,
   originalLyrics,
   handleTranslatedLyricsChange,
   handleOriginalLyricsChange,
+  isLoading = false,
 }: {
   translatedLyrics: string[]
   originalLyrics: string[]
@@ -109,8 +93,10 @@ export function LyricsView({
     lineIndex: number,
     newOriginalLyrics: string,
   ) => void
+  isLoading?: boolean
 }) {
   const [isEditable, setIsEditable] = useState(false)
+  const skeletonLyricsPairs: null[] = new Array(20).fill(null)
 
   const buttons = useCallback(
     () =>
@@ -157,7 +143,7 @@ export function LyricsView({
       original,
     }))
   return (
-    <VStack className="relative px-4 py-2 shadow-lg drop-shadow-card-foreground gap-0.5">
+    <VStack className="relative px-4 py-2 shadow-lg drop-shadow-card-foreground gap-0.5 mx-auto w-full">
       <div className="absolute bg-card rounded-xl inset-0 -z-20"></div>
       <HStack className="gap-2 w-full" alignItems="center">
         <h3 className="text-xl font-extrabold">Lyrics</h3>
@@ -166,18 +152,23 @@ export function LyricsView({
       </HStack>
       <hr className="border-white" />
       <VStack className="gap-5 py-4 h-162.5 overflow-y-auto w-full">
-        {lyricsPairs.map((pair, index) => {
-          return (
-            <LyricsPair
-              key={`lyrics-pair-${index}`}
-              {...pair}
-              index={index}
-              isEditable={isEditable}
-              handleTranslatedLyricsChange={handleTranslatedLyricsChange}
-              handleOriginalLyricsChange={handleOriginalLyricsChange}
-            />
-          )
-        })}
+        {!isLoading &&
+          lyricsPairs.map((pair, index) => {
+            return (
+              <LyricsPair
+                key={`lyrics-pair-${index}`}
+                {...pair}
+                index={index}
+                isEditable={isEditable}
+                handleTranslatedLyricsChange={handleTranslatedLyricsChange}
+                handleOriginalLyricsChange={handleOriginalLyricsChange}
+              />
+            )
+          })}
+        {isLoading &&
+          skeletonLyricsPairs.map((_, index) => (
+            <SkeletonLyricsPair key={`skeleton-lyrics-pair-${index}`} />
+          ))}
       </VStack>
     </VStack>
   )
