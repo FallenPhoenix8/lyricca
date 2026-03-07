@@ -2,7 +2,7 @@
 
 > ## License
 >
-> This project is licensed under **CC BY-NC 4.0**. > It is intended for portfolio review and > educational use only.
+> This project is licensed under **CC BY-NC 4.0**. It is intended for portfolio review and educational use only.
 >
 > | Permission          | Status | Notes                           |
 > | :------------------ | :----: | :------------------------------ |
