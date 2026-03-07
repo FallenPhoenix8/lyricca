@@ -3,6 +3,8 @@ import AnimatedButtonGroup, { ButtonGroupItem } from "./animated-button-group"
 import { HStack, Spacer, VStack } from "./layout"
 import { useCallback, useLayoutEffect, useMemo, useState } from "react"
 import { Skeleton } from "./skeleton"
+import { cn } from "@/lib/utils"
+import { easeOvershootClassName } from "./constants"
 
 function SkeletonLyricsPair() {
   return (
@@ -35,10 +37,16 @@ function LyricsPair({
   isEditable?: boolean
 }) {
   return (
-    <VStack className="gap-2">
+    <VStack className="gap-1">
       <div
-        className="text-foreground font-bold leading-4"
+        className={cn(
+          "text-foreground font-bold leading-4 px-2 bg-transparent py-1 border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] duration-300 outline-0 mx-0.5",
+          easeOvershootClassName,
+          isEditable &&
+            "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
+        )}
         contentEditable={isEditable}
+        tabIndex={isEditable ? 0 : -1}
         onInput={(event) => {
           const target = event.target as HTMLDivElement
           handleOriginalLyricsChange(index, target.textContent)
@@ -48,8 +56,14 @@ function LyricsPair({
         {original}
       </div>
       <div
-        className="text-muted-foreground font-bold leading-4"
+        className={cn(
+          "text-muted-foreground font-bold leading-4 px-2 bg-transparent py-1 border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] duration-300 outline-0 mx-0.5",
+          easeOvershootClassName,
+          isEditable &&
+            "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
+        )}
         contentEditable={isEditable}
+        tabIndex={isEditable ? 0 : -1}
         onInput={(event) => {
           const target = event.target as HTMLDivElement
           handleTranslatedLyricsChange(index, target.textContent)
@@ -151,7 +165,7 @@ export function LyricsView({
         <AnimatedButtonGroup buttons={buttons()} />
       </HStack>
       <hr className="border-white" />
-      <VStack className="gap-6 p-4 h-162.5 overflow-y-auto w-full">
+      <VStack className="gap-5 py-4 h-162.5 overflow-y-auto w-full">
         {lyricsPairs.map((pair, index) => {
           return (
             <LyricsPair
