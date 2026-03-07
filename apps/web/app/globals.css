@@ -152,11 +152,11 @@
   /* app/globals.css */
 
   ::view-transition-old(.app-page-transition) {
-    animation: app-page-out 220ms ease forwards;
+    animation: app-page-out 220ms cubic-bezier(0.32, 0, 0.67, 0) forwards;
   }
 
   ::view-transition-new(.app-page-transition) {
-    animation: app-page-in 220ms ease forwards;
+    animation: app-page-in 220ms cubic-bezier(0.32, 0, 0.67, 0) forwards;
   }
 
   @keyframes app-page-out {
