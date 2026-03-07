@@ -2,6 +2,16 @@ import { EyeIcon, PenIcon } from "@phosphor-icons/react"
 import AnimatedButtonGroup, { ButtonGroupItem } from "./animated-button-group"
 import { HStack, Spacer, VStack } from "./layout"
 import { useCallback, useLayoutEffect, useMemo, useState } from "react"
+import { Skeleton } from "./skeleton"
+
+function SkeletonLyricsPair() {
+  return (
+    <VStack className="gap-2 w-full px-4">
+      <Skeleton className="h-4 w-full rounded-sm" />
+      <Skeleton className="h-4 w-full rounded-sm" />
+    </VStack>
+  )
+}
 
 function LyricsPair({
   translated,
@@ -48,6 +58,23 @@ function LyricsPair({
       >
         {translated}
       </div>
+    </VStack>
+  )
+}
+
+export function SkeletonLyricsView() {
+  const skeletonLyricsPairs: null[] = new Array(10).fill(null)
+  return (
+    <VStack className="py-2 shadow-lg drop-shadow-card-foreground gap-6 w-[90vw] md:w-[60vw] bg-card rounded-xl overflow-y-hidden">
+      <HStack className="gap-2 w-full border-b pb-2" alignItems="center">
+        <Skeleton className="ml-4 h-5 w-16 rounded-sm" />
+        <Spacer />
+        <Skeleton className="mr-4 h-6 w-24 rounded-sm" />
+      </HStack>
+
+      {skeletonLyricsPairs.map((_, index) => (
+        <SkeletonLyricsPair key={`skeleton-lyrics-pair-${index}`} />
+      ))}
     </VStack>
   )
 }

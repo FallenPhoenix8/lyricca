@@ -15,9 +15,53 @@ import { use, useMemo } from "react"
 import Image from "next/image"
 import { ImageRosetta } from "@/components/ui/svg/ImageRosetta"
 import { Badge } from "@/components/ui/badge"
-import { LyricsView } from "@/components/ui/lyrics-view"
+import { LyricsView, SkeletonLyricsView } from "@/components/ui/lyrics-view"
 import { SongUpateSchema } from "@/lib/model/Song"
 import { useDebounce, useDebouncedCallback } from "use-debounce"
+import { Skeleton } from "@/components/ui/skeleton"
+
+function SkeletonSongLyricsPage() {
+  return (
+    <>
+      <Breadcrumb className="my-2">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href="/app/library">Library</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Lyrics</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      <ZStack className="block md:hidden">
+        <Skeleton className="w-full rounded-xl aspect-video mr-2" />
+      </ZStack>
+
+      <HStack className="w-[90vw]">
+        <VStack
+          className="h-[90vh] max-w-sm hidden md:flex"
+          justifyContent="center"
+        >
+          <Skeleton className="h-96 w-80 rounded-xl" />
+        </VStack>
+        <VStack className="pl-4 gap-4">
+          <VStack className="gap-1">
+            <Skeleton className="h-8 w-[85vw] md:w-[50vw] mt-3" />
+            <HStack className="gap-2">
+              <Skeleton className="h-6 w-20 rounded-full" />
+              <Skeleton className="h-6 w-24 rounded-full" />
+            </HStack>
+          </VStack>
+          <SkeletonLyricsView />
+        </VStack>
+      </HStack>
+    </>
+  )
+}
 
 export default function SongLyricsPage({
   params,
@@ -49,7 +93,6 @@ export default function SongLyricsPage({
       console.error("Failed to update original lyrics:", error)
       return
     }
-    console.log("Successfully updated original lyrics.")
   }
   function updateTranslatedLyrics(
     lineIndex: number,
@@ -67,7 +110,6 @@ export default function SongLyricsPage({
       console.error("Failed to update translated lyrics:", error)
       return
     }
-    console.log("Successfully updated translated lyrics.")
   }
 
   const debouncedUpdateTranslatedLyrics = useDebouncedCallback(
@@ -81,7 +123,7 @@ export default function SongLyricsPage({
 
   return song ? (
     <>
-      <Breadcrumb>
+      <Breadcrumb className="my-2">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
@@ -105,7 +147,9 @@ export default function SongLyricsPage({
             className="w-full aspect-video object-cover rounded-xl"
           />
         ) : (
-          <ImageRosetta className="h-96 rounded-xl" />
+          <div className="w-full aspect-video object-contain">
+            <ImageRosetta className="h-1/2 rounded-xl" />
+          </div>
         )}
       </ZStack>
 
@@ -123,12 +167,14 @@ export default function SongLyricsPage({
               className="h-96 aspect-square object-cover rounded-xl"
             />
           ) : (
-            <ImageRosetta className="h-96 rounded-xl" />
+            <div className="h-96 aspect-square object-contain">
+              <ImageRosetta className="h-96 rounded-xl" />
+            </div>
           )}
         </VStack>
         <VStack className="pl-4 gap-4">
           <VStack className="gap-1">
-            <h2 className="app-title-heading">{song.title}</h2>
+            <h2 className="app-title-heading mt-3">{song.title}</h2>
             <HStack className="gap-2">
               <Badge variant="secondary">
                 {song.artist ?? "Unknown Artist"}
@@ -146,6 +192,6 @@ export default function SongLyricsPage({
       </HStack>
     </>
   ) : (
-    <div>Loading...</div>
+    <SkeletonSongLyricsPage />
   )
 }

@@ -9,6 +9,7 @@ import Link from "next/link"
 import { easeOvershootClassName, easeBezierClassName } from "./constants"
 import { HStack, VStack } from "./layout"
 import { useState } from "react"
+import { Skeleton } from "./skeleton"
 
 function SongCardRegular(props: { song: SongDTO; className?: string }) {
   return (
@@ -131,4 +132,32 @@ export function SongCard({
   return isCompact
     ? SongCardCompact({ song, className })
     : SongCardRegular({ song, className })
+}
+
+export function SkeletonSongCard() {
+  return (
+    <>
+      <Card className="hidden xs:flex relative w-52 min-h-96 pt-0 shadow-sm dark:shadow-muted/50 shadow-foreground/10">
+        <Skeleton className="aspect-square bg-foreground/10 dark:bg-background/50 rounded-t-xl" />
+        <CardTitle className="leading-normal">
+          <Skeleton className="max-w-full h-6 rounded-sm mx-2" />
+        </CardTitle>
+        <CardDescription className="flex flex-wrap gap-2 px-2">
+          <Badge variant="secondary">
+            <Skeleton className="h-4 w-20 rounded-full" />
+          </Badge>
+          <Badge variant="secondary">
+            <Skeleton className="h-4 w-24 rounded-full" />
+          </Badge>
+        </CardDescription>
+      </Card>
+      <HStack className="flex xs:hidden w-full p-1">
+        <Skeleton className="h-10 aspect-square bg-secondary rounded-xs squircle shadow-sm"></Skeleton>
+        <VStack className="px-2 justify-around w-full h-10">
+          <Skeleton className="h-4 w-full rounded-xs" />
+          <Skeleton className="h-4 w-3/4 rounded-xs" />
+        </VStack>
+      </HStack>
+    </>
+  )
 }
