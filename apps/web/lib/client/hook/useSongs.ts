@@ -9,7 +9,7 @@ import {
 import db from "../db"
 import APIClient from "@/lib/data/APIClient"
 import type { TypeSongCreate, TypeSongDTO } from "@/lib/model/Song"
-import { useCallback, useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Err, Ok, Result } from "@/types/Result"
 import { useMutation, useQuery, useQueryClient } from "react-query"
 
@@ -130,9 +130,16 @@ async function checkAndUpdateAllLocally(input: SongCheckAllInput) {
 }
 
 export function useSongs() {
-  const songs = useLiveQuery(() => {
-    return db.songs.toArray()
-  })
+  const [isLoading, setIsLoading] = useState(true)
+  const songs = useLiveQuery(
+    () => {
+      const songs = db.songs.toArray()
+      setIsLoading(false)
+      return songs
+    },
+    [],
+    [] as SongDTO[],
+  )
 
   // * MARK: - Keep latest songs without re-binding listeners
   const songsRef = useRef(songs)
@@ -144,6 +151,7 @@ export function useSongs() {
   const isSyncingRef = useRef(false)
 
   const syncNow = useCallback(async () => {
+    if (isLoading) return
     if (isSyncingRef.current) return
     isSyncingRef.current = true
 
@@ -252,7 +260,8 @@ export function useSongs() {
      * @returns song with the given ID, or null if not found
      */
     findOneLocally: (id: string): SongDTO | null => {
-      return songs?.find((song) => song.id === id) ?? null
+      return songs.find((song) => song.id === id) ?? null
     },
+    isLoading,
   }
 }

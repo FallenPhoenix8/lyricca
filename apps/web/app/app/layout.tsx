@@ -1,16 +1,22 @@
 "use client"
 import Navigation from "@/components/ui/navigation/navigation"
+import { SongsProvider } from "@/components/ui/SongsContext"
+import { ViewTransition } from "react"
 import { QueryClient, QueryClientProvider } from "react-query"
 
 const queryClient = new QueryClient()
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <main className="select-none">
-        <Navigation origin="app" />
-        <section className="px-4 pt-2">{children}</section>
-      </main>
-    </QueryClientProvider>
+    <ViewTransition default="app-page-transition">
+      <QueryClientProvider client={queryClient}>
+        <SongsProvider>
+          <main className="select-none">
+            <Navigation origin="app" />
+            <section className="px-4 pt-2">{children}</section>
+          </main>
+        </SongsProvider>
+      </QueryClientProvider>
+    </ViewTransition>
   )
 }

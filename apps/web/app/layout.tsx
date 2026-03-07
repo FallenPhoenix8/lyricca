@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Noto_Sans } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/providers/theme-provider"
+import { ViewTransition } from "react"
 
 const notoSans = Noto_Sans({
   subsets: ["latin"],

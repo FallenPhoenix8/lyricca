@@ -10,13 +10,13 @@ import { easeOvershootClassName, easeBezierClassName } from "./constants"
 import { HStack, VStack } from "./layout"
 import { useState } from "react"
 import { Skeleton } from "./skeleton"
-import { PlaceholderImage } from "./svg/PlaceholderImage"
+import { ViewTransition } from "react"
 
 function SongCardRegular(props: { song: SongDTO; className?: string }) {
   return (
     <Card
       className={cn(
-        "relative max-w-52 min-h-96 pt-0 shadow-sm dark:shadow-muted/50 shadow-foreground/10 hover:shadow-lg hover:-translate-y-1 transition-[shadow, transition, border-radius] duration-300 group hover:rounded-2xl ",
+        "relative max-w-52 min-h-96 pt-0 shadow-sm dark:shadow-muted/50 shadow-foreground/10 hover:shadow-lg hover:-translate-y-1 transition-[shadow, transition, border-radius] duration-300 group hover:rounded-2xl",
         easeOvershootClassName,
         props.className,
       )}
@@ -29,16 +29,18 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
       />
       <Link href={`/app/library/${props.song.id}`} className="w-full">
         {props.song.cover ? (
-          <Image
-            src={props.song.cover.url}
-            alt={props.song.title}
-            className={cn(
-              "relative z-20 aspect-square object-cover rounded-t-xl group-hover:rounded-b-xl w-full transition-[border-radius, scale] duration-300 group-hover:scale-95 group-hover:rounded-t-2xl",
-              easeOvershootClassName,
-            )}
-            width={224}
-            height={224}
-          />
+          <ViewTransition name={`${props.song.id}-cover`}>
+            <Image
+              src={props.song.cover.url}
+              alt={props.song.title}
+              className={cn(
+                "relative z-20 aspect-square object-cover rounded-t-xl group-hover:rounded-b-xl w-full transition-[border-radius, scale] duration-300 group-hover:scale-95 group-hover:rounded-t-2xl",
+                easeOvershootClassName,
+              )}
+              width={224}
+              height={224}
+            />
+          </ViewTransition>
         ) : (
           <ImageRosetta
             className={cn(
@@ -50,14 +52,16 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
       </Link>
 
       <CardHeader>
-        <CardTitle className="leading-normal">
-          <Link
-            href={`/app/library/${props.song.id}`}
-            className="w-full font-semibold line-clamp-2 underline-offset-4 hover:underline"
-          >
-            {props.song.title}
-          </Link>
-        </CardTitle>
+        <ViewTransition name={`${props.song.id}-title`}>
+          <CardTitle className="leading-normal">
+            <Link
+              href={`/app/library/${props.song.id}`}
+              className="w-full font-semibold line-clamp-2 underline-offset-4 hover:underline"
+            >
+              {props.song.title}
+            </Link>
+          </CardTitle>
+        </ViewTransition>
         <CardDescription className="flex flex-wrap gap-2">
           {props.song.artist ? (
             <Badge variant="secondary">{props.song.artist}</Badge>
@@ -93,22 +97,22 @@ function SongCardCompact(props: { song: SongDTO; className?: string }) {
         )}
       ></div>
       <div className="grid place-items-center h-10 aspect-square bg-secondary rounded-xs squircle shadow-sm dark:shadow-background/50 shadow-foreground/50">
-        {props.song.cover ? (
+        <ViewTransition name={`${props.song.id}-cover`}>
           <Image
-            src={props.song.cover.url}
+            src={props.song.cover?.url ?? "/default-cover.png"}
             alt={props.song.title}
             className="h-full aspect-square object-cover rounded-xs squircle"
             width={40}
             height={40}
           />
-        ) : (
-          <PlaceholderImage className="h-8 aspect-square rounded-xs squircle" />
-        )}
+        </ViewTransition>
       </div>
       <VStack className="px-2 justify-around">
-        <div className="text-sm font-semibold line-clamp-1">
-          {props.song.title}
-        </div>
+        <ViewTransition name={`${props.song.id}-title`}>
+          <div className="text-sm font-semibold line-clamp-1">
+            {props.song.title}
+          </div>
+        </ViewTransition>
         <div className="text-xs text-muted-foreground line-clamp-1">
           <span>
             {props.song.artist ? props.song.artist : "Unknown Artist"}
@@ -124,7 +128,7 @@ function SongCardCompact(props: { song: SongDTO; className?: string }) {
 export function SongCard({
   song,
   className,
-  isCompact = false,
+  isCompact,
 }: {
   song: SongDTO
   className?: string

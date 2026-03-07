@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [new URL(IMAGE_HOST)],
   },
+  experimental: {
+    viewTransition: true,
+  },
 }
 
 export default nextConfig

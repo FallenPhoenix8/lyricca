@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { HStack, Spacer, VStack, ZStack } from "@/components/ui/layout"
 import { useSongs } from "@/lib/client/hook/useSongs"
 import Link from "next/link"
-import { use, useMemo } from "react"
+import { use, useMemo, ViewTransition } from "react"
 import Image from "next/image"
 import { ImageRosetta } from "@/components/ui/svg/ImageRosetta"
 import { Badge } from "@/components/ui/badge"
@@ -20,16 +20,20 @@ import { SongUpateSchema } from "@/lib/model/Song"
 import { useDebounce, useDebouncedCallback } from "use-debounce"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PlaceholderImage } from "@/components/ui/svg/PlaceholderImage"
+import { useSongsContext } from "@/components/ui/SongsContext"
+import { redirect } from "next/navigation"
+import { useParams } from "next/navigation"
 
-export default function SongLyricsPage({
-  params,
-}: {
-  params: Promise<{ slug: string[] }>
-}) {
-  const { slug } = use(params)
-  const songId = slug[0]
-  const { findOneLocally, update } = useSongs()
+export default function SongLyricsPage() {
+  const { songId } = useParams<{ songId: string }>()
+
+  const { findOneLocally, update, isLoading, songs } = useSongsContext()
   const song = findOneLocally(songId)
+
+  if (song === null && !isLoading && songs.length !== 0) {
+    redirect(`/app/library`)
+  }
+
   const translatedLyrics = useMemo(() => {
     return song?.translated_lyrics.split("\n") ?? []
   }, [song])
@@ -78,7 +82,7 @@ export default function SongLyricsPage({
     updateOriginalLyrics,
     1000,
   )
-  // song ? (
+
   return (
     <>
       <Breadcrumb className="my-2">
@@ -96,32 +100,23 @@ export default function SongLyricsPage({
       </Breadcrumb>
       <div className="grid grid-cols-12 grid-rows-[200px 200px] gap-4">
         <div className="col-span-12 md:col-span-4 row-span-1 md:h-screen flex justify-center items-center">
-          {!song && (
-            <Skeleton className="w-full aspect-video md:aspect-square rounded-xl border-2" />
-          )}
-          {song && song.cover && (
+          <ViewTransition name={`${songId}-cover`}>
             <Image
-              src={song.cover.url}
-              alt={song.title}
+              src={song?.cover?.url ?? "/default-cover.png"}
+              alt={song?.title ?? ""}
               className="w-full aspect-video md:aspect-square object-cover rounded-xl border-2"
               width={330}
               height={180}
             />
-          )}
-          {song && !song.cover && (
-            <div className="w-full aspect-video object-contain rounded-xl border-2">
-              <PlaceholderImage className="w-full h-full rounded-xl" />
-            </div>
-          )}
+          </ViewTransition>
         </div>
         <div className="col-span-12 md:col-span-8 row-span-2 md:col-start-5">
           <VStack className="pl-4 gap-4">
             <VStack className="gap-1">
-              {song ? (
-                <h2 className="app-title-heading mt-3">{song.title}</h2>
-              ) : (
-                <Skeleton className="h-8 w-[50vw] mt-3" />
-              )}
+              <ViewTransition name={`${songId}-title`}>
+                <h2 className="app-title-heading mt-3">{song?.title ?? ""}</h2>
+                {isLoading && <Skeleton className="h-8 w-[50vw] rounded-sm" />}
+              </ViewTransition>
               <HStack className="gap-2">
                 {song ? (
                   <Badge variant="secondary">
@@ -144,7 +139,7 @@ export default function SongLyricsPage({
               originalLyrics={originalLyrics}
               handleTranslatedLyricsChange={debouncedUpdateTranslatedLyrics}
               handleOriginalLyricsChange={debouncedUpdateOriginalLyrics}
-              isLoading={!song}
+              isLoading={isLoading}
             />
           </VStack>
         </div>
