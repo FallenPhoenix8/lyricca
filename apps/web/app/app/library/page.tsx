@@ -25,7 +25,7 @@ export default function LibraryPage() {
   }, [songs])
   return (
     <>
-      <Breadcrumb>
+      <Breadcrumb className="my-2">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbPage>Library</BreadcrumbPage>
