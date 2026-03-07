@@ -7,7 +7,8 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb"
 import { HStack } from "@/components/ui/layout"
-import { SkeletonSongCard, SongCard } from "@/components/ui/song-card"
+import { SkeletonSongCard } from "@/components/ui/song-card"
+import { SongCardResponsiveClient } from "@/components/ui/song-card-responsive-client"
 import { useSongsContext } from "@/components/ui/SongsContext"
 import { useSongs } from "@/lib/client/hook/useSongs"
 import { useWindowDimensions } from "@/lib/client/hook/useWindowDimensions"
@@ -35,11 +36,10 @@ export default function LibraryPage() {
       <div className="flex flex-wrap gap-2 place-items-center my-3 mx-auto">
         <ViewTransition>
           {songsToShow.map((song) => (
-            <SongCard
+            <SongCardResponsiveClient
               key={song.id}
               song={song}
               className="h-full"
-              isCompact={isCompact}
             />
           ))}
         </ViewTransition>

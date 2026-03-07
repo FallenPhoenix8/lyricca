@@ -1,3 +1,5 @@
+"use client"
+
 import { Badge } from "./badge"
 import { Card, CardTitle, CardHeader, CardDescription } from "./card"
 import { ImageRosetta } from "./svg/ImageRosetta"
@@ -8,25 +10,48 @@ import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { easeOvershootClassName, easeBezierClassName } from "./constants"
 import { HStack, VStack } from "./layout"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Skeleton } from "./skeleton"
 import { ViewTransition } from "react"
 
+/**
+ * This hook uses the `matchMedia` API to check if the current window size matches the given query.
+ * @param query The media query to check.
+ * @returns Whether the current window size matches the given query.
+ */
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
+
+  useEffect(() => {
+    const media = window.matchMedia(query)
+    const onChange = () => setMatches(media.matches)
+
+    media.addEventListener("change", onChange)
+    return () => media.removeEventListener("change", onChange)
+  }, [query])
+
+  return matches
+}
+
+/**
+ * A song card with a cover image, title, artist, and album to be displayed in a card layout on regular screens.
+ */
 function SongCardRegular(props: { song: SongDTO; className?: string }) {
   return (
     <Card
       className={cn(
-        "relative max-w-52 min-h-96 pt-0 shadow-sm dark:shadow-muted/50 shadow-foreground/10 hover:shadow-lg hover:-translate-y-1 transition-[shadow, transition, border-radius] duration-300 group hover:rounded-2xl",
+        "relative max-w-52 min-h-96 pt-0 shadow-sm dark:shadow-muted/50 shadow-foreground/10 hover:shadow-lg hover:-translate-y-1 transition-[shadow,transition,border-radius] duration-300 group hover:rounded-2xl",
         easeOvershootClassName,
         props.className,
       )}
     >
       <div
         className={cn(
-          "absolute inset-0 z-10 aspect-square bg-foreground/10 dark:bg-background/50 rounded-t-xl shadow-muted/50 shadow-none group-hover:shadow-sm transition-[border-radius, shadow] duration-300 group-hover:rounded-b-xl group-hover:rounded-t-2xl",
+          "absolute inset-0 z-10 aspect-square bg-foreground/10 dark:bg-background/50 rounded-t-xl shadow-muted/50 shadow-none group-hover:shadow-sm transition-[border-radius,shadow] duration-300 group-hover:rounded-b-xl group-hover:rounded-t-2xl",
           easeOvershootClassName,
         )}
       />
+
       <Link href={`/app/library/${props.song.id}`} className="w-full">
         {props.song.cover ? (
           <ViewTransition name={`${props.song.id}-cover`}>
@@ -34,7 +59,7 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
               src={props.song.cover.url}
               alt={props.song.title}
               className={cn(
-                "relative z-20 aspect-square object-cover rounded-t-xl group-hover:rounded-b-xl w-full transition-[border-radius, scale] duration-300 group-hover:scale-95 group-hover:rounded-t-2xl",
+                "relative z-20 aspect-square object-cover rounded-t-xl group-hover:rounded-b-xl w-full transition-[border-radius,scale] duration-300 group-hover:scale-95 group-hover:rounded-t-2xl",
                 easeOvershootClassName,
               )}
               width={224}
@@ -44,7 +69,7 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
         ) : (
           <ImageRosetta
             className={cn(
-              "relative z-20 aspect-square -mt-6 rounded-xl transition-[border-radius, scale] duration-300 group-hover:scale-95 group-hover:rounded-t-2xl",
+              "relative z-20 aspect-square -mt-6 rounded-xl transition-[border-radius,scale] duration-300 group-hover:scale-95 group-hover:rounded-t-2xl",
               easeOvershootClassName,
             )}
           />
@@ -62,6 +87,7 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
             </Link>
           </CardTitle>
         </ViewTransition>
+
         <CardDescription className="flex flex-wrap gap-2">
           {props.song.artist ? (
             <Badge variant="secondary">{props.song.artist}</Badge>
@@ -79,6 +105,9 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
   )
 }
 
+/**
+ * A song card with a cover image, title, artist, and album to be displayed in a card layout on compact screens.
+ */
 function SongCardCompact(props: { song: SongDTO; className?: string }) {
   const [isActive, setIsActive] = useState(false)
 
@@ -91,11 +120,12 @@ function SongCardCompact(props: { song: SongDTO; className?: string }) {
     >
       <div
         className={cn(
-          "absolute inset-0 duration-300 transition-[background-color, border-radius, scale, shadow] -z-10 rounded-sm shadow-none drop-shadow-card",
+          "absolute inset-0 duration-300 transition-[background-color,border-radius,scale,shadow] -z-10 rounded-sm shadow-none drop-shadow-card",
           easeBezierClassName,
           isActive && "bg-card rounded-md scale-105 shadow-sm",
         )}
-      ></div>
+      />
+
       <div className="grid place-items-center h-10 aspect-square bg-secondary rounded-xs squircle shadow-sm dark:shadow-background/50 shadow-foreground/50">
         <ViewTransition name={`${props.song.id}-cover`}>
           <Image
@@ -107,38 +137,61 @@ function SongCardCompact(props: { song: SongDTO; className?: string }) {
           />
         </ViewTransition>
       </div>
+
       <VStack className="px-2 justify-around">
         <ViewTransition name={`${props.song.id}-title`}>
           <div className="text-sm font-semibold line-clamp-1">
             {props.song.title}
           </div>
         </ViewTransition>
+
         <div className="text-xs text-muted-foreground line-clamp-1">
-          <span>
-            {props.song.artist ? props.song.artist : "Unknown Artist"}
-          </span>
+          <span>{props.song.artist ?? "Unknown Artist"}</span>
           <DotIcon className="inline" size={16} />
-          <span>{props.song.album ? props.song.album : "Unknown Album"}</span>
+          <span>{props.song.album ?? "Unknown Album"}</span>
         </div>
       </VStack>
     </Link>
   )
 }
 
-export function SongCard({
-  song,
-  className,
-  isCompact,
-}: {
+/**
+ * A song card with a cover image, title, artist, and album to be displayed in a card layout. The card layout can be compact or regular depending on the screen size.
+ * DO NOT USE THIS COMPONENT DIRECTLY. Use the `SongCardResponsive` component exported by `./song-card-responsive-client.tsx` instead. Otherwise, the view transitions will break.
+ */
+export function SongCard(props: {
   song: SongDTO
   className?: string
   isCompact?: boolean
 }) {
-  return isCompact
-    ? SongCardCompact({ song, className })
-    : SongCardRegular({ song, className })
+  return props.isCompact ? (
+    <SongCardCompact song={props.song} className={props.className} />
+  ) : (
+    <SongCardRegular song={props.song} className={props.className} />
+  )
+}
+/**
+ * A responsive song card with a cover image, title, artist, and album to be displayed in a card layout. The card layout can be compact or regular depending on the screen size.
+ * DO NOT USE THIS COMPONENT DIRECTLY. Use the `SongCardResponsive` component exported by `./song-card-responsive.tsx` instead. Otherwise, the view transitions will break.
+ */
+export default function ResponsiveSongCard(props: {
+  song: SongDTO
+  className?: string
+}) {
+  const isCompact = useMediaQuery("(max-width: 460px)")
+
+  return (
+    <SongCard
+      song={props.song}
+      className={props.className}
+      isCompact={isCompact}
+    />
+  )
 }
 
+/**
+ * A skeleton song card to be displayed in a card layout.
+ */
 export function SkeletonSongCard() {
   return (
     <>
@@ -156,8 +209,9 @@ export function SkeletonSongCard() {
           </Badge>
         </CardDescription>
       </Card>
+
       <HStack className="flex xs:hidden w-full p-1">
-        <Skeleton className="h-10 aspect-square bg-secondary rounded-xs squircle shadow-sm"></Skeleton>
+        <Skeleton className="h-10 aspect-square bg-secondary rounded-xs squircle shadow-sm" />
         <VStack className="px-2 justify-around w-full h-10">
           <Skeleton className="h-4 w-full rounded-xs" />
           <Skeleton className="h-4 w-3/4 rounded-xs" />
