@@ -1,4 +1,10 @@
-import { BadRequestException, Inject, Injectable, Logger } from "@nestjs/common"
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from "@nestjs/common"
 import type {
   LanguageDTO,
   AvailableLanguages,
@@ -46,7 +52,7 @@ export class TranslationService {
     // * MARK: - If cache is empty, fetch languages from API and update cache
     languages = {
       sourceLanguages: (await this.client.getSourceLanguages())
-        .filter((l) => l.code != "en")
+        // .filter((l) => l.code != "en")
         .map((l) => ({
           code: l.code,
           name: l.name,
@@ -69,28 +75,40 @@ export class TranslationService {
     from?: deepl.SourceLanguageCode
   }): Promise<TranslationOutputDTO> {
     // * MARK: - Check if language code exists
-    if (!(await this.isLanguageCodeExists(properties.to))) {
+    if (!(await this.isLanguageCodeExists(properties.to, "target"))) {
       throw new BadRequestException(
-        `Language code "${properties.to}" does not exist.`,
+        `Language code "${properties.to}" does not exist in target languages.`,
       )
     }
 
     if (
       properties.from &&
-      !(await this.isLanguageCodeExists(properties.from))
+      !(await this.isLanguageCodeExists(properties.from, "source"))
     ) {
       throw new BadRequestException(
-        `Language code "${properties.from}" does not exist.`,
+        `Language code "${properties.from}" does not exist in source languages.`,
       )
     }
 
     // * MARK: - Make request to API
     const lines = properties.text.split("\n")
-    const result = await this.client.translateText(
-      lines,
-      properties.from ?? null,
-      properties.to,
-    )
+    let result: deepl.TextResult[] | null = null
+    try {
+      result = await this.client.translateText(
+        lines,
+        properties.from ?? null,
+        properties.to,
+      )
+    } catch (error) {
+      if (error.toString().toLowerCase().includes("bad request")) {
+        throw new BadRequestException(
+          "Invalid translation request, probably due to invalid language codes.",
+        )
+      }
+    }
+    if (result === null) {
+      throw new InternalServerErrorException("Translation failed.")
+    }
 
     // * MARK: - Parse and return response
     const detectedLanguageCodes = new Set<deepl.SourceLanguageCode>(
@@ -181,7 +199,10 @@ export class TranslationService {
     return language || null
   }
 
-  private async isLanguageCodeExists(languageCode: string): Promise<boolean> {
+  private async isLanguageCodeExists(
+    languageCode: string,
+    origin: "source" | "target",
+  ): Promise<boolean> {
     // * MARK: - Try to retrieve languages from cache, if not, update cache
     let availableLanguages = await this.retrieveAvailableLanguagesFromCache()
     if (
@@ -205,9 +226,14 @@ export class TranslationService {
     }
 
     // * MARK: - Check if language code exists in cache
-    return (
-      availableLanguages.sourceLanguages.some((l) => l.code === languageCode) ||
-      availableLanguages.targetLanguages.some((l) => l.code === languageCode)
-    )
+    if (origin === "source") {
+      return availableLanguages.sourceLanguages.some(
+        (l) => l.code === languageCode,
+      )
+    } else {
+      return availableLanguages.targetLanguages.some(
+        (l) => l.code === languageCode,
+      )
+    }
   }
 }
