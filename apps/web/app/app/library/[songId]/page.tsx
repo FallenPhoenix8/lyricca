@@ -23,6 +23,7 @@ import { PlaceholderImage } from "@/components/ui/svg/PlaceholderImage"
 import { useSongsContext } from "@/components/ui/SongsContext"
 import { redirect } from "next/navigation"
 import { useParams } from "next/navigation"
+import { cn } from "@/lib/utils"
 
 export default function SongLyricsPage() {
   const { songId } = useParams<{ songId: string }>()
@@ -104,7 +105,11 @@ export default function SongLyricsPage() {
             <Image
               src={song?.cover?.url ?? "/default-cover.png"}
               alt={song?.title ?? ""}
-              className="w-full aspect-video md:aspect-square object-cover rounded-xl border-2"
+              className="w-full aspect-video md:aspect-square object-cover rounded-xl border-2 bg-accent animate-pulse"
+              onLoad={(event) => {
+                const target = event.target as HTMLImageElement
+                target.classList.remove("animate-pulse")
+              }}
               width={330}
               height={180}
             />

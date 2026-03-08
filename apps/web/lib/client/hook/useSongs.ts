@@ -141,6 +141,8 @@ export function useSongs() {
     [] as SongDTO[],
   )
 
+  const count = useLiveQuery(() => db.songs.count(), [], null)
+
   // * MARK: - Keep latest songs without re-binding listeners
   const songsRef = useRef(songs)
   useEffect(() => {
@@ -228,6 +230,10 @@ export function useSongs() {
 
   return {
     /**
+     * Provides the total number of songs in the local database.
+     */
+    count,
+    /**
      * Provides a list of songs from the local database. This allows components to access and display the songs without needing to make API calls, improving performance and responsiveness. The local database is kept in sync with the API through the `checkAndUpdateAllLocally` function, ensuring that the data is always up-to-date.
      */
     songs,
@@ -260,7 +266,7 @@ export function useSongs() {
      * @returns song with the given ID, or null if not found
      */
     findOneLocally: (id: string): SongDTO | null => {
-      return songs.find((song) => song.id === id) ?? null
+      return songs?.find((song) => song.id === id) ?? null
     },
     isLoading,
   }

@@ -40,7 +40,7 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
   return (
     <Card
       className={cn(
-        "relative max-w-52 min-h-96 pt-0 shadow-sm dark:shadow-muted/50 shadow-foreground/10 hover:shadow-lg hover:-translate-y-1 transition-[shadow,transition,border-radius] duration-300 group hover:rounded-2xl",
+        "relative w-52 min-h-96 pt-0 shadow-sm dark:shadow-muted/50 shadow-foreground/10 hover:shadow-lg hover:-translate-y-1 transition-[shadow,transition,border-radius] duration-300 group hover:rounded-2xl",
         easeOvershootClassName,
         props.className,
       )}
@@ -53,27 +53,22 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
       />
 
       <Link href={`/app/library/${props.song.id}`} className="w-full">
-        {props.song.cover ? (
-          <ViewTransition name={`${props.song.id}-cover`}>
-            <Image
-              src={props.song.cover.url}
-              alt={props.song.title}
-              className={cn(
-                "relative z-20 aspect-square object-cover rounded-t-xl group-hover:rounded-b-xl w-full transition-[border-radius,scale] duration-300 group-hover:scale-95 group-hover:rounded-t-2xl",
-                easeOvershootClassName,
-              )}
-              width={224}
-              height={224}
-            />
-          </ViewTransition>
-        ) : (
-          <ImageRosetta
+        <ViewTransition name={`${props.song.id}-cover`}>
+          <Image
+            src={props.song.cover?.url ?? "/default-cover.png"}
+            alt={props.song.title}
             className={cn(
-              "relative z-20 aspect-square -mt-6 rounded-xl transition-[border-radius,scale] duration-300 group-hover:scale-95 group-hover:rounded-t-2xl",
+              "relative z-20 aspect-square object-cover rounded-t-xl group-hover:rounded-b-xl w-full transition-[border-radius,scale] duration-300 group-hover:scale-95 group-hover:rounded-t-2xl bg-accent animate-pulse",
               easeOvershootClassName,
             )}
+            onLoad={(event) => {
+              const target = event.target as HTMLImageElement
+              target.classList.remove("animate-pulse")
+            }}
+            width={224}
+            height={224}
           />
-        )}
+        </ViewTransition>
       </Link>
 
       <CardHeader>
@@ -131,7 +126,11 @@ function SongCardCompact(props: { song: SongDTO; className?: string }) {
           <Image
             src={props.song.cover?.url ?? "/default-cover.png"}
             alt={props.song.title}
-            className="h-full aspect-square object-cover rounded-xs squircle"
+            className="h-full aspect-square object-cover rounded-xs squircle bg-accent animate-pulse"
+            onLoad={(event) => {
+              const target = event.target as HTMLImageElement
+              target.classList.remove("animate-pulse")
+            }}
             width={40}
             height={40}
           />

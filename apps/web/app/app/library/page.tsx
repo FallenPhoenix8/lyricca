@@ -17,10 +17,8 @@ import { useEffect, useMemo, useState } from "react"
 import { ViewTransition } from "react"
 
 export default function LibraryPage() {
-  const { songs, isLoading } = useSongsContext()
+  const { songs, isLoading, count } = useSongsContext()
   const songsToShow = useMemo(() => songs, [songs])
-  const { width } = useWindowDimensions() ?? { width: 0 }
-  const isCompact = width < 460
 
   const skeletonCards: null[] = new Array(10).fill(null)
 
@@ -35,13 +33,15 @@ export default function LibraryPage() {
       </Breadcrumb>
       <div className="flex flex-wrap gap-2 place-items-center my-3 mx-auto">
         <ViewTransition>
-          {songsToShow.map((song) => (
-            <SongCardResponsiveClient
-              key={song.id}
-              song={song}
-              className="h-full"
-            />
-          ))}
+          {!isLoading &&
+            count !== 0 &&
+            songsToShow.map((song) => (
+              <SongCardResponsiveClient
+                key={song.id}
+                song={song}
+                className="h-full"
+              />
+            ))}
         </ViewTransition>
 
         {isLoading &&
