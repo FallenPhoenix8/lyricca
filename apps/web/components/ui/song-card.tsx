@@ -202,10 +202,14 @@ export function SongCard(props: {
   className?: string
   isCompact?: boolean
 }) {
-  return props.isCompact ? (
-    <SongCardCompact song={props.song} className={props.className} />
-  ) : (
-    <SongCardRegular song={props.song} className={props.className} />
+  return (
+    <div>
+      {props.isCompact ? (
+        <SongCardCompact song={props.song} className={props.className} />
+      ) : (
+        <SongCardRegular song={props.song} className={props.className} />
+      )}
+    </div>
   )
 }
 /**
