@@ -10,10 +10,13 @@ import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { easeOvershootClassName, easeBezierClassName } from "./constants"
 import { HStack, VStack } from "./layout"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Skeleton } from "./skeleton"
 import { ViewTransition } from "react"
+import { useGSAP } from "@gsap/react"
+import gsap from "gsap"
 
+gsap.registerPlugin(useGSAP)
 /**
  * This hook uses the `matchMedia` API to check if the current window size matches the given query.
  * @param query The media query to check.
@@ -37,6 +40,23 @@ function useMediaQuery(query: string) {
  * A song card with a cover image, title, artist, and album to be displayed in a card layout on regular screens.
  */
 function SongCardRegular(props: { song: SongDTO; className?: string }) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const isFirstRender = useRef(true)
+  useGSAP(() => {
+    if (!isFirstRender.current) return
+    isFirstRender.current = false
+    gsap.fromTo(
+      cardRef.current,
+      {
+        opacity: 0,
+      },
+      {
+        opacity: 1,
+        duration: 0.3,
+        ease: "power4.in",
+      },
+    )
+  })
   return (
     <Card
       className={cn(
@@ -44,6 +64,7 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
         easeOvershootClassName,
         props.className,
       )}
+      ref={cardRef}
     >
       <div
         className={cn(
@@ -65,6 +86,7 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
               const target = event.target as HTMLImageElement
               target.classList.remove("animate-pulse")
             }}
+            loading="eager"
             width={224}
             height={224}
           />
@@ -105,13 +127,30 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
  */
 function SongCardCompact(props: { song: SongDTO; className?: string }) {
   const [isActive, setIsActive] = useState(false)
-
+  const cardRef = useRef<HTMLAnchorElement>(null)
+  const isFirstRender = useRef(true)
+  useGSAP(() => {
+    if (!isFirstRender.current) return
+    isFirstRender.current = false
+    gsap.fromTo(
+      cardRef.current,
+      {
+        opacity: 0,
+      },
+      {
+        opacity: 1,
+        duration: 0.3,
+        ease: "power4.in",
+      },
+    )
+  })
   return (
     <Link
       href={`/app/library/${props.song.id}`}
       className={cn("flex relative w-full p-1 rounded-md", props.className)}
       onTouchStart={() => setIsActive(true)}
       onTouchEnd={() => setIsActive(false)}
+      ref={cardRef}
     >
       <div
         className={cn(

@@ -1,3 +1,9 @@
+import { ViewTransition } from "react"
+
 export default function AddPage() {
-  return <div>Add page</div>
+  return (
+    <ViewTransition default="app-page-transition">
+      <div>Add page</div>
+    </ViewTransition>
+  )
 }

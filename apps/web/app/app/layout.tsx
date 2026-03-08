@@ -8,15 +8,13 @@ const queryClient = new QueryClient()
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ViewTransition default="app-page-transition">
-      <QueryClientProvider client={queryClient}>
-        <SongsProvider>
-          <main className="select-none">
-            <Navigation origin="app" />
-            <section className="px-4 pt-2">{children}</section>
-          </main>
-        </SongsProvider>
-      </QueryClientProvider>
-    </ViewTransition>
+    <QueryClientProvider client={queryClient}>
+      <SongsProvider>
+        <main className="select-none">
+          <Navigation origin="app" />
+          <section className="px-4 pt-2">{children}</section>
+        </main>
+      </SongsProvider>
+    </QueryClientProvider>
   )
 }

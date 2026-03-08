@@ -1,3 +1,9 @@
+import { ViewTransition } from "react"
+
 export default function PreferencesPage() {
-  return <div>Preferences page</div>
+  return (
+    <ViewTransition default="app-page-transition">
+      <div>Preferences page</div>
+    </ViewTransition>
+  )
 }
