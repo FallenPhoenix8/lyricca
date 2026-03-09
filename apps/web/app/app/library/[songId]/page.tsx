@@ -24,9 +24,12 @@ import { useSongsContext } from "@/components/ui/SongsContext"
 import { redirect } from "next/navigation"
 import { useParams } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { useQueryState } from "nuqs"
 
 export default function SongLyricsPage() {
   const { songId } = useParams<{ songId: string }>()
+
+  const [searchParams] = useQueryState("q", { defaultValue: "" })
 
   const { findOneLocally, update, isLoading, songs } = useSongsContext()
   const song = findOneLocally(songId)
@@ -86,11 +89,14 @@ export default function SongLyricsPage() {
 
   return (
     <>
+      {/* <ViewTransition default="auto"> */}
       <Breadcrumb className="my-2">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href="/app/library">Library</Link>
+              <Link href={`/app/library?q=${encodeURIComponent(searchParams)}`}>
+                Library
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -149,6 +155,7 @@ export default function SongLyricsPage() {
           </VStack>
         </div>
       </div>
+      {/* </ViewTransition> */}
     </>
   )
 }

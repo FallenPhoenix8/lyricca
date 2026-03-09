@@ -1,4 +1,10 @@
-import { startTransition, useEffect, useState, ViewTransition } from "react"
+import {
+  startTransition,
+  use,
+  useEffect,
+  useState,
+  ViewTransition,
+} from "react"
 import { SongCardResponsiveClient } from "./song-card-responsive-client"
 import { SkeletonSongCard } from "./song-card"
 import { useSongsContext } from "./SongsContext"
@@ -11,53 +17,114 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
-import { Search } from "lucide-react"
+import {
+  ArrowDownAZ,
+  ArrowDownZA,
+  MoreHorizontalIcon,
+  Search,
+  X,
+} from "lucide-react"
 import { SongDTO } from "@shared/ts-types"
 import { useQueryState } from "nuqs"
+import { ButtonGroup } from "./button-group"
+import { Button } from "./button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "./dropdown-menu"
+import { HStack } from "./layout"
 
 export function SongCardList() {
   // TODO: Add filter tags
   const [filterTags, setFilterTags] = useState<string[]>([])
-  const [searchQuery, setSearchQuery] = useQueryState("q", { defaultValue: "" })
+  const [searchQuery, setSearchQuery] = useQueryState("q", {
+    defaultValue: "",
+  })
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useDebounce(
     searchQuery,
     300,
   )
-  const { songs, isLoading, count } = useSongsContext()
+  const [sortDirection, setSortDirection] = useState<"a-z" | "z-a">("a-z")
+  const [sortBy, setSortBy] = useState<"title" | "artist" | "album">("title")
 
-  const [songsToShow, setSongsToShow] = useState<SongDTO[]>([])
+  const { songs, isLoading, count } = useSongsContext()
+  const [isFirstRender, setIsFirstRender] = useState(true)
+
+  const [songsToShow, setSongsToShow] = useState<SongDTO[]>(
+    songs.sort((a, b) => {
+      if (sortDirection === "a-z") {
+        return a[sortBy]?.localeCompare(b[sortBy] ?? "") ?? 0
+      }
+      return b[sortBy]?.localeCompare(a[sortBy] ?? "") ?? 0
+    }),
+  )
   useEffect(() => {
-    startTransition(() => {
+    const updateSongsToShow = () => {
       if (filterTags.length === 0 && searchQuery === "")
-        setSongsToShow([...songs])
+        setSongsToShow(
+          songs.sort((a, b) => {
+            if (sortDirection === "a-z") {
+              return a[sortBy]?.localeCompare(b[sortBy] ?? "") ?? 0
+            }
+            return b[sortBy]?.localeCompare(a[sortBy] ?? "") ?? 0
+          }),
+        )
+
       setSongsToShow(
-        songs.filter((song) => {
-          // * MARK: - Check if title, artist, or album matches query
-          const isMatchesQuery: boolean =
-            song.title
-              .toLowerCase()
-              .includes(debouncedSearchQuery.toLowerCase()) ||
-            !!song.artist
-              ?.toLowerCase()
-              .includes(debouncedSearchQuery.toLowerCase()) ||
-            !!song.album
-              ?.toLowerCase()
-              .includes(debouncedSearchQuery.toLowerCase())
-          // * MARK: - Check if tags match song's artist or album
-          const isMatchesTags: boolean = filterTags.some((tag) => {
-            const isArtistMatches = song.artist
-              ?.toLowerCase()
-              .includes(tag.toLowerCase())
-            const isAlbumMatches = song.album
-              ?.toLowerCase()
-              .includes(tag.toLowerCase())
-            return isArtistMatches || isAlbumMatches
+        songs
+          .filter((song) => {
+            // * MARK: - Check if title, artist, or album matches query
+            const isMatchesQuery: boolean =
+              song.title
+                .toLowerCase()
+                .includes(debouncedSearchQuery.toLowerCase()) ||
+              !!song.artist
+                ?.toLowerCase()
+                .includes(debouncedSearchQuery.toLowerCase()) ||
+              !!song.album
+                ?.toLowerCase()
+                .includes(debouncedSearchQuery.toLowerCase())
+            // * MARK: - Check if tags match song's artist or album
+            const isMatchesTags: boolean = filterTags.some((tag) => {
+              const isArtistMatches = song.artist
+                ?.toLowerCase()
+                .includes(tag.toLowerCase())
+              const isAlbumMatches = song.album
+                ?.toLowerCase()
+                .includes(tag.toLowerCase())
+              return isArtistMatches || isAlbumMatches
+            })
+            return isMatchesQuery || isMatchesTags
           })
-          return isMatchesQuery || isMatchesTags
-        }),
+          .sort((a, b) => {
+            const firstElement = a[sortBy] ?? "Unknown"
+            const secondElement = b[sortBy] ?? "Unknown"
+            if (sortDirection === "a-z") {
+              return firstElement.localeCompare(b[sortBy] ?? "Unknown") ?? 0
+            }
+            return secondElement.localeCompare(a[sortBy] ?? "Unknown") ?? 0
+          }),
       )
-    })
-  }, [songs, filterTags, debouncedSearchQuery])
+    }
+    if (isFirstRender) {
+      setIsFirstRender(false)
+      updateSongsToShow()
+    } else {
+      startTransition(() => {
+        updateSongsToShow()
+      })
+    }
+  }, [songs, filterTags, debouncedSearchQuery, sortDirection, sortBy])
   const countToShow = useMemo(() => {
     if (filterTags.length === 0 && searchQuery === "") return count
     return songsToShow.length
@@ -66,6 +133,26 @@ export function SongCardList() {
   function handleSearch(event: React.ChangeEvent<HTMLInputElement>) {
     setDebouncedSearchQuery(event.target.value)
     setSearchQuery(event.target.value)
+  }
+
+  function resetSearch() {
+    setSearchQuery("")
+    setDebouncedSearchQuery("")
+  }
+
+  function handleSortDirectionChange() {
+    startTransition(() => {
+      setSortDirection((prev) => {
+        if (prev === "a-z") return "z-a"
+        return "a-z"
+      })
+    })
+  }
+
+  function handleSortByChange(event: string) {
+    const allowedSortBy = ["title", "artist", "album"]
+    if (!allowedSortBy.includes(event)) return
+    setSortBy(event as "title" | "artist" | "album")
   }
 
   const skeletonCards: null[] = new Array(10).fill(null)
@@ -89,19 +176,63 @@ export function SongCardList() {
   }, [debouncedSearchQuery])
   return (
     <>
-      <InputGroup className="max-w-md mx-auto">
-        <InputGroupInput
-          placeholder="Search..."
-          onChange={handleSearch}
-          value={searchQuery}
-        />
-        <InputGroupAddon>
-          <Search />
-        </InputGroupAddon>
-        <InputGroupAddon align="inline-end">
-          {countToShow && `${countToShow} results`}
-        </InputGroupAddon>
-      </InputGroup>
+      <HStack className="gap-2" justifyContent="center">
+        <InputGroup className="max-w-md ">
+          <InputGroupInput
+            placeholder="Search..."
+            onChange={handleSearch}
+            value={searchQuery}
+          />
+          <InputGroupAddon>
+            <Search />
+          </InputGroupAddon>
+          <InputGroupAddon
+            align="inline-end"
+            className="hidden xs:flex items-center gap-0 pr-1.5"
+          >
+            {countToShow && `${countToShow} results`}
+            <Button
+              variant="ghost"
+              className="ml-1"
+              size="icon"
+              onClick={resetSearch}
+            >
+              <X />
+            </Button>
+          </InputGroupAddon>
+        </InputGroup>
+        <ButtonGroup>
+          <Button variant="outline" onClick={handleSortDirectionChange}>
+            {sortDirection === "a-z" ? <ArrowDownAZ /> : <ArrowDownZA />}
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="More Options">
+                <MoreHorizontalIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                <DropdownMenuRadioGroup
+                  onValueChange={(event) => handleSortByChange(event)}
+                  value={sortBy}
+                >
+                  <DropdownMenuRadioItem value="title">
+                    Title
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="artist">
+                    Artist
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="album">
+                    Album
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </ButtonGroup>
+      </HStack>
 
       <div
         className={cn(
@@ -109,18 +240,17 @@ export function SongCardList() {
           countToShow === 0 && "justify-center",
         )}
       >
-        <ViewTransition>
-          {!isLoading &&
-            songsToShow.length !== 0 &&
-            countToShow !== 0 &&
-            songsToShow.map((song) => (
-              <SongCardResponsiveClient
-                key={song.id}
-                song={song}
-                className="h-full"
-              />
-            ))}
-        </ViewTransition>
+        {!isLoading &&
+          songsToShow.length !== 0 &&
+          countToShow !== 0 &&
+          songsToShow.map((song) => (
+            <SongCardResponsiveClient
+              key={song.id}
+              song={song}
+              className="h-full"
+            />
+          ))}
+
         {!isLoading && countToShow === 0 && (
           <div>
             <h1 className="text-center text-xl font-bold">

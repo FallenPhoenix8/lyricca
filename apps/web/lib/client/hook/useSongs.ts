@@ -9,7 +9,7 @@ import {
 import db from "../db"
 import APIClient from "@/lib/data/APIClient"
 import type { TypeSongCreate, TypeSongDTO } from "@/lib/model/Song"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Err, Ok, Result } from "@/types/Result"
 import { useMutation, useQuery, useQueryClient } from "react-query"
 
@@ -79,8 +79,15 @@ async function remove(
   return Ok(result.value)
 }
 
-async function checkAndUpdateAllLocally(input: SongCheckAllInput) {
+async function checkAndUpdateAllLocally(
+  input: SongCheckAllInput,
+  isLoading: boolean,
+) {
   console.log("Syncing local songs...")
+  if (isLoading) {
+    console.log("Skipping syncing local songs because loading is in progress.")
+    return
+  }
   // * Check all songs in the API
   const endpoint = "songs/check-all"
   const result = await APIClient.shared.post<SongCheckAllOutput>(
@@ -107,21 +114,33 @@ async function checkAndUpdateAllLocally(input: SongCheckAllInput) {
   // * Update songs in local database
   await db.transaction("rw", db.songs, async () => {
     for (const songId of upToDateSongs.toBeCreated) {
-      const song = await getDetails(songId)
-      if (song) {
-        await db.songs.add(song)
+      try {
+        const song = await getDetails(songId)
+        if (song) {
+          await db.songs.add(song, song.id)
+        }
+      } catch (error) {
+        console.error("Failed to add song:", error)
       }
     }
 
     for (const songId of upToDateSongs.toBeUpdated) {
-      const song = await getDetails(songId)
-      if (song) {
-        await db.songs.put(song)
+      try {
+        const song = await getDetails(songId)
+        if (song) {
+          await db.songs.put(song, song.id)
+        }
+      } catch (error) {
+        console.error("Failed to update song:", error)
       }
     }
 
     for (const songId of upToDateSongs.toBeDeleted) {
-      await db.songs.delete(songId)
+      try {
+        await db.songs.delete(songId)
+      } catch (error) {
+        console.error("Failed to delete song:", error)
+      }
     }
   })
   if (countTotalToSync > 0) {
@@ -130,16 +149,15 @@ async function checkAndUpdateAllLocally(input: SongCheckAllInput) {
 }
 
 export function useSongs() {
-  const [isLoading, setIsLoading] = useState(true)
   const songs = useLiveQuery(
     () => {
       const songs = db.songs.toArray()
-      setIsLoading(false)
       return songs
     },
     [],
-    [] as SongDTO[],
+    null,
   )
+  const isLoading = useMemo(() => songs === null, [songs])
 
   const count = useLiveQuery(() => db.songs.count(), [], null)
 
@@ -179,7 +197,6 @@ export function useSongs() {
       setTimeout(syncNow, 1000 * 30)
       return
     }
-
     if (isLoading) return
     if (isSyncingRef.current) return
     isSyncingRef.current = true
@@ -197,19 +214,19 @@ export function useSongs() {
     }
 
     try {
-      await checkAndUpdateAllLocally(songCheckAllInput)
+      await checkAndUpdateAllLocally(songCheckAllInput, isLoading)
       isSyncingRef.current = false
     } finally {
       isSyncingRef.current = false
     }
-  }, [songsRef])
+  }, [songsRef, isLoading])
 
   /**
    * Initialize by checking all songs in the API and updating local database accordingly. This ensures that the local database is always in sync with the API, even if there are changes made from other clients or the server itself.
    */
   useEffect(() => {
     syncNow()
-  }, [syncNow, songs])
+  }, [syncNow, songs, isLoading])
 
   // * MARK: - Sync songs when the user comes back to tab
   useEffect(() => {
@@ -263,7 +280,7 @@ export function useSongs() {
     /**
      * Provides a list of songs from the local database. This allows components to access and display the songs without needing to make API calls, improving performance and responsiveness. The local database is kept in sync with the API through the `checkAndUpdateAllLocally` function, ensuring that the data is always up-to-date.
      */
-    songs,
+    songs: songs ?? [],
     /**
      * This function creates a new song by sending a request to the API and then updates the local database with the new song. It returns a query that can be used to track the status of the creation process and handle any errors that may occur.
      * @param input Input for adding a song

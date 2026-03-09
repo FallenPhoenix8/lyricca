@@ -11,16 +11,16 @@ import { ViewTransition } from "react"
 export default function LibraryPage() {
   return (
     <>
-      <ViewTransition default="auto">
-        <Breadcrumb className="my-2">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbPage>Library</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-        <SongCardList />
-      </ViewTransition>
+      {/* <ViewTransition default="auto"> */}
+      <Breadcrumb className="my-2">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbPage>Library</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <SongCardList />
+      {/* </ViewTransition> */}
     </>
   )
 }

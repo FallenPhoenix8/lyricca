@@ -15,6 +15,8 @@ import { Skeleton } from "./skeleton"
 import { ViewTransition } from "react"
 import { useGSAP } from "@gsap/react"
 import gsap from "gsap"
+import { useSearchParams } from "next/navigation"
+import { useQueryState } from "nuqs"
 
 gsap.registerPlugin(useGSAP)
 /**
@@ -40,23 +42,8 @@ function useMediaQuery(query: string) {
  * A song card with a cover image, title, artist, and album to be displayed in a card layout on regular screens.
  */
 function SongCardRegular(props: { song: SongDTO; className?: string }) {
-  const cardRef = useRef<HTMLDivElement>(null)
-  const isFirstRender = useRef(true)
-  useGSAP(() => {
-    if (!isFirstRender.current) return
-    isFirstRender.current = false
-    gsap.fromTo(
-      cardRef.current,
-      {
-        opacity: 0,
-      },
-      {
-        opacity: 1,
-        duration: 0.3,
-        ease: "power4.in",
-      },
-    )
-  })
+  const [searchParams] = useQueryState("q", { defaultValue: "" })
+  const encodedSearchParams = encodeURIComponent(searchParams)
   return (
     <Card
       className={cn(
@@ -64,7 +51,6 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
         easeOvershootClassName,
         props.className,
       )}
-      ref={cardRef}
     >
       <div
         className={cn(
@@ -73,7 +59,10 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
         )}
       />
 
-      <Link href={`/app/library/${props.song.id}`} className="w-full">
+      <Link
+        href={`/app/library/${props.song.id}?q=${encodedSearchParams}`}
+        className="w-full"
+      >
         <ViewTransition name={`${props.song.id}-cover`}>
           <Image
             src={props.song.cover?.url ?? "/default-cover.png"}
@@ -97,7 +86,7 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
         <ViewTransition name={`${props.song.id}-title`}>
           <CardTitle className="leading-normal">
             <Link
-              href={`/app/library/${props.song.id}`}
+              href={`/app/library/${props.song.id}?q=${encodedSearchParams}`}
               className="w-full font-semibold line-clamp-2 underline-offset-4 hover:underline"
             >
               {props.song.title}
@@ -127,30 +116,13 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
  */
 function SongCardCompact(props: { song: SongDTO; className?: string }) {
   const [isActive, setIsActive] = useState(false)
-  const cardRef = useRef<HTMLAnchorElement>(null)
-  const isFirstRender = useRef(true)
-  useGSAP(() => {
-    if (!isFirstRender.current) return
-    isFirstRender.current = false
-    gsap.fromTo(
-      cardRef.current,
-      {
-        opacity: 0,
-      },
-      {
-        opacity: 1,
-        duration: 0.3,
-        ease: "power4.in",
-      },
-    )
-  })
+  const [searchParams] = useQueryState("q", { defaultValue: "" })
   return (
     <Link
-      href={`/app/library/${props.song.id}`}
+      href={`/app/library/${props.song.id}?q=${encodeURIComponent(searchParams)}`}
       className={cn("flex relative w-full p-1 rounded-md", props.className)}
       onTouchStart={() => setIsActive(true)}
       onTouchEnd={() => setIsActive(false)}
-      ref={cardRef}
     >
       <div
         className={cn(
