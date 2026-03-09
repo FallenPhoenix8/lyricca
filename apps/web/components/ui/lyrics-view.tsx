@@ -1,7 +1,14 @@
 import { EyeIcon, PenIcon } from "@phosphor-icons/react"
 import AnimatedButtonGroup, { ButtonGroupItem } from "./animated-button-group"
 import { HStack, Spacer, VStack } from "./layout"
-import { useCallback, useLayoutEffect, useMemo, useState } from "react"
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { Skeleton } from "./skeleton"
 import { cn } from "@/lib/utils"
 import { easeOvershootClassName } from "./constants"
@@ -36,6 +43,14 @@ function LyricsPair({
   ) => void
   isEditable?: boolean
 }) {
+  const translatedElementRef = useRef<HTMLDivElement>(null)
+  const originalElementRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    if (!isEditable) {
+      originalElementRef.current?.blur()
+      translatedElementRef.current?.blur()
+    }
+  }, [isEditable])
   return (
     <VStack className="gap-1">
       <div
@@ -52,6 +67,7 @@ function LyricsPair({
           handleOriginalLyricsChange(index, target.textContent)
         }}
         suppressContentEditableWarning
+        ref={originalElementRef}
       >
         {original}
       </div>
@@ -69,6 +85,7 @@ function LyricsPair({
           handleTranslatedLyricsChange(index, target.textContent)
         }}
         suppressContentEditableWarning
+        ref={translatedElementRef}
       >
         {translated}
       </div>
@@ -82,6 +99,8 @@ export function LyricsView({
   handleTranslatedLyricsChange,
   handleOriginalLyricsChange,
   isLoading = false,
+  isEditable,
+  setIsEditable,
 }: {
   translatedLyrics: string[]
   originalLyrics: string[]
@@ -93,9 +112,10 @@ export function LyricsView({
     lineIndex: number,
     newOriginalLyrics: string,
   ) => void
+  isEditable: boolean
+  setIsEditable: React.Dispatch<React.SetStateAction<boolean>>
   isLoading?: boolean
 }) {
-  const [isEditable, setIsEditable] = useState(false)
   const skeletonLyricsPairs: null[] = new Array(20).fill(null)
 
   const buttons = useCallback(
@@ -107,7 +127,7 @@ export function LyricsView({
           icon: <EyeIcon className="h-5 w-5" />,
           isInitialActive: isEditable === false,
           onClick: () => {
-            setIsEditable(false)
+            setIsEditable((prev) => !prev)
           },
         },
         {
@@ -116,26 +136,12 @@ export function LyricsView({
           icon: <PenIcon className="w-5 h-5" />,
           isInitialActive: isEditable === true,
           onClick: () => {
-            setIsEditable(true)
+            setIsEditable((prev) => !prev)
           },
         },
       ] satisfies ButtonGroupItem[],
     [isEditable],
   )
-
-  useLayoutEffect(() => {
-    window.addEventListener("keydown", handleKeyDown)
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key.toLowerCase() === "enter") {
-        event.preventDefault()
-        setIsEditable(false)
-      }
-    }
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [isEditable])
 
   const lyricsPairs: { translated: string; original: string }[] =
     originalLyrics.map((original, index) => ({

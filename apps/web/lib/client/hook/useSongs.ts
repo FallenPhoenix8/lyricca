@@ -106,12 +106,16 @@ async function checkAndUpdateAllLocally(
     upToDateSongs.toBeUpdated.length +
     upToDateSongs.toBeDeleted.length
 
+  const isUpToDate = countTotalToSync === 0
   console.log(
-    countTotalToSync === 0
+    isUpToDate
       ? "Songs are up to date."
       : `Syncing ${countTotalToSync} songs...`,
   )
-  // * Update songs in local database
+  if (isUpToDate) {
+    return
+  }
+  // * MARK: - Update songs in local database
   await db.transaction("rw", db.songs, async () => {
     for (const songId of upToDateSongs.toBeCreated) {
       try {
