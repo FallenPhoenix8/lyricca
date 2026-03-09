@@ -15,7 +15,8 @@ export async function proxy(request: NextRequest) {
 
   const isAuthRoute =
     pathname === "/auth/sign-in" || pathname === "/auth/sign-up"
-  const isAppRoute = pathname.startsWith("/app")
+  const isAppProtectedRoute =
+    pathname.startsWith("/app/preferences") || pathname.startsWith("/app/add")
 
   const token = request.cookies.get("token")?.value ?? ""
   const apiUrl = process.env.NEXT_PUBLIC_API_URL
@@ -58,7 +59,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // App pages: require authorization
-  if (isAppRoute) {
+  if (isAppProtectedRoute) {
     if (!ok) return NextResponse.redirect(signInURL)
     const res = NextResponse.next()
     if (newToken) res.cookies.set("token", newToken, COOKIE_OPTIONS)

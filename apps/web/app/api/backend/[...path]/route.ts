@@ -7,6 +7,7 @@ const ALLOWED_PREFIXES = [
   "/auth/sign-in",
   "/auth/sign-up",
   "/users/availability",
+  "/status",
 ]
 
 function isAllowedPrefix(path: string) {

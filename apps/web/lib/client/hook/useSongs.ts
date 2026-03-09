@@ -151,8 +151,35 @@ export function useSongs() {
 
   // MARK: - Prevent overlapping sync calls
   const isSyncingRef = useRef(false)
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL
+  if (!apiUrl) {
+    throw new Error("NEXT_PUBLIC_API_URL is not set")
+  }
 
   const syncNow = useCallback(async () => {
+    const statusURL = new URL("/status", apiUrl)
+    try {
+      const response = await fetch(statusURL, {
+        headers: {
+          "access-control-allow-origin": "",
+        },
+      })
+      if (!response.ok) {
+        console.error(
+          "Failed to check server status. Retrying in 30 seconds...",
+          response.status,
+        )
+        setTimeout(syncNow, 1000 * 30)
+      }
+    } catch (error) {
+      console.error(
+        "Failed to check server status. Retrying in 30 seconds...",
+        error,
+      )
+      setTimeout(syncNow, 1000 * 30)
+      return
+    }
+
     if (isLoading) return
     if (isSyncingRef.current) return
     isSyncingRef.current = true
