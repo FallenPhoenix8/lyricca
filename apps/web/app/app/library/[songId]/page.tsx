@@ -212,7 +212,7 @@ export default function SongLyricsPage() {
         <div className="col-span-12 md:col-span-4 row-span-1 md:h-screen flex justify-center items-center">
           <ViewTransition name={`${songId}-cover`}>
             <Image
-              src={song?.cover?.url ?? "/default-cover.png"}
+              src={song?.cover?.url ?? "/empty.png"}
               alt={song?.title ?? ""}
               className="w-full aspect-video md:aspect-square object-cover rounded-xl border-2 bg-accent animate-pulse"
               onLoad={(event) => {

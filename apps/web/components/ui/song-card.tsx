@@ -65,7 +65,7 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
       >
         <ViewTransition name={`${props.song.id}-cover`}>
           <Image
-            src={props.song.cover?.url ?? "/default-cover.png"}
+            src={props.song.cover?.url ?? "/empty.png"}
             alt={props.song.title}
             className={cn(
               "relative z-20 aspect-square object-cover rounded-t-xl group-hover:rounded-b-xl w-full transition-[border-radius,scale] duration-300 group-hover:scale-95 group-hover:rounded-t-2xl bg-accent animate-pulse",
@@ -135,7 +135,7 @@ function SongCardCompact(props: { song: SongDTO; className?: string }) {
       <div className="grid place-items-center h-10 aspect-square bg-secondary rounded-xs squircle shadow-sm dark:shadow-background/50 shadow-foreground/50">
         <ViewTransition name={`${props.song.id}-cover`}>
           <Image
-            src={props.song.cover?.url ?? "/default-cover.png"}
+            src={props.song.cover?.url ?? "/empty.png"}
             alt={props.song.title}
             className="h-full aspect-square object-cover rounded-xs squircle bg-accent animate-pulse"
             onLoad={(event) => {
