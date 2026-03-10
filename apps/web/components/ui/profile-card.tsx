@@ -40,39 +40,23 @@ async function fetchTranslationUsage() {
   return data
 }
 
-function ImageSkeleton() {
-  return (
-    <Image
-      src="/empty.png"
-      alt="Profile Picture"
-      width={112}
-      height={112}
-      className="w-28 aspect-square bg-accent animate-pulse object-cover"
-      style={{
-        maskImage: `url("/9-Cookie.svg")`,
-        maskSize: "112px 112px",
-      }}
-    />
-  )
-}
-
 export async function ProfileCard() {
   const user = await fetchUserProfile()
   const usage = await fetchTranslationUsage()
-  const usagePercentage = ((usage.count / usage.limit) * 100).toFixed(1)
   return (
-    <HStack
-      className="h-full gap-4 rounded-xl shadow-md shadow-card/50 border-2 border-card-foreground/10 bg-card p-4"
-      alignItems="center"
-      justifyContent="between"
-    >
-      <Suspense fallback={<ImageSkeleton />}>
+    <VStack>
+      <HStack
+        className="h-20 gap-4 rounded-xl max-w-lg w-full mx-auto shadow-md shadow-card/50 border-2 border-card-foreground/10 bg-card p-1 md:p-4 justify-between md:min-h-32"
+        alignItems="center"
+      >
         <ProfileImage profileURL={user.profile_url} />
-      </Suspense>
-      <VStack className="h-full justify-start py-2">
-        <h1 className="text-2xl font-bold line-clamp-1">{user.username}</h1>
-      </VStack>
-      <TotalUsageChart limitUsage={usage.limit} currentUsage={usage.count} />
-    </HStack>
+        <VStack className="flex-1 h-full justify-start py-2">
+          <h1 className="text-xl md:text-2xl font-bold line-clamp-1">
+            {user.username}
+          </h1>
+        </VStack>
+        <TotalUsageChart limitUsage={usage.limit} currentUsage={usage.count} />
+      </HStack>
+    </VStack>
   )
 }

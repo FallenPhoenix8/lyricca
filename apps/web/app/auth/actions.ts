@@ -71,15 +71,18 @@ export async function signInAction(
   }
 
   const data = await APIClient.shared.post<AuthPayload>("/auth/sign-in", fields)
-  console.log(data)
+
+  // If the APIClient redirected (401), this line is never reached.
+  // If the API returned a structured error (400, 500), we handle it here.
   if (!data.ok) {
     return {
       errors: {},
-      message: "Incorrect username or password",
+      message: data.error?.message[0] ?? "Incorrect username or password",
     }
   }
 
   ;(await cookies()).set("token", data.value.token, COOKIE_OPTIONS)
 
+  // This throws a NEW redirect error
   redirect("/app/library")
 }

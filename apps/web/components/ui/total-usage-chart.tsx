@@ -9,8 +9,28 @@ import { useRef, useState } from "react"
 import { Circle } from "./svg/shapes/Circle"
 
 import { Popover, PopoverContent, PopoverTrigger } from "./popover"
+import { LoadingSpinner } from "./loading-spinner"
 
 gsap.registerPlugin(useGSAP, DrawSVGPlugin)
+
+export function TotalUsageChartSkeleton() {
+  return (
+    <ZStackGrid className="w-18 aspect-square">
+      <div className="h-full w-full flex justify-center items-center text-xs font-semibold">
+        <LoadingSpinner className="h-8 w-8 bg-accent" />
+      </div>
+      <Circle
+        className="h-full w-full fill-transparent stroke-[4.5rem] stroke-background/10 rotate-90 animate-pulse"
+        style={{ overflow: "visible" }}
+      />
+      <Circle
+        className="h-full w-full fill-transparent stroke-[4.5rem] stroke-background/10 rotate-90 animate-pulse"
+        style={{ overflow: "visible" }}
+      />
+      <Circle className="h-full w-full fill-transparent stroke-[2.5rem] stroke-accent rotate-90 origin-center animate-pulse" />
+    </ZStackGrid>
+  )
+}
 export function TotalUsageChart({
   currentUsage,
   limitUsage,

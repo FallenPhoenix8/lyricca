@@ -5,6 +5,7 @@ import { AxiosError } from "axios"
 import { ApiError } from "next/dist/server/api-utils"
 import { ErrorResponseDTO } from "@shared/ts-types"
 import { redirect } from "next/navigation"
+import { isRedirectError } from "next/dist/client/components/redirect-error"
 
 class APIClient {
   protected getHeaders(): Record<string, string> {
@@ -50,10 +51,16 @@ class APIClient {
         return Err(data as ErrorResponseDTO)
       }
       return Ok(data)
+      // lib/data/APIClient.ts
     } catch (error) {
+      if (isRedirectError(error)) {
+        throw error
+      }
+
       console.error("Error making request to API:", error)
-      const errorResponse = error as ErrorResponseDTO
-      return Err(errorResponse)
+
+      const errorResponse = (error as any)?.response?.data || error
+      return Err(errorResponse as ErrorResponseDTO)
     }
   }
 
