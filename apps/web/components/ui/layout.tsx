@@ -63,6 +63,19 @@ export function ZStack(
   )
 }
 
+export function ZStackGrid(
+  props: {
+    children: React.ReactNode[] | React.ReactNode
+    className?: string
+  } & React.HTMLAttributes<HTMLDivElement>,
+) {
+  return (
+    <div {...props} className={`z-stack ${props.className}`}>
+      {props.children}
+    </div>
+  )
+}
+
 export function Spacer({ className }: { className?: string }) {
   return <div className={`flex-1 ${className}`}></div>
 }

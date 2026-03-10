@@ -1,9 +1,14 @@
-import { ViewTransition } from "react"
+import { Suspense, ViewTransition } from "react"
+import { ProfileCard } from "@/components/ui/profile-card"
 
 export default function PreferencesPage() {
   return (
-    <ViewTransition default="app-page-transition">
-      <div>Preferences page</div>
+    <ViewTransition default="auto">
+      <div>
+        <Suspense fallback={<div>Loading...</div>}>
+          <ProfileCard />
+        </Suspense>
+      </div>
     </ViewTransition>
   )
 }

@@ -129,6 +129,14 @@
   .squircle {
     border-shape: squircle;
   }
+  .z-stack {
+    display: grid;
+    grid-template-areas: "stack";
+
+    & > * {
+      grid-area: stack;
+    }
+  }
 
   @keyframes spin-half {
     from {

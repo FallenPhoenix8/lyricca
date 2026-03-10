@@ -9,6 +9,7 @@ import type {
   LanguageDTO,
   AvailableLanguages,
   TranslationOutputDTO,
+  TranslationUsageDTO,
 } from "@shared/ts-types"
 import { Cache, CACHE_MANAGER } from "@nestjs/cache-manager"
 import * as deepl from "deepl-node"
@@ -67,6 +68,23 @@ export class TranslationService {
     // * MARK: - Update cache
     await this.storeAvailableLanguagesInCache(languages)
     return languages
+  }
+
+  async getUsage(): Promise<TranslationUsageDTO> {
+    try {
+      const { character } = await this.client.getUsage()
+      if (!character) {
+        throw new InternalServerErrorException(
+          "Translation usage request failed.",
+        )
+      }
+      return character
+    } catch (error) {
+      console.error("Translation usage request failed:", error)
+      throw new InternalServerErrorException(
+        "Translation usage request failed.",
+      )
+    }
   }
 
   async translate(properties: {

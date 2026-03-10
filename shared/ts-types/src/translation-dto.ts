@@ -19,9 +19,15 @@ type TranslationOutputDTO = {
   detectedLanguages: LanguageDTO[]
 }
 
+type TranslationUsageDTO = {
+  count: number
+  limit: number
+}
+
 export type {
   LanguageDTO,
   AvailableLanguages,
   TranslationInputDTO,
   TranslationOutputDTO,
+  TranslationUsageDTO,
 }
