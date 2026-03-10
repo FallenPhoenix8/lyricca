@@ -7,16 +7,20 @@ import { UserService } from "../user/user.service"
 import { AuthPayload } from "@shared/ts-types"
 import { hash, compare } from "bcrypt"
 import { JwtService } from "@nestjs/jwt"
-import { jwtConstants } from "./constants"
+import { jwtConstants, saltOrRounds } from "./constants"
 import type { VerifiedTokenPayload } from "./auth.guard"
 
 @Injectable()
 export class AuthService {
-  private readonly saltOrRounds = 10
+  private readonly saltOrRounds = saltOrRounds
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
   ) {}
+
+  async hashPassword(password: string): Promise<string> {
+    return await hash(password, this.saltOrRounds)
+  }
 
   async signIn(username: string, password: string): Promise<AuthPayload> {
     const invalidCredentialsException = new UnauthorizedException(
@@ -42,7 +46,7 @@ export class AuthService {
     if (existingUser) {
       throw usernameExistsException
     }
-    const hashedPassword = await hash(password, this.saltOrRounds)
+    const hashedPassword = await this.hashPassword(password)
     const newUser = await this.userService.create({
       username,
       password: hashedPassword,

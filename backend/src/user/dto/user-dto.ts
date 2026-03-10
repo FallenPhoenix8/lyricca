@@ -10,6 +10,7 @@ import {
   IsStrongPassword,
   IsString,
   IsOptional,
+  IsUrl,
 } from "class-validator"
 import { SongDTOImpl } from "../../songs/dto/song-dto"
 
@@ -37,6 +38,10 @@ class UserUpdateImpl implements UserUpdate {
   @IsOptional()
   @IsStrongPassword()
   password?: string
+
+  @IsOptional()
+  @IsUrl()
+  profile_url?: string
 }
 
 class UserDTOImpl implements UserDTO {
@@ -45,11 +50,13 @@ class UserDTOImpl implements UserDTO {
     this.username = user.username
     this.created_at = user.created_at
     this.updated_at = user.updated_at
+    this.profile_url = user.profile_url
   }
   id: string
   username: string
   created_at: Date
   updated_at: Date
+  profile_url: string | null
 }
 
 class UserImpl implements User {
@@ -60,6 +67,7 @@ class UserImpl implements User {
     this.created_at = user.created_at
     this.updated_at = user.updated_at
     this.songs = user.songs.map((song) => new SongDTOImpl(song))
+    this.profile_url = user.profile_url
   }
   id: string
   username: string
@@ -67,6 +75,7 @@ class UserImpl implements User {
   created_at: Date
   updated_at: Date
   songs: SongDTOImpl[]
+  profile_url: string | null
 }
 
 class AvailabilityCheckDTOImpl implements AvailabilityCheckDTO {

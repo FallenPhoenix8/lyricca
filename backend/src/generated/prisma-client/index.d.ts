@@ -1181,6 +1181,7 @@ export namespace Prisma {
     password: string | null
     created_at: Date | null
     updated_at: Date | null
+    profile_url: string | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -1189,6 +1190,7 @@ export namespace Prisma {
     password: string | null
     created_at: Date | null
     updated_at: Date | null
+    profile_url: string | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -1197,6 +1199,7 @@ export namespace Prisma {
     password: number
     created_at: number
     updated_at: number
+    profile_url: number
     _all: number
   }
 
@@ -1207,6 +1210,7 @@ export namespace Prisma {
     password?: true
     created_at?: true
     updated_at?: true
+    profile_url?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -1215,6 +1219,7 @@ export namespace Prisma {
     password?: true
     created_at?: true
     updated_at?: true
+    profile_url?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -1223,6 +1228,7 @@ export namespace Prisma {
     password?: true
     created_at?: true
     updated_at?: true
+    profile_url?: true
     _all?: true
   }
 
@@ -1304,6 +1310,7 @@ export namespace Prisma {
     password: string
     created_at: Date
     updated_at: Date
+    profile_url: string | null
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
@@ -1329,6 +1336,7 @@ export namespace Prisma {
     password?: boolean
     created_at?: boolean
     updated_at?: boolean
+    profile_url?: boolean
     songs?: boolean | User$songsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
@@ -1339,6 +1347,7 @@ export namespace Prisma {
     password?: boolean
     created_at?: boolean
     updated_at?: boolean
+    profile_url?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -1347,6 +1356,7 @@ export namespace Prisma {
     password?: boolean
     created_at?: boolean
     updated_at?: boolean
+    profile_url?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
@@ -1355,9 +1365,10 @@ export namespace Prisma {
     password?: boolean
     created_at?: boolean
     updated_at?: boolean
+    profile_url?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "password" | "created_at" | "updated_at", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "password" | "created_at" | "updated_at" | "profile_url", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     songs?: boolean | User$songsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1376,6 +1387,7 @@ export namespace Prisma {
       password: string
       created_at: Date
       updated_at: Date
+      profile_url: string | null
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -1805,6 +1817,7 @@ export namespace Prisma {
     readonly password: FieldRef<"User", 'String'>
     readonly created_at: FieldRef<"User", 'DateTime'>
     readonly updated_at: FieldRef<"User", 'DateTime'>
+    readonly profile_url: FieldRef<"User", 'String'>
   }
     
 
@@ -5431,7 +5444,8 @@ export namespace Prisma {
     username: 'username',
     password: 'password',
     created_at: 'created_at',
-    updated_at: 'updated_at'
+    updated_at: 'updated_at',
+    profile_url: 'profile_url'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -5567,6 +5581,7 @@ export namespace Prisma {
     password?: StringFilter<"User"> | string
     created_at?: DateTimeFilter<"User"> | Date | string
     updated_at?: DateTimeFilter<"User"> | Date | string
+    profile_url?: StringNullableFilter<"User"> | string | null
     songs?: SongListRelationFilter
   }
 
@@ -5576,6 +5591,7 @@ export namespace Prisma {
     password?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+    profile_url?: SortOrderInput | SortOrder
     songs?: SongOrderByRelationAggregateInput
   }
 
@@ -5588,6 +5604,7 @@ export namespace Prisma {
     password?: StringFilter<"User"> | string
     created_at?: DateTimeFilter<"User"> | Date | string
     updated_at?: DateTimeFilter<"User"> | Date | string
+    profile_url?: StringNullableFilter<"User"> | string | null
     songs?: SongListRelationFilter
   }, "id" | "username">
 
@@ -5597,6 +5614,7 @@ export namespace Prisma {
     password?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+    profile_url?: SortOrderInput | SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
@@ -5611,6 +5629,7 @@ export namespace Prisma {
     password?: StringWithAggregatesFilter<"User"> | string
     created_at?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    profile_url?: StringNullableWithAggregatesFilter<"User"> | string | null
   }
 
   export type CoverWhereInput = {
@@ -5786,6 +5805,7 @@ export namespace Prisma {
     password: string
     created_at?: Date | string
     updated_at?: Date | string
+    profile_url?: string | null
     songs?: SongCreateNestedManyWithoutUserInput
   }
 
@@ -5795,6 +5815,7 @@ export namespace Prisma {
     password: string
     created_at?: Date | string
     updated_at?: Date | string
+    profile_url?: string | null
     songs?: SongUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -5804,6 +5825,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile_url?: NullableStringFieldUpdateOperationsInput | string | null
     songs?: SongUpdateManyWithoutUserNestedInput
   }
 
@@ -5813,6 +5835,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile_url?: NullableStringFieldUpdateOperationsInput | string | null
     songs?: SongUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -5822,6 +5845,7 @@ export namespace Prisma {
     password: string
     created_at?: Date | string
     updated_at?: Date | string
+    profile_url?: string | null
   }
 
   export type UserUpdateManyMutationInput = {
@@ -5830,6 +5854,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile_url?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -5838,6 +5863,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile_url?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type CoverCreateInput = {
@@ -6048,10 +6074,30 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type SongListRelationFilter = {
     every?: SongWhereInput
     some?: SongWhereInput
     none?: SongWhereInput
+  }
+
+  export type SortOrderInput = {
+    sort: SortOrder
+    nulls?: NullsOrder
   }
 
   export type SongOrderByRelationAggregateInput = {
@@ -6064,6 +6110,7 @@ export namespace Prisma {
     password?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+    profile_url?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -6072,6 +6119,7 @@ export namespace Prisma {
     password?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+    profile_url?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -6080,6 +6128,7 @@ export namespace Prisma {
     password?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+    profile_url?: SortOrder
   }
 
   export type UuidWithAggregatesFilter<$PrismaModel = never> = {
@@ -6129,6 +6178,24 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
   export type SongNullableScalarRelationFilter = {
     is?: SongWhereInput | null
     isNot?: SongWhereInput | null
@@ -6155,21 +6222,6 @@ export namespace Prisma {
     updated_at?: SortOrder
   }
 
-  export type StringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
   export type UuidNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -6190,11 +6242,6 @@ export namespace Prisma {
   export type CoverNullableScalarRelationFilter = {
     is?: CoverWhereInput | null
     isNot?: CoverWhereInput | null
-  }
-
-  export type SortOrderInput = {
-    sort: SortOrder
-    nulls?: NullsOrder
   }
 
   export type SongCountOrderByAggregateInput = {
@@ -6234,24 +6281,6 @@ export namespace Prisma {
     updated_at?: SortOrder
     user_id?: SortOrder
     cover_id?: SortOrder
-  }
-
-  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type UuidNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -6338,6 +6367,10 @@ export namespace Prisma {
     set?: Date | string
   }
 
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+  }
+
   export type SongUpdateManyWithoutUserNestedInput = {
     create?: XOR<SongCreateWithoutUserInput, SongUncheckedCreateWithoutUserInput> | SongCreateWithoutUserInput[] | SongUncheckedCreateWithoutUserInput[]
     connectOrCreate?: SongCreateOrConnectWithoutUserInput | SongCreateOrConnectWithoutUserInput[]
@@ -6410,10 +6443,6 @@ export namespace Prisma {
     connect?: CoverWhereUniqueInput
   }
 
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
-  }
-
   export type UserUpdateOneRequiredWithoutSongsNestedInput = {
     create?: XOR<UserCreateWithoutSongsInput, UserUncheckedCreateWithoutSongsInput>
     connectOrCreate?: UserCreateOrConnectWithoutSongsInput
@@ -6476,6 +6505,20 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type NestedUuidWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -6532,31 +6575,6 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type NestedStringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
-  export type NestedUuidNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedUuidNullableFilter<$PrismaModel> | string | null
-  }
-
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -6583,6 +6601,17 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedUuidNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedUuidNullableFilter<$PrismaModel> | string | null
   }
 
   export type NestedUuidNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -6762,6 +6791,7 @@ export namespace Prisma {
     password: string
     created_at?: Date | string
     updated_at?: Date | string
+    profile_url?: string | null
   }
 
   export type UserUncheckedCreateWithoutSongsInput = {
@@ -6770,6 +6800,7 @@ export namespace Prisma {
     password: string
     created_at?: Date | string
     updated_at?: Date | string
+    profile_url?: string | null
   }
 
   export type UserCreateOrConnectWithoutSongsInput = {
@@ -6813,6 +6844,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile_url?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserUncheckedUpdateWithoutSongsInput = {
@@ -6821,6 +6853,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile_url?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type CoverUpsertWithoutSongInput = {

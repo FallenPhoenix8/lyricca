@@ -75,16 +75,9 @@ export class SongsController {
     const user = await req.user()
 
     // * MARK: - Convert `Express.Multer.File` to `File` object
-    const optimizedFile =
-      await this.imageService.validateAndOptimizeImage(coverFile)
-    const bytes = Uint8Array.from(optimizedFile.buffer)
-    const blob = new Blob([bytes], { type: optimizedFile.mimeType })
+    const file = await this.imageService.convertToOptimizedFile(coverFile)
 
-    const cover = await this.coversService.create(
-      new File([blob], coverFile.originalname, {
-        type: optimizedFile.mimeType,
-      }),
-    )
+    const cover = await this.coversService.create(file)
 
     // * MARK: - Create song
     const song = await this.songsService.create({
@@ -117,21 +110,14 @@ export class SongsController {
 
     if (coverFile) {
       // * MARK: - Convert `Express.Multer.File` to `File` object
-      const optimizedFile =
-        await this.imageService.validateAndOptimizeImage(coverFile)
-      const bytes = Uint8Array.from(optimizedFile.buffer)
-      const blob = new Blob([bytes], { type: optimizedFile.mimeType })
+      const file = await this.imageService.convertToOptimizedFile(coverFile)
 
       //* MARK: - Update song cover
       //*   1) Create new cover
       //*   2) Remove previous cover
       //*   3) Update song with new cover ID
 
-      const cover = await this.coversService.create(
-        new File([blob], coverFile.originalname, {
-          type: optimizedFile.mimeType,
-        }),
-      )
+      const cover = await this.coversService.create(file)
 
       await this.songsService.update(id, {
         cover_id: cover.id,

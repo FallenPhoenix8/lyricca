@@ -6,9 +6,13 @@ type User = {
   created_at: Date
   updated_at: Date
   songs: SongDTO[]
+  profile_url: string | null
 }
 
-type UserCreate = Omit<User, "id" | "created_at" | "updated_at" | "songs">
+type UserCreate = Omit<
+  User,
+  "id" | "created_at" | "updated_at" | "songs" | "profile_url"
+>
 type UserUpdate = Partial<UserCreate>
 type UserDTO = Omit<User, "password" | "songs">
 

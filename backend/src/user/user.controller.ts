@@ -12,6 +12,8 @@ import {
   Req,
   ForbiddenException,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from "@nestjs/common"
 import { UserService } from "./user.service"
 import {
@@ -22,6 +24,7 @@ import {
 } from "./dto/user-dto"
 import { AuthGuard } from "../auth/auth.guard"
 import { Request } from "@nestjs/common"
+import { FileInterceptor } from "@nestjs/platform-express"
 @Controller("users")
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -30,6 +33,13 @@ export class UserController {
   async findAll(): Promise<UserDTOImpl[]> {
     const users = await this.userService.findAll()
     return users.map((user) => new UserDTOImpl(user))
+  }
+
+  @UseGuards(AuthGuard)
+  @Get("me")
+  async findMe(@Req() req: any): Promise<UserDTOImpl> {
+    const user = await req.user()
+    return new UserDTOImpl(user)
   }
 
   @Get("availability")
@@ -51,15 +61,23 @@ export class UserController {
 
   @UseGuards(AuthGuard)
   @Patch(":id")
+  @UseInterceptors(FileInterceptor("profile-picture"))
   async update(
     @Param("id", ParseUUIDPipe) id: string,
     @Body() updateUserDto: UserUpdateImpl,
     @Req() req: any,
+    @UploadedFile() profilePictureFile?: Express.Multer.File,
   ): Promise<UserDTOImpl> {
     // Ensure that users can only update their own data
-    if (req.user.id !== id) {
+    const requestUser = await req.user()
+    if (requestUser.id !== id) {
       throw new ForbiddenException("You can only update your own user data.")
     }
+    // If a profile picture is provided, upload it to the storage
+    if (profilePictureFile) {
+      await this.userService.uploadProfilePicture(id, profilePictureFile)
+    }
+
     const user = await this.userService.update(id, updateUserDto)
     return new UserDTOImpl(user)
   }
@@ -71,7 +89,7 @@ export class UserController {
     @Req() req: any,
   ): Promise<UserDTOImpl> {
     // Ensure that users can only delete their own data
-    if (req.user.id !== id) {
+    if ((await req.user().id) !== id) {
       throw new ForbiddenException("You can only delete your own user data.")
     }
     const user = await this.userService.remove(id)

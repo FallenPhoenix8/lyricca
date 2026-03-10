@@ -3,6 +3,7 @@ import { SupabaseService } from "../supabase/supabase.service"
 import { v7 as uuid } from "uuid"
 import { DatabaseService } from "../database/database.service"
 import { CoverDTOImpl, CoverUpdateDTOImpl } from "./dto/cover-dto"
+import { ImageService } from "../image/image.service"
 
 @Injectable()
 export class CoversService {
@@ -11,6 +12,7 @@ export class CoversService {
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly databaseService: DatabaseService,
+    private readonly imageService: ImageService,
   ) {}
 
   async create(file: File) {

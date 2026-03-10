@@ -99,6 +99,15 @@ export class ImageService {
     }
   }
 
+  async convertToOptimizedFile(file: Express.Multer.File): Promise<File> {
+    const optimizedFile = await this.validateAndOptimizeImage(file)
+    const bytes = Uint8Array.from(optimizedFile.buffer)
+    const blob = new Blob([bytes], { type: optimizedFile.mimeType })
+    return new File([blob], file.originalname, {
+      type: optimizedFile.mimeType,
+    })
+  }
+
   private formatBytes(bytes: number): string {
     const mb = bytes / (1024 * 1024)
     if (mb < 1) {

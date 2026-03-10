@@ -10,10 +10,22 @@ import {
   UserImpl,
 } from "./dto/user-dto"
 import { DatabaseService } from "../database/database.service"
+import { ImageService } from "../image/image.service"
+import { v7 as uuid } from "uuid"
+import { SupabaseService } from "../supabase/supabase.service"
+import { AuthService } from "../auth/auth.service"
+import { saltOrRounds } from "../auth/constants"
+import { hash } from "bcrypt"
 
 @Injectable()
 export class UserService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  private readonly saltOrRounds = saltOrRounds
+  private readonly bucketName = "user-profiles"
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly imageService: ImageService,
+    private readonly supabaseService: SupabaseService,
+  ) {}
 
   async create(createUserDto: UserCreateImpl): Promise<UserImpl> {
     // * MARK: - Check if username already exists
@@ -90,11 +102,16 @@ export class UserService {
   }
 
   async update(id: string, updateUserDto: UserUpdateImpl): Promise<UserImpl> {
+    let hashedPassword: string | undefined = undefined
+    if (updateUserDto.password) {
+      hashedPassword = await hash(updateUserDto.password, this.saltOrRounds)
+    }
     const user = await this.databaseService.user.update({
       where: { id },
       data: {
         username: updateUserDto.username,
-        password: updateUserDto.password,
+        password: hashedPassword,
+        profile_url: updateUserDto.profile_url,
       },
       include: {
         songs: {
@@ -126,5 +143,35 @@ export class UserService {
       where: { username },
     })
     return user ? false : true
+  }
+
+  async uploadProfilePicture(id: string, file: Express.Multer.File) {
+    const optimizedFile = await this.imageService.convertToOptimizedFile(file)
+    const fileExtension = optimizedFile.name.split(".").pop()
+    const fileName = uuid()
+    const filePath = `${fileName}.${fileExtension}`
+
+    const uploadedFile = await this.supabaseService.storage
+      .from(this.bucketName)
+      .upload(filePath, optimizedFile)
+
+    if (uploadedFile.error) {
+      throw new Error(`Failed to upload file: ${uploadedFile.error.message}`)
+    }
+
+    const {
+      data: { publicUrl },
+    } = this.supabaseService.storage
+      .from(this.bucketName)
+      .getPublicUrl(uploadedFile.data.path)
+
+    const user = await this.databaseService.user.update({
+      where: { id },
+      data: {
+        profile_url: publicUrl,
+      },
+    })
+
+    return new UserDTOImpl(user)
   }
 }

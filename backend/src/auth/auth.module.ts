@@ -5,9 +5,13 @@ import { UserModule } from "../user/user.module"
 import { JwtModule } from "@nestjs/jwt"
 import { jwtConstants } from "./constants"
 import { UserService } from "../user/user.service"
+import { ImageService } from "../image/image.service"
+import { SupabaseService } from "../supabase/supabase.service"
+import { ImageModule } from "../image/image.module"
+import { SupabaseModule } from "../supabase/supabase.module"
 
 @Module({
-  providers: [AuthService, UserService],
+  providers: [AuthService, UserService, ImageService, SupabaseService],
   imports: [
     UserModule,
     JwtModule.register({
@@ -15,6 +19,8 @@ import { UserService } from "../user/user.service"
       secret: jwtConstants.secret,
       signOptions: { expiresIn: "30d" },
     }),
+    ImageModule,
+    SupabaseModule,
   ],
   controllers: [AuthController],
 })
