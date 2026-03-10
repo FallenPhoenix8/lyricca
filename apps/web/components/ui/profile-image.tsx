@@ -19,9 +19,9 @@ export function ProfileImage({ profileURL }: { profileURL: string | null }) {
   }, [imageRef, width])
   return (
     <ZStackGrid className="h-full aspect-square place-items-center">
-      {profileURL ? (
+      {!profileURL ? (
         <Image
-          src={profileURL}
+          src={profileURL ?? ""}
           alt="Profile Picture"
           width={68}
           height={68}
@@ -37,7 +37,7 @@ export function ProfileImage({ profileURL }: { profileURL: string | null }) {
           ref={imageRef}
         />
       ) : (
-        <PlaceholderImage />
+        <PlaceholderImage className="bg-none" />
       )}
     </ZStackGrid>
   )

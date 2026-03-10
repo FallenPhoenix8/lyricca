@@ -15,7 +15,7 @@ gsap.registerPlugin(useGSAP, DrawSVGPlugin)
 
 export function TotalUsageChartSkeleton() {
   return (
-    <ZStackGrid className="w-18 aspect-square">
+    <ZStackGrid className="w-20 aspect-square">
       <div className="h-full w-full flex justify-center items-center text-xs font-semibold">
         <LoadingSpinner className="h-8 w-8 bg-accent" />
       </div>
@@ -138,11 +138,11 @@ export function TotalUsageChart({
         onTouchEnd={() => setIsOpen(false)}
         onContextMenu={(event) => event.preventDefault()}
       >
-        <ZStackGrid className="w-18 aspect-square">
+        <ZStackGrid className="h-full aspect-square">
           <div className="h-full w-full flex justify-center items-center text-xs font-semibold">
             {formattedPercentage}
           </div>
-          <ZStackGrid className="h-full w-full rotate-x-180 rotate-y-180">
+          <ZStackGrid className="p-1 rotate-x-180 rotate-y-180">
             <Cookie9
               className="h-full w-full fill-transparent stroke-[2rem] stroke-accent-foreground animate-spin"
               style={{ animationDuration: "10s" }}
