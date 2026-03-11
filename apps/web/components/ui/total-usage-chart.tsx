@@ -47,11 +47,12 @@ export function TotalUsageChart({
   const outerBorderRef = useRef<SVGSVGElement>(null)
 
   // * MARK: - Calculate percentages and display values
-  const usagePercentageNum = (currentUsage / limitUsage) * 100
+  const usageLeft = limitUsage - currentUsage
+  const usagePercentageNum = (usageLeft / limitUsage) * 100
   const remainingPercentageNum = 100 - usagePercentageNum
   const formattedPercentage =
     usagePercentageNum >= 100 ? "100%" : `${usagePercentageNum.toFixed(1)}%`
-  const formattedCurrentUsage = currentUsage.toLocaleString("en-US")
+  const formattedUsageLeft = usageLeft.toLocaleString("en-US")
   const formattedLimitUsage = limitUsage.toLocaleString("en-US")
 
   // * MARK: - Calculate beginning of new usage cycle
@@ -89,7 +90,7 @@ export function TotalUsageChart({
       },
       {
         drawSVG: `-${remainingPercentageNum}%`,
-        duration: 0,
+        // duration: 0,
       },
     )
 
@@ -100,27 +101,26 @@ export function TotalUsageChart({
       },
       {
         drawSVG: `-${remainingPercentageNum}%`,
-        duration: 0,
+        // duration: 0,
       },
     )
 
-    tl.fromTo(
+    gsap.fromTo(
+      chartPath,
+      {
+        drawSVG: "0",
+      },
+      {
+        drawSVG: "100%",
+      },
+    )
+    gsap.fromTo(
       arcPath,
       {
         drawSVG: "0",
       },
       {
         drawSVG: `-${remainingPercentageNum}%`,
-      },
-    )
-
-    tl.fromTo(
-      chartPath,
-      {
-        drawSVG: "0",
-      },
-      {
-        drawSVG: "-100% ",
       },
     )
   })
@@ -140,13 +140,16 @@ export function TotalUsageChart({
         onContextMenu={(event) => event.preventDefault()}
       >
         <ZStackGrid className="h-full aspect-square">
-          <div className="h-full w-full flex justify-center items-center text-xs font-semibold">
+          <div
+            className="h-full w-full flex justify-center items-center text-xs font-semibold"
+            aria-label="Translations usage left"
+          >
             {formattedPercentage}
           </div>
-          <ZStackGrid className="p-1 rotate-x-180 rotate-y-180">
+          <ZStackGrid className="p-1 rotate-x-180 rotate-y-180" aria-hidden>
             <Cookie9
               className="h-full w-full fill-transparent stroke-[2rem] stroke-accent-foreground animate-spin"
-              style={{ animationDuration: "10s" }}
+              style={{ animationDuration: "10s", scale: "-1 -1" }}
               ref={chartRef}
             />
             <Circle
@@ -169,18 +172,19 @@ export function TotalUsageChart({
       <PopoverContent>
         <label
           htmlFor="translation-usage-percentage"
-          className="uppercase text-xs font-semibold text-muted-foreground"
+          className="uppercase text-xs font-semibold text-muted-foreground mb-2"
         >
-          Translation Usage
+          Translation Usage Left
         </label>
         <p
           className="font-semibold text-center"
           id="translation-usage-percentage"
         >
-          {formattedCurrentUsage} <span className="text-xl font-normal">/</span>{" "}
+          {formattedUsageLeft} <span className="text-xl font-normal">/</span>{" "}
           {formattedLimitUsage}
         </p>
-        <p className="text-xs text-center">
+        <p className="text-xs text-center font-semibold">characters left</p>
+        <p className="text-xs text-center mt-2">
           Limit will be refreshed in {daysRemaining} days.
         </p>
       </PopoverContent>
