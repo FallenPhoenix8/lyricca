@@ -11,6 +11,7 @@ import {
   IsString,
   IsOptional,
   IsUrl,
+  MaxLength,
 } from "class-validator"
 import { SongDTOImpl } from "../../songs/dto/song-dto"
 
@@ -32,6 +33,7 @@ class UserCreateImpl implements UserCreate {
 class UserUpdateImpl implements UserUpdate {
   @IsOptional()
   @IsString()
+  @MaxLength(15)
   @IsNotEmpty()
   username?: string
 

@@ -8,6 +8,7 @@ import { ProfileImage } from "./profile-image"
 import { TranslationUsageDTO, UserDTO } from "@shared/ts-types"
 import { cookies } from "next/headers"
 import { TotalUsageChart } from "./total-usage-chart"
+import { cn } from "@/lib/utils"
 
 const apiURL = process.env.NEXT_PUBLIC_API_URL
 if (!apiURL) {
@@ -46,14 +47,21 @@ export async function ProfileCard() {
   return (
     <VStack>
       <HStack
-        className="h-20 gap-4 rounded-xl max-w-lg w-full mx-auto shadow-md shadow-card/50 border-2 border-card-foreground/10 bg-card p-1 md:p-4 justify-between md:min-h-32"
+        className="h-16 md:h-20 gap-1 md:gap-4 w-full justify-between"
         alignItems="center"
       >
         <ProfileImage profileURL={user.profile_url} />
         <VStack className="flex-1 h-full justify-start py-2">
-          <h1 className="text-xl md:text-2xl font-bold line-clamp-1">
+          <p
+            className={cn(
+              "font-bold line-clamp-1 overflow-elipsis max-w-[14ch]",
+              user.username.length > 10
+                ? "text-xs md:text-xl"
+                : "text-sm md:text-2xl",
+            )}
+          >
             {user.username}
-          </h1>
+          </p>
         </VStack>
         <TotalUsageChart limitUsage={usage.limit} currentUsage={usage.count} />
       </HStack>

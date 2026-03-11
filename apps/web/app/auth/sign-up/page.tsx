@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import BlobSceneNarrow from "@/components/ui/svg/BlobSceneNarrow"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 const queryClient = new QueryClient()
 
@@ -37,9 +38,10 @@ function ValidationTile({
   isLoading?: boolean | null
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-md px-4 py-2 bg-secondary/20 flex-nowrap mb-1 border border-border">
+    <div className="flex items-center gap-2 rounded-md px-2 md:px-4 py-2 bg-secondary/20 flex-nowrap mb-1 border border-border">
       {isLoading && (
-        <SpinnerIcon className="w-5 h-5 animate-spin" weight="bold" />
+        // <SpinnerIcon className="w-5 h-5 animate-spin" weight="bold" />
+        <LoadingSpinner className="w-5 h-5 shrink-0" />
       )}
       {isValid && !isLoading && (
         <CheckIcon className="w-5 h-5 text-green-500" />
@@ -47,7 +49,7 @@ function ValidationTile({
       {!isValid && !isLoading && (
         <XIcon className="w-5 h-5 text-destructive" weight="bold" />
       )}
-      <span>{children}</span>
+      <div className="flex-1">{children}</div>
     </div>
   )
 }
@@ -81,7 +83,7 @@ function UsernameInput({
       usernameAvailability &&
       usernameAvailability.ok &&
       usernameAvailability.value.available
-    const isMinimumLength = username.length >= 3
+    const isMinimumLength = username.length >= 3 && username.length <= 15
     const isValid = isAvailable && isMinimumLength
     const isValidForUI = isValid === false && isMinimumLength
 

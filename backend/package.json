@@ -28,6 +28,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
+    "@prisma/client-runtime-utils": "^7.5.0",
     "@shared/ts-types": "workspace:*",
     "@supabase/supabase-js": "^2.91.1",
     "@types/bcrypt": "^6.0.0",

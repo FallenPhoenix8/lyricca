@@ -8,7 +8,7 @@ import { Cookie9 } from "./svg/shapes/Cookie9"
 
 export function ProfileImage({ profileURL }: { profileURL: string | null }) {
   const imageRef = useRef<HTMLImageElement>(null)
-  const [dims, setDims] = useState({ width: 68, height: 68 })
+  const [dims, setDims] = useState({ width: 64, height: 64 })
 
   const { width } = useWindowDimensions() ?? { width: 0 }
   useLayoutEffect(() => {
@@ -19,12 +19,12 @@ export function ProfileImage({ profileURL }: { profileURL: string | null }) {
   }, [imageRef, width])
   return (
     <ZStackGrid className="h-full aspect-square place-items-center">
-      {!profileURL ? (
+      {profileURL ? (
         <Image
-          src={profileURL ?? ""}
+          src={profileURL}
           alt="Profile Picture"
-          width={68}
-          height={68}
+          width={64}
+          height={64}
           className="h-full w-full aspect-square bg-accent animate-pulse object-cover"
           style={{
             maskImage: `url("/9-Cookie.svg")`,

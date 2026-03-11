@@ -8,8 +8,9 @@ const PasswordSchema = type(
     "Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and one special character.",
 })
 
-const UsernameSchama = type("string > 0").configure({
-  message: "Username cannot be empty.",
+const UsernameSchama = type("0 < string < 15").configure({
+  message:
+    "Username cannot be empty. Must be between 1 and 15 characters long.",
 })
 
 const UserSchema = type({
@@ -17,8 +18,8 @@ const UserSchema = type({
   username: UsernameSchama,
   created_at: "Date",
   updated_at: "Date",
+  profile_url: "string.url",
 })
-const TUserDTO = UserSchema.infer satisfies UserDTO
 
 const UserCreateSchema = type({
   username: UsernameSchama,
@@ -37,9 +38,8 @@ const TUserCreate = UserCreateSchema.infer satisfies UserCreate
 const UserUpateSchema = UserCreateSchema.partial()
 const TUserUpdate = UserUpateSchema.infer satisfies UserUpdate
 
-type TypeUserDTO = typeof TUserDTO
 type TypeUserCreate = typeof TUserCreate
 type TypeUserUpdate = typeof TUserUpdate
 
-export type { TypeUserDTO, TypeUserCreate, TypeUserUpdate }
+export type { TypeUserCreate, TypeUserUpdate }
 export { UserSchema, UserCreateSchema, UserUpateSchema }

@@ -10,12 +10,13 @@ import { Circle } from "./svg/shapes/Circle"
 
 import { Popover, PopoverContent, PopoverTrigger } from "./popover"
 import { LoadingSpinner } from "./loading-spinner"
+import { cn } from "@/lib/utils"
 
 gsap.registerPlugin(useGSAP, DrawSVGPlugin)
 
-export function TotalUsageChartSkeleton() {
+export function TotalUsageChartSkeleton({ className }: { className?: string }) {
   return (
-    <ZStackGrid className="w-20 aspect-square">
+    <ZStackGrid className={cn("h-18 aspect-square", className)}>
       <div className="h-full w-full flex justify-center items-center text-xs font-semibold">
         <LoadingSpinner className="h-8 w-8 bg-accent" />
       </div>
