@@ -21,11 +21,11 @@ export function TotalUsageChartSkeleton({ className }: { className?: string }) {
         <LoadingSpinner className="h-8 w-8 bg-accent" />
       </div>
       <Circle
-        className="h-full w-full fill-transparent stroke-[4.5rem] stroke-background/10 rotate-90 animate-pulse"
+        className="h-full w-full fill-transparent stroke-[5.5rem] stroke-background/10 rotate-90 animate-pulse"
         style={{ overflow: "visible" }}
       />
       <Circle
-        className="h-full w-full fill-transparent stroke-[4.5rem] stroke-background/10 rotate-90 animate-pulse"
+        className="h-full w-full fill-transparent stroke-[5.5rem] stroke-background/10 rotate-90 animate-pulse"
         style={{ overflow: "visible" }}
       />
       <Circle className="h-full w-full fill-transparent stroke-[2.5rem] stroke-accent rotate-90 origin-center animate-pulse" />
@@ -148,7 +148,7 @@ export function TotalUsageChart({
           </div>
           <ZStackGrid className="p-1 rotate-x-180 rotate-y-180" aria-hidden>
             <Cookie9
-              className="h-full w-full fill-transparent stroke-[2rem] stroke-accent-foreground animate-spin"
+              className="h-full w-full fill-transparent stroke-[2rem] stroke-primary animate-spin"
               style={{ animationDuration: "10s", scale: "-1 -1" }}
               ref={chartRef}
             />

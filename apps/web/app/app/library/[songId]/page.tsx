@@ -129,7 +129,7 @@ export default function SongLyricsPage() {
   }
 
   const debouncedUpdateTitle = useDebouncedCallback(updateTitle, 2000)
-  function handleChangeTitle(event: React.FormEvent<HTMLDivElement>) {
+  function handleChangeTitle(event: React.InputEvent<HTMLDivElement>) {
     const { textContent } = event.target as HTMLDivElement
     if (textContent.length > 0) {
       debouncedUpdateTitle(textContent, event.target as HTMLDivElement)
@@ -137,7 +137,7 @@ export default function SongLyricsPage() {
   }
 
   const debouncedUpdateArtist = useDebouncedCallback(updateArtist, 2000)
-  function handleChangeArtist(event: React.FormEvent<HTMLDivElement>) {
+  function handleChangeArtist(event: React.InputEvent<HTMLSpanElement>) {
     const target = event.target as HTMLDivElement
     const { textContent } = target
 
@@ -146,7 +146,7 @@ export default function SongLyricsPage() {
   }
 
   const debouncedUpdateAlbum = useDebouncedCallback(updateAlbum, 2000)
-  function handleChangeAlbum(event: React.FormEvent<HTMLDivElement>) {
+  function handleChangeAlbum(event: React.InputEvent<HTMLDivElement>) {
     const target = event.target as HTMLDivElement
     const { textContent } = target
 

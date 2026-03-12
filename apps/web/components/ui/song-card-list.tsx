@@ -177,7 +177,7 @@ export function SongCardList() {
   return (
     <>
       <HStack className="gap-2" justifyContent="center">
-        <InputGroup className="max-w-md ">
+        <InputGroup className="max-w-md bg-background">
           <InputGroupInput
             placeholder="Search..."
             onChange={handleSearch}
