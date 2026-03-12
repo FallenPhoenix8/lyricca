@@ -141,7 +141,7 @@ export function TotalUsageChart({
       >
         <ZStackGrid className="h-full aspect-square">
           <div
-            className="h-full w-full flex justify-center items-center text-xs font-semibold"
+            className="h-full w-full flex justify-center items-center text-[0.60rem] font-semibold"
             aria-label="Translations usage left"
           >
             {formattedPercentage}
