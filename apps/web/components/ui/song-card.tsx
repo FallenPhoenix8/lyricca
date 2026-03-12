@@ -6,6 +6,7 @@ import { ImageRosetta } from "./svg/ImageRosetta"
 import { SongDTO } from "@shared/ts-types"
 import Image from "next/image"
 import { DotIcon } from "lucide-react"
+import { XIcon } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { easeOvershootClassName, easeBezierClassName } from "./constants"
@@ -41,9 +42,40 @@ function useMediaQuery(query: string) {
 /**
  * A song card with a cover image, title, artist, and album to be displayed in a card layout on regular screens.
  */
-function SongCardRegular(props: { song: SongDTO; className?: string }) {
+function SongCardRegular(props: {
+  song: SongDTO
+  className?: string
+  isArtistTagActive: boolean
+  isAlbumTagActive: boolean
+  onTagClick: (type: "artist" | "album", tag: string) => void
+}) {
   const [searchParams] = useQueryState("q", { defaultValue: "" })
   const encodedSearchParams = encodeURIComponent(searchParams)
+
+  const unknownArtist = "Unknown Artist"
+  const unknownAlbum = "Unknown Album"
+
+  function handleTagClick(
+    event: React.MouseEvent<HTMLSpanElement, MouseEvent>,
+    type: "artist" | "album",
+  ) {
+    const target = event.target as HTMLSpanElement
+    const tag = target.textContent
+    if (tag) {
+      props.onTagClick(type, tag)
+    }
+  }
+
+  const closeButtonArtistTag = props.isArtistTagActive ? (
+    <XIcon data-icon="inline-start" className="w-5 h-5" weight="bold" />
+  ) : (
+    <></>
+  )
+  const closeButtonAlbumTag = props.isAlbumTagActive ? (
+    <XIcon data-icon="inline-start" className="w-5 h-5" weight="bold" />
+  ) : (
+    <></>
+  )
   return (
     <Card
       className={cn(
@@ -96,14 +128,38 @@ function SongCardRegular(props: { song: SongDTO; className?: string }) {
 
         <CardDescription className="flex flex-wrap gap-2">
           {props.song.artist ? (
-            <Badge variant="secondary">{props.song.artist}</Badge>
+            <Badge
+              variant={props.isArtistTagActive ? "default" : "secondary"}
+              onClick={(e) => handleTagClick(e, "artist")}
+            >
+              {closeButtonArtistTag}
+              {props.song.artist}
+            </Badge>
           ) : (
-            <Badge variant="outline">Unknown Artist</Badge>
+            <Badge
+              variant={props.isArtistTagActive ? "default" : "outline"}
+              onClick={(e) => handleTagClick(e, "artist")}
+            >
+              {closeButtonArtistTag}
+              {unknownArtist}
+            </Badge>
           )}
           {props.song.album ? (
-            <Badge variant="secondary">{props.song.album}</Badge>
+            <Badge
+              variant={props.isAlbumTagActive ? "default" : "secondary"}
+              onClick={(e) => handleTagClick(e, "album")}
+            >
+              {closeButtonAlbumTag}
+              {props.song.album}
+            </Badge>
           ) : (
-            <Badge variant="outline">Unknown Album</Badge>
+            <Badge
+              variant={props.isAlbumTagActive ? "default" : "outline"}
+              onClick={(e) => handleTagClick(e, "album")}
+            >
+              {closeButtonAlbumTag}
+              {unknownAlbum}
+            </Badge>
           )}
         </CardDescription>
       </CardHeader>
@@ -171,6 +227,9 @@ function SongCardCompact(props: { song: SongDTO; className?: string }) {
  */
 export function SongCard(props: {
   song: SongDTO
+  isArtistTagActive: boolean
+  isAlbumTagActive: boolean
+  onTagClick(type: "artist" | "album", tag: string): void
   className?: string
   isCompact?: boolean
 }) {
@@ -179,7 +238,13 @@ export function SongCard(props: {
       {props.isCompact ? (
         <SongCardCompact song={props.song} className={props.className} />
       ) : (
-        <SongCardRegular song={props.song} className={props.className} />
+        <SongCardRegular
+          song={props.song}
+          className={props.className}
+          onTagClick={props.onTagClick}
+          isAlbumTagActive={props.isAlbumTagActive}
+          isArtistTagActive={props.isArtistTagActive}
+        />
       )}
     </div>
   )
@@ -190,12 +255,18 @@ export function SongCard(props: {
  */
 export default function ResponsiveSongCard(props: {
   song: SongDTO
+  isArtistTagActive: boolean
+  isAlbumTagActive: boolean
+  onTagClick(type: "artist" | "album", tag: string): void
   className?: string
 }) {
   const isCompact = useMediaQuery("(max-width: 460px)")
 
   return (
     <SongCard
+      isAlbumTagActive={props.isAlbumTagActive}
+      isArtistTagActive={props.isArtistTagActive}
+      onTagClick={props.onTagClick}
       song={props.song}
       className={props.className}
       isCompact={isCompact}

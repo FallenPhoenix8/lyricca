@@ -43,10 +43,16 @@ import {
   DropdownMenuTrigger,
 } from "./dropdown-menu"
 import { HStack } from "./layout"
+import { useTags } from "@/lib/client/hook/useTags"
+import { Badge } from "./badge"
+import { XIcon } from "@phosphor-icons/react"
 
 export function SongCardList() {
-  // TODO: Add filter tags
-  const [filterTags, setFilterTags] = useState<string[]>([])
+  const unknownArtist = "Unknown Artist"
+  const unknownAlbum = "Unknown Album"
+  const [filterTags, setFilterTags] = useState<
+    { type: "artist" | "album"; value: string }[]
+  >([])
   const [searchQuery, setSearchQuery] = useQueryState("q", {
     defaultValue: "",
   })
@@ -94,17 +100,87 @@ export function SongCardList() {
               !!song.album
                 ?.toLowerCase()
                 .includes(debouncedSearchQuery.toLowerCase())
+            if (filterTags.length === 0) {
+              return isMatchesQuery
+            }
             // * MARK: - Check if tags match song's artist or album
+            const tagTypes = filterTags.map((t) => t.type)
+            const isArtistAndAlbumTags =
+              tagTypes.includes("artist") && tagTypes.includes("album")
+            // * MARK: - Check if tags match song's artist and album, if one tag is artist and other is album
+            if (isArtistAndAlbumTags) {
+              /**
+               * Check if artist matches artist tag (unknown artist is considered a match for all unknown artists)
+               */
+              let isArtistMatches =
+                !song.artist &&
+                filterTags
+                  .find((t) => t.type === "artist")!
+                  .value.toLowerCase() === unknownArtist.toLowerCase()
+              isArtistMatches ||=
+                song.artist
+                  ?.toLowerCase()
+                  .includes(
+                    filterTags
+                      .find((t) => t.type === "artist")!
+                      .value.toLowerCase(),
+                  ) ?? false
+
+              /**
+               * Check if album matches album tag (unknown album is considered a match for all unknown albums)
+               */
+              let isAlbumMatches =
+                !song.album &&
+                filterTags
+                  .find((t) => t.type === "album")!
+                  .value.toLowerCase() === unknownAlbum.toLowerCase()
+              isAlbumMatches ||=
+                song.album
+                  ?.toLowerCase()
+                  .includes(
+                    filterTags
+                      .find((t) => t.type === "album")!
+                      .value.toLowerCase(),
+                  ) ?? false
+
+              // * MARK: - Check if both artist and album match, if search query is present, then narrow down the matches to only those that match search query
+              return (
+                isArtistMatches &&
+                isAlbumMatches &&
+                (debouncedSearchQuery === "" || isMatchesQuery)
+              )
+            }
+
+            // * MARK: - If tags are the same, then check against individual tags
+            // for example: if tags are both type "artist", then just match albums no matter the artist
             const isMatchesTags: boolean = filterTags.some((tag) => {
-              const isArtistMatches = song.artist
-                ?.toLowerCase()
-                .includes(tag.toLowerCase())
-              const isAlbumMatches = song.album
-                ?.toLowerCase()
-                .includes(tag.toLowerCase())
+              /**
+               * Check if artist matches artist tag (unknown artist is considered a match for all unknown artists)
+               */
+              let isArtistMatches =
+                !song.artist &&
+                tag.value.toLowerCase() === unknownArtist.toLowerCase()
+              isArtistMatches ||=
+                song.artist?.toLowerCase().includes(tag.value.toLowerCase()) ??
+                false
+
+              /**
+               * Check if album matches album tag (unknown album is considered a match for all unknown albums)
+               */
+              let isAlbumMatches =
+                !song.album &&
+                tag.value.toLowerCase() === unknownAlbum.toLowerCase()
+              isAlbumMatches ||=
+                song.album?.toLowerCase().includes(tag.value.toLowerCase()) ??
+                false
+
               return isArtistMatches || isAlbumMatches
             })
-            return isMatchesQuery || isMatchesTags
+            if (debouncedSearchQuery === "") {
+              return isMatchesTags
+            }
+
+            return isMatchesQuery && isMatchesTags
           })
           .sort((a, b) => {
             const firstElement = a[sortBy] ?? "Unknown"
@@ -174,10 +250,52 @@ export function SongCardList() {
   useEffect(() => {
     console.log("Search query changed:", debouncedSearchQuery)
   }, [debouncedSearchQuery])
+
+  function handleTagClick(type: "artist" | "album", tag: string) {
+    startTransition(() => {
+      setFilterTags((prev) => {
+        if (isIncludesTag(tag)) {
+          return prev.filter((t) => t.value.toLowerCase() !== tag.toLowerCase())
+        }
+        const newTags = [...prev]
+        newTags.unshift({ type, value: tag })
+        if (newTags.length > 2) {
+          newTags.pop()
+        }
+        return newTags
+      })
+    })
+  }
+
+  function isIncludesTag(tag: string) {
+    return filterTags
+      .map((t) => t.value.toLowerCase())
+      .includes(tag.toLowerCase())
+  }
+
   return (
     <>
+      <HStack className="gap-2 mb-2">
+        {filterTags.map((tag) => {
+          return (
+            <Badge
+              key={tag.value}
+              variant="default"
+              className="text-xs flex lg:hidden"
+              onClick={(e) => handleTagClick(tag.type, tag.value)}
+            >
+              <XIcon
+                data-icon="inline-start"
+                className="w-5 h-5"
+                weight="bold"
+              />
+              {tag.value}
+            </Badge>
+          )
+        })}
+      </HStack>
       <HStack className="gap-2" justifyContent="center">
-        <InputGroup className="max-w-md bg-background">
+        <InputGroup className="max-w-lg bg-background">
           <InputGroupInput
             placeholder="Search..."
             onChange={handleSearch}
@@ -185,6 +303,23 @@ export function SongCardList() {
           />
           <InputGroupAddon>
             <Search />
+            {filterTags.map((tag) => {
+              return (
+                <Badge
+                  key={tag.value}
+                  variant="default"
+                  className="text-xs hidden lg:flex"
+                  onClick={() => handleTagClick(tag.type, tag.value)}
+                >
+                  <XIcon
+                    data-icon="inline-start"
+                    className="w-5 h-5"
+                    weight="bold"
+                  />
+                  {tag.value}
+                </Badge>
+              )
+            })}
           </InputGroupAddon>
           <InputGroupAddon
             align="inline-end"
@@ -245,6 +380,9 @@ export function SongCardList() {
           countToShow !== 0 &&
           songsToShow.map((song) => (
             <SongCardResponsiveClient
+              isAlbumTagActive={isIncludesTag(song.album ?? "Unknown Album")}
+              isArtistTagActive={isIncludesTag(song.artist ?? "Unknown Artist")}
+              onTagClick={handleTagClick}
               key={song.id}
               song={song}
               className="h-full"
