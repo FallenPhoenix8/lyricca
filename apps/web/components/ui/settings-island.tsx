@@ -14,7 +14,7 @@ export function SettingsIsland(
       <div
         {...props}
         className={cn(
-          "rounded-4xl md:rounded-xl squircle bg-card text-card-foreground shadow-md shadow-card/50 border-2 border-card-foreground/10 w-full",
+          "rounded-4xl md:rounded-xl squircle bg-card text-card-foreground shadow-md shadow-card/50 border md:border-2 border-card-foreground/10 w-full",
           props.className,
         )}
       >
