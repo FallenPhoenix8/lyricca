@@ -1,26 +1,34 @@
 "use client"
-import { useState, useRef } from "react"
+import { useState, useRef, startTransition } from "react"
 
 export function useTags(limit: number = 2) {
-  const [tags, setTags] = useState<string[]>([])
+  const [tags, setTags] = useState<
+    { type: "artist" | "album"; value: string }[]
+  >([])
 
-  function push(tag: string) {
-    let newTags = [...tags]
-    newTags.unshift(tag)
-    if (newTags.length > limit) {
-      newTags.pop()
-    }
-    setTags(newTags)
+  function pushTag(type: "artist" | "album", tag: string) {
+    startTransition(() => {
+      setTags((prev) => {
+        if (isIncludesTag(tag)) {
+          return prev.filter((t) => t.value.toLowerCase() !== tag.toLowerCase())
+        }
+        const newTags = [...prev]
+        newTags.unshift({ type, value: tag })
+        if (newTags.length > limit) {
+          newTags.pop()
+        }
+        return newTags
+      })
+    })
   }
 
-  function clear() {
-    setTags([])
+  function isIncludesTag(tag: string) {
+    return tags.map((t) => t.value.toLowerCase()).includes(tag.toLowerCase())
   }
 
-  function includes(tag: string) {
-    return tags.includes(tag)
+  return {
+    tags,
+    pushTag,
+    isIncludesTag,
   }
-
-  const value = useRef(tags)
-  return { value, push, clear, includes }
 }

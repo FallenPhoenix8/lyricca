@@ -50,9 +50,7 @@ import { XIcon } from "@phosphor-icons/react"
 export function SongCardList() {
   const unknownArtist = "Unknown Artist"
   const unknownAlbum = "Unknown Album"
-  const [filterTags, setFilterTags] = useState<
-    { type: "artist" | "album"; value: string }[]
-  >([])
+  const { tags: filterTags, pushTag, isIncludesTag } = useTags(2)
   const [searchQuery, setSearchQuery] = useQueryState("q", {
     defaultValue: "",
   })
@@ -251,28 +249,6 @@ export function SongCardList() {
     console.log("Search query changed:", debouncedSearchQuery)
   }, [debouncedSearchQuery])
 
-  function handleTagClick(type: "artist" | "album", tag: string) {
-    startTransition(() => {
-      setFilterTags((prev) => {
-        if (isIncludesTag(tag)) {
-          return prev.filter((t) => t.value.toLowerCase() !== tag.toLowerCase())
-        }
-        const newTags = [...prev]
-        newTags.unshift({ type, value: tag })
-        if (newTags.length > 2) {
-          newTags.pop()
-        }
-        return newTags
-      })
-    })
-  }
-
-  function isIncludesTag(tag: string) {
-    return filterTags
-      .map((t) => t.value.toLowerCase())
-      .includes(tag.toLowerCase())
-  }
-
   return (
     <>
       <HStack className="gap-2 mb-2">
@@ -282,7 +258,7 @@ export function SongCardList() {
               key={tag.value}
               variant="default"
               className="text-xs flex lg:hidden"
-              onClick={(e) => handleTagClick(tag.type, tag.value)}
+              onClick={(e) => pushTag(tag.type, tag.value)}
             >
               <XIcon
                 data-icon="inline-start"
@@ -309,7 +285,7 @@ export function SongCardList() {
                   key={tag.value}
                   variant="default"
                   className="text-xs hidden lg:flex"
-                  onClick={() => handleTagClick(tag.type, tag.value)}
+                  onClick={() => pushTag(tag.type, tag.value)}
                 >
                   <XIcon
                     data-icon="inline-start"
@@ -382,7 +358,7 @@ export function SongCardList() {
             <SongCardResponsiveClient
               isAlbumTagActive={isIncludesTag(song.album ?? "Unknown Album")}
               isArtistTagActive={isIncludesTag(song.artist ?? "Unknown Artist")}
-              onTagClick={handleTagClick}
+              onTagClick={pushTag}
               key={song.id}
               song={song}
               className="h-full"

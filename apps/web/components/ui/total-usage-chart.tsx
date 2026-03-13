@@ -1,18 +1,84 @@
 "use client"
 
 import { ZStack, ZStackGrid } from "./layout"
-import { Cookie9 } from "./svg/shapes/Cookie9"
+import { Cookie9, pathData as cookie9PathData } from "./svg/shapes/Cookie9"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
-import { DrawSVGPlugin } from "gsap/all"
+import { DrawSVGPlugin, MorphSVGPlugin } from "gsap/all"
 import { useRef, useState } from "react"
-import { Circle } from "./svg/shapes/Circle"
+import { Circle, pathData as circlePathData } from "./svg/shapes/Circle"
 
 import { Popover, PopoverContent, PopoverTrigger } from "./popover"
 import { LoadingSpinner } from "./loading-spinner"
 import { cn } from "@/lib/utils"
 
-gsap.registerPlugin(useGSAP, DrawSVGPlugin)
+gsap.registerPlugin(useGSAP, DrawSVGPlugin, MorphSVGPlugin)
+
+const chartOffsetPathPercentage = 5.5
+
+function AnimatedChartPart({
+  usagePercentage,
+  offset,
+  className,
+}: {
+  usagePercentage: number
+  offset: number
+  className?: string
+}) {
+  const maskRef = useRef<SVGPathElement>(null)
+
+  useGSAP(() => {
+    if (!maskRef.current) return
+
+    const chartOffset =
+      usagePercentage >= 100 || usagePercentage <= 0 ? 0 : offset
+    // Animate the mask reveal
+    gsap.fromTo(
+      maskRef.current,
+      { drawSVG: `${chartOffset}%` },
+      {
+        drawSVG: `${chartOffset}% ${usagePercentage - chartOffset}%`,
+        duration: 1.5,
+        ease: "power2.out",
+      },
+    )
+  })
+
+  return (
+    <svg
+      width="380"
+      height="380"
+      viewBox="0 0 380 380"
+      className={cn("overflow-visible", className)}
+      style={{ overflow: "visible" }}
+    >
+      <defs>
+        {/* Mask for the chart part, to make the spinning part have rounded edges */}
+        <mask id="fixed-mask" maskUnits="userSpaceOnUse">
+          <path
+            d={circlePathData}
+            fill="none"
+            stroke="white"
+            strokeLinecap="round"
+            ref={maskRef}
+            className="stroke-[5.5rem]"
+          />
+        </mask>
+      </defs>
+
+      {/* The spinning part of the chart */}
+      <g mask="url(#fixed-mask)">
+        <path
+          d={cookie9PathData}
+          fill="none"
+          stroke="currentColor"
+          className="stroke-primary origin-center stroke-[3.5rem] animate-spin"
+          style={{ transformOrigin: "center", animationDuration: "10s" }}
+        />
+      </g>
+    </svg>
+  )
+}
 
 export function TotalUsageChartSkeleton({ className }: { className?: string }) {
   return (
@@ -41,10 +107,7 @@ export function TotalUsageChart({
 }) {
   const [isOpen, setIsOpen] = useState(false)
   // * MARK: - Prepare references for chart elements
-  const chartRef = useRef<SVGSVGElement>(null)
   const arcRef = useRef<SVGSVGElement>(null)
-  const innerBorderRef = useRef<SVGSVGElement>(null)
-  const outerBorderRef = useRef<SVGSVGElement>(null)
 
   // * MARK: - Calculate percentages and display values
   const usageLeft = limitUsage - currentUsage
@@ -65,72 +128,26 @@ export function TotalUsageChart({
   // 1000ms * 60s * 60m * 24h = 86,400,000 ms per day
   const daysRemaining = Math.ceil(diffInMs / (1000 * 60 * 60 * 24))
   useGSAP(() => {
-    if (
-      !chartRef.current ||
-      !arcRef.current ||
-      !innerBorderRef.current ||
-      !outerBorderRef.current
-    )
-      return
-    const chart = chartRef.current
-    const chartPath = chart.querySelector("path")
+    if (!arcRef.current) return
     const arc = arcRef.current
     const arcPath = arc.querySelector("path")
-    const innerBorder = innerBorderRef.current
-    const innerBorderPath = innerBorder.querySelector("path")
-    const outerBorder = outerBorderRef.current
-    const outerBorderPath = outerBorder.querySelector("path")
 
-    const tl = gsap.timeline()
-
-    gsap.fromTo(
-      innerBorderPath,
-      {
-        drawSVG: "0",
-      },
-      {
-        drawSVG: `-${remainingPercentageNum}%`,
-        // duration: 0,
-      },
-    )
-
-    gsap.fromTo(
-      outerBorderPath,
-      {
-        drawSVG: "0",
-      },
-      {
-        drawSVG: `-${remainingPercentageNum}%`,
-        // duration: 0,
-      },
-    )
-
-    gsap.fromTo(
-      chartPath,
-      {
-        drawSVG: "0",
-      },
-      {
-        drawSVG: "100%",
-      },
-    )
+    const chartOffset =
+      remainingPercentageNum >= 100 || remainingPercentageNum <= 0
+        ? 0
+        : chartOffsetPathPercentage
     gsap.fromTo(
       arcPath,
       {
-        drawSVG: "0",
+        drawSVG: `${chartOffset}%`,
       },
       {
-        drawSVG: `-${remainingPercentageNum}%`,
+        drawSVG: `-${chartOffset}% -${remainingPercentageNum - chartOffset}%`,
       },
     )
   })
   return (
-    <Popover
-      open={isOpen}
-      onOpenChange={() =>
-        console.log(isOpen ? "Popover opened" : "Popover closed")
-      }
-    >
+    <Popover open={isOpen}>
       <PopoverTrigger
         asChild
         onMouseEnter={() => setIsOpen(true)}
@@ -147,24 +164,16 @@ export function TotalUsageChart({
             {formattedPercentage}
           </div>
           <ZStackGrid className="p-1 rotate-x-180 rotate-y-180" aria-hidden>
-            <Cookie9
-              className="h-full w-full fill-transparent stroke-[2rem] stroke-primary animate-spin"
-              style={{ animationDuration: "10s", scale: "-1 -1" }}
-              ref={chartRef}
+            <AnimatedChartPart
+              offset={chartOffsetPathPercentage}
+              usagePercentage={usagePercentageNum}
+              className="h-full w-full rotate-70"
             />
+
             <Circle
-              className="h-full w-full fill-transparent stroke-[4.5rem] stroke-background rotate-90"
-              style={{ overflow: "visible" }}
-              ref={innerBorderRef}
-            />
-            <Circle
-              className="h-full w-full fill-transparent stroke-[4.5rem] stroke-background rotate-90"
-              style={{ overflow: "visible" }}
-              ref={outerBorderRef}
-            />
-            <Circle
-              className="h-full w-full fill-transparent stroke-[2.5rem] stroke-accent rotate-90 origin-center"
+              className="h-full w-full fill-transparent stroke-[5.1rem] stroke-accent rotate-70 origin-center"
               ref={arcRef}
+              style={{ overflow: "visible" }}
             />
           </ZStackGrid>
         </ZStackGrid>
