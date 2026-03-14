@@ -8,6 +8,7 @@ import { ImageService } from "../image/image.service"
 @Injectable()
 export class CoversService {
   private readonly bucketName = "covers"
+  private readonly searchAPIURL = "https://musicbrainz.org/"
 
   constructor(
     private readonly supabaseService: SupabaseService,
@@ -71,5 +72,84 @@ export class CoversService {
     }
 
     return new CoverDTOImpl(cover)
+  }
+
+  async getSuggestionURL({
+    artist,
+    title,
+    userAgent,
+  }: {
+    artist: string
+    title: string
+    userAgent: string
+  }): Promise<URL | null> {
+    const recordingSearchURL = this.getSuggestionSearchURL(
+      artist,
+      title,
+      "recording",
+    )
+    let coverURL = await this.getSuggestionCoverURL(
+      recordingSearchURL,
+      userAgent,
+    )
+    if (!coverURL) {
+      const releaseSearchURL = this.getSuggestionSearchURL(
+        artist,
+        title,
+        "release",
+      )
+      coverURL = await this.getSuggestionCoverURL(releaseSearchURL, userAgent)
+    }
+
+    return coverURL
+  }
+
+  private getSuggestionSearchURL(
+    artist: string,
+    title: string,
+    type: "recording" | "release" = "recording",
+  ): URL {
+    // * MARK: - Build Lucene query
+    const queryParts: string[] = [
+      `recording:"${title.toLowerCase()}"`,
+      `artist:"${artist.toLowerCase()}"`,
+    ]
+    const query = encodeURIComponent(queryParts.join(" AND "))
+
+    // * MARK: - Build search URL
+    const url = new URL(
+      `ws/2/${type}/?query=${query}&fmt=json`,
+      this.searchAPIURL,
+    )
+    return url
+  }
+
+  private async getSuggestionCoverURL(
+    searchURL: URL,
+    userAgent: string,
+  ): Promise<URL | null> {
+    try {
+      const response = await fetch(searchURL, {
+        headers: {
+          "User-Agent": userAgent,
+        },
+      })
+      const data = await response.json()
+      //* MARK: - Get the MBID of the first release associated with this recording.
+      // Recordings don't have images directly; their "Releases" (albums/singles) do.
+      // If there is no release, then return null to indicate that no cover has been found.
+      const firstRelease = data.recordings?.[0]?.releases?.[0]
+
+      if (!firstRelease || !firstRelease.id) {
+        return null
+      }
+      const suggestedCoverURL = new URL(
+        `https://coverartarchive.org/release/${firstRelease.id}/front`,
+      )
+      return suggestedCoverURL
+    } catch (error) {
+      console.error("Failed to get cover suggestion URL:", error)
+      return null
+    }
   }
 }
