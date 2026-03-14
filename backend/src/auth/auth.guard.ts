@@ -8,6 +8,7 @@ import { JwtService } from "@nestjs/jwt"
 import { jwtConstants } from "./constants"
 import { Request } from "express"
 import { UserService } from "../user/user.service"
+import { UserImpl } from "../user/dto/user-dto"
 
 export type VerifiedTokenPayload = {
   /**
@@ -23,6 +24,11 @@ export type VerifiedTokenPayload = {
    * Expiration time (seconds since Epoch)
    */
   exp: number
+}
+
+export type AuthenticatedRequest = Request & {
+  user: () => Promise<UserImpl>
+  token: string
 }
 @Injectable()
 export class AuthGuard implements CanActivate {

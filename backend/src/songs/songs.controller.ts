@@ -19,7 +19,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from "@nestjs/common"
-import { AuthGuard } from "../auth/auth.guard"
+import { AuthGuard, type AuthenticatedRequest } from "../auth/auth.guard"
 import {
   SongCheckAllInputImpl,
   SongCreateDTOImpl,
@@ -48,7 +48,7 @@ export class SongsController {
 
   @UseGuards(AuthGuard)
   @Get()
-  async findAll(@Req() req: any): Promise<SongDTOImpl[]> {
+  async findAll(@Req() req: AuthenticatedRequest): Promise<SongDTOImpl[]> {
     const user = await req.user()
     return user.songs.map((song: SongImpl) => new SongDTOImpl(song))
   }
@@ -67,7 +67,7 @@ export class SongsController {
   @Post()
   @UseInterceptors(FileInterceptor("cover"))
   async create(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Body() body: SongCreateDTOImpl,
     @UploadedFile() coverFile: Express.Multer.File,
   ): Promise<SongDTOImpl> {
@@ -93,7 +93,7 @@ export class SongsController {
   @Patch(":id")
   @UseInterceptors(FileInterceptor("cover"))
   async update(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Body() body: SongUpdateDTOImpl,
     @Param("id", ParseUUIDPipe) id: string,
     @UploadedFile() coverFile?: Express.Multer.File,
@@ -140,7 +140,7 @@ export class SongsController {
   @UseGuards(AuthGuard)
   @Delete(":id")
   async remove(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Param("id", ParseUUIDPipe) id: string,
   ): Promise<SongDTOImpl> {
     const user = await req.user()
@@ -186,7 +186,7 @@ export class SongsController {
   @HttpCode(200)
   async checkAll(
     @Body() input: SongCheckAllInputImpl,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ): Promise<SongCheckAllOutput> {
     const user = await req.user()
     return this.songsService.checkAll(input, user.id)

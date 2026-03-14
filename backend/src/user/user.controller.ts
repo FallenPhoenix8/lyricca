@@ -22,7 +22,7 @@ import {
   UserDTOImpl,
   AvailabilityCheckDTOImpl,
 } from "./dto/user-dto"
-import { AuthGuard } from "../auth/auth.guard"
+import { AuthGuard, type AuthenticatedRequest } from "../auth/auth.guard"
 import { Request } from "@nestjs/common"
 import { FileInterceptor } from "@nestjs/platform-express"
 @Controller("users")
@@ -37,7 +37,7 @@ export class UserController {
 
   @UseGuards(AuthGuard)
   @Get("me")
-  async findMe(@Req() req: any): Promise<UserDTOImpl> {
+  async findMe(@Req() req: AuthenticatedRequest): Promise<UserDTOImpl> {
     const user = await req.user()
     return new UserDTOImpl(user)
   }
@@ -65,7 +65,7 @@ export class UserController {
   async update(
     @Param("id", ParseUUIDPipe) id: string,
     @Body() updateUserDto: UserUpdateImpl,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @UploadedFile() profilePictureFile?: Express.Multer.File,
   ): Promise<UserDTOImpl> {
     // Ensure that users can only update their own data
@@ -86,10 +86,10 @@ export class UserController {
   @Delete(":id")
   async remove(
     @Param("id", ParseUUIDPipe) id: string,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ): Promise<UserDTOImpl> {
     // Ensure that users can only delete their own data
-    if ((await req.user().id) !== id) {
+    if ((await req.user()).id !== id) {
       throw new ForbiddenException("You can only delete your own user data.")
     }
     const user = await this.userService.remove(id)

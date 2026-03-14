@@ -12,7 +12,7 @@ import {
 import { LoginDTOImpl } from "./dto/auth-dto"
 import { AuthService } from "./auth.service"
 import type { Response } from "express"
-import { AuthGuard } from "./auth.guard"
+import { type AuthenticatedRequest, AuthGuard } from "./auth.guard"
 import { UserDTOImpl } from "../user/dto/user-dto"
 import { AuthPayload } from "@shared/ts-types"
 
@@ -55,7 +55,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Get("me")
-  async me(@Req() req: any): Promise<UserDTOImpl> {
+  async me(@Req() req: AuthenticatedRequest): Promise<UserDTOImpl> {
     return new UserDTOImpl(await req.user())
   }
 
@@ -64,7 +64,7 @@ export class AuthController {
   @Post("refresh")
   async refresh(
     @Res({ passthrough: true }) response: Response,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ): Promise<AuthPayload | void> {
     const refreshResult = await this.authService.refresh(req)
     if (refreshResult === "long-ttl") {
