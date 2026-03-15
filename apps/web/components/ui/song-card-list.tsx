@@ -46,11 +46,20 @@ import { HStack } from "./layout"
 import { useTags } from "@/lib/client/hook/useTags"
 import { Badge } from "./badge"
 import { XIcon } from "@phosphor-icons/react"
+import db from "@/lib/client/db"
+import { useLiveQuery } from "dexie-react-hooks"
+
+type TSortBy = "title" | "artist" | "album"
 
 export function SongCardList() {
   const unknownArtist = "Unknown Artist"
   const unknownAlbum = "Unknown Album"
-  const { tags: filterTags, pushTag, isIncludesTag } = useTags(2)
+  const {
+    tags: filterTags,
+    pushTag,
+    isIncludesTag,
+    clear: clearTags,
+  } = useTags(2)
   const [searchQuery, setSearchQuery] = useQueryState("q", {
     defaultValue: "",
   })
@@ -58,147 +67,96 @@ export function SongCardList() {
     searchQuery,
     300,
   )
-  const [sortDirection, setSortDirection] = useState<"a-z" | "z-a">("a-z")
-  const [sortBy, setSortBy] = useState<"title" | "artist" | "album">("title")
+  const [sortDirection, setSortDirection] = useQueryState("dir", {
+    defaultValue: "a-z",
+  })
+  const [sortBy, setSortBy] = useQueryState("by", { defaultValue: "title" })
 
-  const { songs, isLoading, count } = useSongsContext()
+  const { isLoading, count, songs } = useSongsContext()
   const [isFirstRender, setIsFirstRender] = useState(true)
+  /**
+   * Actual songs to be displayed in the list. This is a state that is updated whenever the songsCollection hook changes. It is used to trigger ViewTransition.
+   */
+  const [songsToShow, setSongsToShow] = useState<SongDTO[]>([])
+  /**
+   * This hook is used to fetch songs from the database. It leverages the use of Indexes to speed up the search process.
+   */
+  const songsCollection = useLiveQuery(
+    async () => {
+      const q = debouncedSearchQuery.toLowerCase()
+      let collection
 
-  const [songsToShow, setSongsToShow] = useState<SongDTO[]>(
-    songs.sort((a, b) => {
-      if (sortDirection === "a-z") {
-        return a[sortBy]?.localeCompare(b[sortBy] ?? "") ?? 0
+      // 1. DATA ACCESS (Using Indexes)
+      const artistTag = filterTags
+        .find((t) => t.type === "artist")
+        ?.value.toLowerCase()
+      const albumTag = filterTags
+        .find((t) => t.type === "album")
+        ?.value.toLowerCase()
+
+      if (artistTag && albumTag) {
+        collection = db.songs
+          .where("[search_artist+search_album]")
+          .equals([artistTag, albumTag])
+      } else if (artistTag) {
+        collection = db.songs.where("search_artist").equals(artistTag)
+      } else if (albumTag) {
+        collection = db.songs.where("search_album").equals(albumTag)
+      } else {
+        collection = db.songs.toCollection()
       }
-      return b[sortBy]?.localeCompare(a[sortBy] ?? "") ?? 0
-    }),
-  )
-  useEffect(() => {
-    const updateSongsToShow = () => {
-      if (filterTags.length === 0 && searchQuery === "")
-        setSongsToShow(
-          songs.sort((a, b) => {
-            if (sortDirection === "a-z") {
-              return a[sortBy]?.localeCompare(b[sortBy] ?? "") ?? 0
-            }
-            return b[sortBy]?.localeCompare(a[sortBy] ?? "") ?? 0
-          }),
+
+      // 2. FILTERING
+      if (q !== "") {
+        collection = collection.filter(
+          (song) =>
+            song.title.toLowerCase().includes(q) ||
+            song.search_artist!.includes(q) ||
+            song.search_album!.includes(q),
         )
+      }
 
-      setSongsToShow(
-        songs
-          .filter((song) => {
-            // * MARK: - Check if title, artist, or album matches query
-            const isMatchesQuery: boolean =
-              song.title
-                .toLowerCase()
-                .includes(debouncedSearchQuery.toLowerCase()) ||
-              !!song.artist
-                ?.toLowerCase()
-                .includes(debouncedSearchQuery.toLowerCase()) ||
-              !!song.album
-                ?.toLowerCase()
-                .includes(debouncedSearchQuery.toLowerCase())
-            if (filterTags.length === 0) {
-              return isMatchesQuery
-            }
-            // * MARK: - Check if tags match song's artist or album
-            const tagTypes = filterTags.map((t) => t.type)
-            const isArtistAndAlbumTags =
-              tagTypes.includes("artist") && tagTypes.includes("album")
-            // * MARK: - Check if tags match song's artist and album, if one tag is artist and other is album
-            if (isArtistAndAlbumTags) {
-              /**
-               * Check if artist matches artist tag (unknown artist is considered a match for all unknown artists)
-               */
-              let isArtistMatches =
-                !song.artist &&
-                filterTags
-                  .find((t) => t.type === "artist")!
-                  .value.toLowerCase() === unknownArtist.toLowerCase()
-              isArtistMatches ||=
-                song.artist
-                  ?.toLowerCase()
-                  .includes(
-                    filterTags
-                      .find((t) => t.type === "artist")!
-                      .value.toLowerCase(),
-                  ) ?? false
+      // 3. RELIABLE SORTING
+      // Extract the array first
+      return await collection.toArray()
+    },
+    [debouncedSearchQuery, filterTags],
+    [],
+  )
 
-              /**
-               * Check if album matches album tag (unknown album is considered a match for all unknown albums)
-               */
-              let isAlbumMatches =
-                !song.album &&
-                filterTags
-                  .find((t) => t.type === "album")!
-                  .value.toLowerCase() === unknownAlbum.toLowerCase()
-              isAlbumMatches ||=
-                song.album
-                  ?.toLowerCase()
-                  .includes(
-                    filterTags
-                      .find((t) => t.type === "album")!
-                      .value.toLowerCase(),
-                  ) ?? false
+  // Trigger ViewTransition when songsToShow actually changes
+  useEffect(() => {
+    if (!songsCollection) return
 
-              // * MARK: - Check if both artist and album match, if search query is present, then narrow down the matches to only those that match search query
-              return (
-                isArtistMatches &&
-                isAlbumMatches &&
-                (debouncedSearchQuery === "" || isMatchesQuery)
-              )
-            }
+    const updateUI = () => {
+      // 1. Create a NEW array reference (Crucial for React to see the change)
+      const baseArray = [...songsCollection]
 
-            // * MARK: - If tags are the same, then check against individual tags
-            // for example: if tags are both type "artist", then just match albums no matter the artist
-            const isMatchesTags: boolean = filterTags.some((tag) => {
-              /**
-               * Check if artist matches artist tag (unknown artist is considered a match for all unknown artists)
-               */
-              let isArtistMatches =
-                !song.artist &&
-                tag.value.toLowerCase() === unknownArtist.toLowerCase()
-              isArtistMatches ||=
-                song.artist?.toLowerCase().includes(tag.value.toLowerCase()) ??
-                false
+      // 2. Sort using a predictable comparator
+      baseArray.sort((a, b) => {
+        // Use the 'sortBy' state dynamically
+        const valA = String(a[sortBy as TSortBy] || "unknown").toLowerCase()
+        const valB = String(b[sortBy as TSortBy] || "unknown").toLowerCase()
 
-              /**
-               * Check if album matches album tag (unknown album is considered a match for all unknown albums)
-               */
-              let isAlbumMatches =
-                !song.album &&
-                tag.value.toLowerCase() === unknownAlbum.toLowerCase()
-              isAlbumMatches ||=
-                song.album?.toLowerCase().includes(tag.value.toLowerCase()) ??
-                false
-
-              return isArtistMatches || isAlbumMatches
-            })
-            if (debouncedSearchQuery === "") {
-              return isMatchesTags
-            }
-
-            return isMatchesQuery && isMatchesTags
-          })
-          .sort((a, b) => {
-            const firstElement = a[sortBy] ?? "Unknown"
-            const secondElement = b[sortBy] ?? "Unknown"
-            if (sortDirection === "a-z") {
-              return firstElement.localeCompare(b[sortBy] ?? "Unknown") ?? 0
-            }
-            return secondElement.localeCompare(a[sortBy] ?? "Unknown") ?? 0
-          }),
-      )
-    }
-    if (isFirstRender) {
-      setIsFirstRender(false)
-      updateSongsToShow()
-    } else {
-      startTransition(() => {
-        updateSongsToShow()
+        const comparison = valA.localeCompare(valB, undefined, {
+          numeric: true,
+        })
+        return sortDirection === "a-z" ? comparison : -comparison
       })
+
+      setSongsToShow(baseArray)
     }
-  }, [songs, filterTags, debouncedSearchQuery, sortDirection, sortBy])
+
+    // 3. Trigger View Transition if supported
+    if (document.startViewTransition !== undefined) {
+      startTransition(() => {
+        updateUI()
+      })
+    } else {
+      updateUI()
+    }
+  }, [songsCollection, sortBy, sortDirection])
+
   const countToShow = useMemo(() => {
     if (filterTags.length === 0 && searchQuery === "") return count
     return songsToShow.length
@@ -212,6 +170,7 @@ export function SongCardList() {
   function resetSearch() {
     setSearchQuery("")
     setDebouncedSearchQuery("")
+    clearTags()
   }
 
   function handleSortDirectionChange() {
@@ -226,7 +185,7 @@ export function SongCardList() {
   function handleSortByChange(event: string) {
     const allowedSortBy = ["title", "artist", "album"]
     if (!allowedSortBy.includes(event)) return
-    setSortBy(event as "title" | "artist" | "album")
+    setSortBy(event as TSortBy)
   }
 
   const skeletonCards: null[] = new Array(10).fill(null)
@@ -352,6 +311,7 @@ export function SongCardList() {
         )}
       >
         {!isLoading &&
+          songsCollection.length !== 0 &&
           songsToShow.length !== 0 &&
           countToShow !== 0 &&
           songsToShow.map((song) => (

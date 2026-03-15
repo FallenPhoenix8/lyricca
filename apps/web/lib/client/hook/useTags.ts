@@ -26,9 +26,14 @@ export function useTags(limit: number = 2) {
     return tags.map((t) => t.value.toLowerCase()).includes(tag.toLowerCase())
   }
 
+  function clear() {
+    setTags([])
+  }
+
   return {
     tags,
     pushTag,
     isIncludesTag,
+    clear,
   }
 }

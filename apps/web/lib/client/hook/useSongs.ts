@@ -152,13 +152,51 @@ async function checkAndUpdateAllLocally(
   }
 }
 
-export function useSongs() {
+export function useSongs(
+  searchQuery: string,
+  filterTags: { type: "artist" | "album"; value: string }[],
+) {
+  // const songs = useLiveQuery(
+  //   () => {
+  //     const songs = db.songs.toArray()
+  //     return songs
+  //   },
+  //   [],
+  //   null,
+  // )
   const songs = useLiveQuery(
-    () => {
-      const songs = db.songs.toArray()
-      return songs
+    async () => {
+      let collection
+
+      // * MARK: - Check for compound index [artist+album]
+      const artistTag = filterTags.find((t) => t.type === "artist")?.value
+      const albumTag = filterTags.find((t) => t.type === "album")?.value
+
+      if (artistTag && albumTag) {
+        collection = db.songs
+          .where("[artist+album]")
+          .equals([artistTag, albumTag])
+      } else if (artistTag) {
+        collection = db.songs.where("artist").equals(artistTag)
+      } else if (albumTag) {
+        collection = db.songs.where("album").equals(albumTag)
+      } else {
+        collection = db.songs.toCollection()
+      }
+
+      // * MARK: - Perform the "includes" check on the reduced set
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase()
+        collection = collection.filter(
+          (s) =>
+            s.title.toLowerCase().includes(q) ||
+            (s.artist?.toLowerCase().includes(q) ?? false),
+        )
+      }
+
+      return await collection.toArray()
     },
-    [],
+    [searchQuery, filterTags],
     null,
   )
   const isLoading = useMemo(() => songs === null, [songs])
