@@ -29,6 +29,7 @@ function LyricsPair({
   handleTranslatedLyricsChange,
   handleOriginalLyricsChange,
   isEditable = false,
+  isReadyTranslation = true,
 }: {
   translated: string
   original: string
@@ -42,6 +43,7 @@ function LyricsPair({
     newOriginalLyrics: string,
   ) => void
   isEditable?: boolean
+  isReadyTranslation?: boolean
 }) {
   const translatedElementRef = useRef<HTMLDivElement>(null)
   const originalElementRef = useRef<HTMLDivElement>(null)
@@ -71,24 +73,29 @@ function LyricsPair({
       >
         {original}
       </div>
-      <div
-        className={cn(
-          "text-muted-foreground font-bold leading-4 px-2 bg-transparent py-1 border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] duration-300 outline-0 mx-0.5",
-          easeOvershootClassName,
-          isEditable &&
-            "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
-        )}
-        contentEditable={isEditable}
-        tabIndex={isEditable ? 0 : -1}
-        onInput={(event) => {
-          const target = event.target as HTMLDivElement
-          handleTranslatedLyricsChange(index, target.textContent)
-        }}
-        suppressContentEditableWarning
-        ref={translatedElementRef}
-      >
-        {translated}
-      </div>
+      {(isReadyTranslation || isEditable) && (
+        <div
+          className={cn(
+            "text-muted-foreground font-bold leading-4 px-2 bg-transparent py-1 border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] duration-300 outline-0 mx-0.5",
+            easeOvershootClassName,
+            isEditable &&
+              "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
+          )}
+          contentEditable={isEditable}
+          tabIndex={isEditable ? 0 : -1}
+          onInput={(event) => {
+            const target = event.target as HTMLDivElement
+            handleTranslatedLyricsChange(index, target.textContent)
+          }}
+          suppressContentEditableWarning
+          ref={translatedElementRef}
+        >
+          {translated}
+        </div>
+      )}
+      {!isReadyTranslation && !isEditable && (
+        <Skeleton className="h-5 w-full rounded-xs px-2 py-1 ml-2" />
+      )}
     </VStack>
   )
 }
@@ -99,6 +106,7 @@ export function LyricsView({
   handleTranslatedLyricsChange,
   handleOriginalLyricsChange,
   isLoading = false,
+  isReadyTranslation = true,
   isEditable,
   setIsEditable,
 }: {
@@ -115,6 +123,7 @@ export function LyricsView({
   isEditable: boolean
   setIsEditable: React.Dispatch<React.SetStateAction<boolean>>
   isLoading?: boolean
+  isReadyTranslation?: boolean
 }) {
   const skeletonLyricsPairs: null[] = new Array(20).fill(null)
 
@@ -168,6 +177,7 @@ export function LyricsView({
                 isEditable={isEditable}
                 handleTranslatedLyricsChange={handleTranslatedLyricsChange}
                 handleOriginalLyricsChange={handleOriginalLyricsChange}
+                isReadyTranslation={isReadyTranslation}
               />
             )
           })}

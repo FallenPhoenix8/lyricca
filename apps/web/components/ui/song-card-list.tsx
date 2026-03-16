@@ -72,7 +72,7 @@ export function SongCardList() {
   })
   const [sortBy, setSortBy] = useQueryState("by", { defaultValue: "title" })
 
-  const { isLoading, count, songs } = useSongsContext()
+  const { isLoading, count, syncNow } = useSongsContext()
   const [isFirstRender, setIsFirstRender] = useState(true)
   /**
    * Actual songs to be displayed in the list. This is a state that is updated whenever the songsCollection hook changes. It is used to trigger ViewTransition.
@@ -207,6 +207,10 @@ export function SongCardList() {
   useEffect(() => {
     console.log("Search query changed:", debouncedSearchQuery)
   }, [debouncedSearchQuery])
+
+  useEffect(() => {
+    syncNow()
+  }, [])
 
   return (
     <>

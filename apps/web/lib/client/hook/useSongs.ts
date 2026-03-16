@@ -3,19 +3,20 @@ import {
   ErrorResponseDTO,
   SongCheckAllInput,
   SongCheckAllOutput,
+  SongCreateDTO,
   SongDTO,
   SongUpdateDTO,
 } from "@shared/ts-types"
 import db from "../db"
 import APIClient from "@/lib/data/APIClient"
-import type { TypeSongCreate, TypeSongDTO } from "@/lib/model/Song"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Err, Ok, Result } from "@/types/Result"
 import { useMutation, useQuery, useQueryClient } from "react-query"
+import { useQueryState } from "nuqs"
 
-async function getDetails(id: string): Promise<TypeSongDTO | null> {
+async function getDetails(id: string): Promise<SongDTO | null> {
   const endpoint = `songs/${id}`
-  const result = await APIClient.shared.get<TypeSongDTO>(endpoint)
+  const result = await APIClient.shared.get<SongDTO>(endpoint)
   if (!result.ok) {
     console.error(`Failed to get song details for id ${id}:`, result.error)
     return null
@@ -24,11 +25,11 @@ async function getDetails(id: string): Promise<TypeSongDTO | null> {
 }
 
 async function create(
-  input: TypeSongCreate,
-): Promise<Result<TypeSongDTO, ErrorResponseDTO>> {
+  input: SongCreateDTO,
+): Promise<Result<SongDTO, ErrorResponseDTO>> {
   // * MARK: - Create song in the API
   const endpoint = "songs"
-  const result = await APIClient.shared.post<TypeSongDTO>(endpoint, input)
+  const result = await APIClient.shared.post<SongDTO>(endpoint, input)
   if (!result.ok) {
     console.error("Failed to create song:", result.error)
     return Err(result.error)
@@ -45,10 +46,10 @@ async function create(
 async function update(
   id: string,
   input: SongUpdateDTO,
-): Promise<Result<TypeSongDTO, ErrorResponseDTO>> {
+): Promise<Result<SongDTO, ErrorResponseDTO>> {
   // * MARK: - Update song in the API
   const endpoint = `songs/${id}`
-  const result = await APIClient.shared.patch<TypeSongDTO>(endpoint, input)
+  const result = await APIClient.shared.patch<SongDTO>(endpoint, input)
   if (!result.ok) {
     console.error("Failed to update song:", result.error)
     return Err(result.error)
@@ -62,12 +63,10 @@ async function update(
   return Ok(song)
 }
 
-async function remove(
-  id: string,
-): Promise<Result<TypeSongDTO, ErrorResponseDTO>> {
+async function remove(id: string): Promise<Result<SongDTO, ErrorResponseDTO>> {
   // * MARK: - Remove song from the API
   const endpoint = `songs/${id}`
-  const result = await APIClient.shared.delete<TypeSongDTO>(endpoint)
+  const result = await APIClient.shared.delete<SongDTO>(endpoint, {})
   if (!result.ok) {
     console.error("Failed to remove song:", result.error)
     return Err(result.error)
@@ -201,6 +200,10 @@ export function useSongs(
   )
   const isLoading = useMemo(() => songs === null, [songs])
 
+  const [isForcedSync, setIsForcedSync] = useQueryState("sync", {
+    defaultValue: "false",
+  })
+
   const count = useLiveQuery(() => db.songs.count(), [], null)
 
   // * MARK: - Keep latest songs without re-binding listeners
@@ -268,6 +271,10 @@ export function useSongs(
    */
   useEffect(() => {
     syncNow()
+    if (isForcedSync === "true") {
+      syncNow()
+      setIsForcedSync("false")
+    }
   }, [syncNow, songs, isLoading])
 
   // * MARK: - Sync songs when the user comes back to tab
@@ -295,7 +302,7 @@ export function useSongs(
   /**
    * Query client for managing queries and mutations
    */
-  const createMutation = useMutation((input: TypeSongCreate) => create(input), {
+  const createMutation = useMutation((input: SongCreateDTO) => create(input), {
     onSuccess: (res) => {
       if (!res.ok) return
     },
@@ -355,5 +362,6 @@ export function useSongs(
       return songs?.find((song) => song.id === id) ?? null
     },
     isLoading,
+    syncNow,
   }
 }

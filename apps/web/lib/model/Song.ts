@@ -19,16 +19,14 @@ const SongSchema = type({
   cover_id: "string.uuid",
   cover: CoverSchema,
 })
-const TSongDTO = SongSchema.infer satisfies SongDTO
 
 const SongCreateSchema = type({
   title: "string > 0",
   original_lyrics: "string > 0",
   translated_lyrics: "string > 0",
-  artist: "string > 0",
-  album: "string > 0",
+  "artist?": "string",
+  "album?": "string",
 })
-const TSongCreate = SongCreateSchema.infer satisfies SongCreateDTO
 
 const SongUpateSchema = type({
   title: "string > 0",
@@ -38,8 +36,5 @@ const SongUpateSchema = type({
   album: "string > 0",
 }).partial()
 
-type TypeSongDTO = typeof TSongDTO
-type TypeSongCreate = typeof TSongCreate
-
-export type { TypeSongDTO, TypeSongCreate }
+// export type { TypeSongDTO, TypeSongCreate }
 export { SongSchema, SongCreateSchema, SongUpateSchema }

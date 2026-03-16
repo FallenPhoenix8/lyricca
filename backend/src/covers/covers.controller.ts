@@ -24,13 +24,15 @@ export class CoversController {
     @Query("title") title: string | undefined,
   ): Promise<SuggestionDTO> {
     const errors: string[] = []
-    if (!artist?.trim()) {
+    const decodedArtist = decodeURIComponent(artist ?? "") ?? ""
+    const decodedTitle = decodeURIComponent(title ?? "") ?? ""
+    if (!decodedArtist.trim()) {
       errors.push(
         "`artist` query parameter is required. It must be a non-empty string.",
       )
     }
 
-    if (!title?.trim()) {
+    if (!decodedTitle.trim()) {
       errors.push(
         "`title` query parameter is required. It must be a non-empty string.",
       )
@@ -42,8 +44,8 @@ export class CoversController {
 
     const userAgent = req.headers["user-agent"] ?? "LyriccaApp/1.0"
     const coverURL = await this.coversService.getSuggestionURL({
-      artist: artist!,
-      title: title!,
+      artist: decodedArtist,
+      title: decodedTitle,
       userAgent,
     })
 

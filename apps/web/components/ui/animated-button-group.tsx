@@ -99,6 +99,7 @@ export default function AnimatedButtonGroup({
           const isActive = index === activeButtonIndex
           const content = (
             <Button
+              type="button"
               tabIndex={button.role === "button" ? 0 : -1}
               variant={isActive ? "secondary" : "ghost"}
               size={isCompact ? "icon-sm" : "xs"}

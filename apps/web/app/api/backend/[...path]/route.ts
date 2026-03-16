@@ -9,13 +9,14 @@ const ALLOWED_PREFIXES = [
   "/users/availability",
   "/status",
   "/covers/suggestion",
+  "/translate",
 ]
 
 function isAllowedPrefix(path: string) {
   return ALLOWED_PREFIXES.some((prefix) => path.startsWith(prefix))
 }
 
-async function makeRequest(props: {
+export async function makeRequest(props: {
   method: string // Any HTTP method
   url: URL
   body: string | FormData | undefined | ArrayBuffer
@@ -37,6 +38,8 @@ async function handler(
   // * MARK: - Prepare backend URL and check if it's allowed
   const { path } = await ctx.params
   const backendPath = `/${joinAsPathForUrl(...path)}`
+
+  const token = (await cookies()).get("token")?.value ?? ""
 
   if (!isAllowedPrefix(backendPath)) {
     return NextResponse.json(
@@ -66,7 +69,6 @@ async function handler(
 
   // Forward body only when present
   const hasBody = !["GET", "HEAD"].includes(req.method)
-
   // * MARK: - Make request to backend
   const response = await makeRequest({
     method: req.method,
@@ -74,9 +76,11 @@ async function handler(
     body: hasBody ? await req.arrayBuffer() : undefined,
     headers: {
       cookie: cookieHeader,
+      Authorization: `Bearer ${token}`,
       "content-type": req.headers.get("content-type")
         ? req.headers.get("content-type")!
         : "application/json",
+      "user-agent": req.headers.get("user-agent") ?? "LyriccaApp/1.0",
     },
   })
 

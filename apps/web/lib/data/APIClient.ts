@@ -21,6 +21,7 @@ class APIClient {
     endpoint: string,
     method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
     body?: any,
+    token?: string,
   ): Promise<Result<T, ErrorResponseDTO>> {
     let baseURL: string = "/api/backend"
     if (typeof window === "undefined") {
@@ -36,7 +37,10 @@ class APIClient {
     try {
       const response = await fetch(url, {
         method,
-        headers,
+        headers: {
+          ...headers,
+          Authorization: `Bearer ${token}`,
+        },
         body: body ? JSON.stringify(body) : undefined,
         credentials: "include",
       })
@@ -64,33 +68,43 @@ class APIClient {
     }
   }
 
-  async get<T>(endpoint: string): Promise<Result<T, ErrorResponseDTO>> {
-    return this.request<T>(endpoint, "GET")
+  async get<T>(
+    endpoint: string,
+    token?: string,
+  ): Promise<Result<T, ErrorResponseDTO>> {
+    return this.request<T>(endpoint, "GET", undefined, token)
   }
 
   async post<T>(
     endpoint: string,
     body: any,
+    token?: string,
   ): Promise<Result<T, ErrorResponseDTO>> {
-    return this.request<T>(endpoint, "POST", body)
+    return this.request<T>(endpoint, "POST", body, token)
   }
 
   async put<T>(
     endpoint: string,
     body: any,
+    token?: string,
   ): Promise<Result<T, ErrorResponseDTO>> {
-    return this.request<T>(endpoint, "PUT", body)
+    return this.request<T>(endpoint, "PUT", body, token)
   }
 
   async patch<T>(
     endpoint: string,
     body: any,
+    token?: string,
   ): Promise<Result<T, ErrorResponseDTO>> {
-    return this.request<T>(endpoint, "PATCH", body)
+    return this.request<T>(endpoint, "PATCH", body, token)
   }
 
-  async delete<T>(endpoint: string): Promise<Result<T, ErrorResponseDTO>> {
-    return this.request<T>(endpoint, "DELETE")
+  async delete<T>(
+    endpoint: string,
+    body: any,
+    token?: string,
+  ): Promise<Result<T, ErrorResponseDTO>> {
+    return this.request<T>(endpoint, "DELETE", body, token)
   }
 }
 

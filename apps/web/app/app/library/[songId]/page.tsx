@@ -12,6 +12,7 @@ import { HStack, Spacer, VStack, ZStack } from "@/components/ui/layout"
 import { useSongs } from "@/lib/client/hook/useSongs"
 import Link from "next/link"
 import {
+  DependencyList,
   startTransition,
   use,
   useEffect,
@@ -35,6 +36,7 @@ import { useParams } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useQueryState } from "nuqs"
 import { easeOvershootClassName } from "@/components/ui/constants"
+import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
 
 export default function SongLyricsPage() {
   const { songId } = useParams<{ songId: string }>()
@@ -163,31 +165,21 @@ export default function SongLyricsPage() {
     1000,
   )
 
-  useLayoutEffect(() => {
-    window.addEventListener("keydown", handleKeyDown)
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key.toLowerCase() === "enter") {
-        event.preventDefault()
-        const titleElement = titleElementRef.current
-        const artistElement = artistElementRef.current
-        const albumElement = albumElementRef.current
+  usePreventEnterKey(() => {
+    const titleElement = titleElementRef.current
+    const artistElement = artistElementRef.current
+    const albumElement = albumElementRef.current
 
-        if (titleElement) {
-          titleElement.blur()
-        }
-        if (artistElement) {
-          artistElement.blur()
-        }
-        if (albumElement) {
-          albumElement.blur()
-        }
-        setIsEditable(false)
-      }
+    if (titleElement) {
+      titleElement.blur()
     }
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown)
+    if (artistElement) {
+      artistElement.blur()
     }
+    if (albumElement) {
+      albumElement.blur()
+    }
+    setIsEditable(false)
   }, [isEditable])
 
   return (
