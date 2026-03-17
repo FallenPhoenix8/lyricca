@@ -322,14 +322,17 @@ export function AddPageClientWrapper({
             <FieldDescription>
               Upload a cover image or get a suggestion from the internet.
               {state.errors?.cover && (
-                <span className="text-destructive">
-                  {state.errors.cover.map((error, index) => (
-                    <span key={index}>
-                      {error}
-                      <br />
-                    </span>
-                  ))}
-                </span>
+                <>
+                  <br />
+                  <span className="text-destructive">
+                    {state.errors.cover.map((error, index) => (
+                      <span key={index}>
+                        {error}
+                        <br />
+                      </span>
+                    ))}
+                  </span>
+                </>
               )}
             </FieldDescription>
           </div>
@@ -442,6 +445,19 @@ export function AddPageClientWrapper({
                 <FieldGroup>
                   <Field>
                     <FieldLabel htmlFor="title">Title</FieldLabel>
+                    <FieldDescription id="title-description">
+                      Enter the song title.
+                      {state.errors?.title &&
+                        state.errors?.title.map((error, index) => (
+                          <>
+                            <br />
+                            <span key={index} className="text-destructive">
+                              {error}
+                              <br />
+                            </span>
+                          </>
+                        ))}
+                    </FieldDescription>
                     <Input
                       placeholder="Song title"
                       required
@@ -452,23 +468,9 @@ export function AddPageClientWrapper({
                         setTitle(target.value)
                       }}
                       value={title}
-                      aria-describedby="title-error"
+                      aria-describedby="title-description"
                       name="title"
                     />
-                    {state.errors?.title && (
-                      <p
-                        className="text-destructive"
-                        id="title-error"
-                        aria-live="polite"
-                      >
-                        {state.errors?.title.map((error, index) => (
-                          <span key={index}>
-                            {error}
-                            <br />
-                          </span>
-                        ))}
-                      </p>
-                    )}
                   </Field>
                   <Field>
                     <FieldLabel htmlFor="artist">
@@ -477,6 +479,19 @@ export function AddPageClientWrapper({
                         (optional, required for cover suggestion)
                       </span>
                     </FieldLabel>
+                    <FieldDescription id="artist-description">
+                      Enter the artist name.
+                      {state.errors?.artist &&
+                        state.errors?.artist.map((error, index) => (
+                          <>
+                            <br />
+                            <span key={index} className="text-destructive">
+                              {error}
+                              <br />
+                            </span>
+                          </>
+                        ))}
+                    </FieldDescription>
                     <Input
                       placeholder="Artist"
                       className="max-w-md"
@@ -486,29 +501,28 @@ export function AddPageClientWrapper({
                         setArtist(target.value)
                       }}
                       value={artist}
-                      aria-describedby="artist-error"
+                      aria-describedby="artist-description"
                       name="artist"
                     />
-                    {state.errors?.artist && (
-                      <p
-                        className="text-destructive"
-                        id="artist-error"
-                        aria-live="polite"
-                      >
-                        {state.errors?.artist.map((error, index) => (
-                          <span key={index}>
-                            {error}
-                            <br />
-                          </span>
-                        ))}
-                      </p>
-                    )}
                   </Field>
                   <Field>
                     <FieldLabel htmlFor="album">
                       Album
                       <span className="text-muted-foreground">(optional)</span>
                     </FieldLabel>
+                    <FieldDescription id="album-description">
+                      Enter the album name.
+                      {state.errors?.album &&
+                        state.errors?.album.map((error, index) => (
+                          <>
+                            <br />
+                            <span key={index} className="text-destructive">
+                              {error}
+                              <br />
+                            </span>
+                          </>
+                        ))}
+                    </FieldDescription>
                     <Input
                       placeholder="Album"
                       className="max-w-md"
@@ -518,23 +532,9 @@ export function AddPageClientWrapper({
                         setAlbum(target.value)
                       }}
                       value={album}
-                      aria-describedby="album-error"
+                      aria-describedby="album-description"
                       name="album"
                     />
-                    {state.errors?.album && (
-                      <p
-                        className="text-destructive"
-                        id="album-error"
-                        aria-live="polite"
-                      >
-                        {state.errors?.album.map((error, index) => (
-                          <span key={index}>
-                            {error}
-                            <br />
-                          </span>
-                        ))}
-                      </p>
-                    )}
                   </Field>
                 </FieldGroup>
               </FieldSet>
@@ -544,6 +544,19 @@ export function AddPageClientWrapper({
                   <FieldLabel htmlFor="original_lyrics">
                     Original Lyrics
                   </FieldLabel>
+                  <FieldDescription id="original-lyrics-description">
+                    Paste the original lyrics here.
+                    {errors.originalLyrics &&
+                      errors.originalLyrics.map((error, index) => (
+                        <>
+                          <br />
+                          <span key={index} className="text-destructive">
+                            {error}
+                            <br />
+                          </span>
+                        </>
+                      ))}
+                  </FieldDescription>
                   <Textarea
                     id="original_lyrics"
                     placeholder="Original lyrics"
@@ -554,29 +567,41 @@ export function AddPageClientWrapper({
                       setOriginalLyrics(target.value)
                     }}
                     value={originalLyrics}
-                    aria-describedby="original-lyrics-error"
+                    aria-describedby="original-lyrics-description"
                     name="original_lyrics"
                   />
-                  {errors.originalLyrics && (
-                    <p
-                      className="text-destructive"
-                      id="original-lyrics-error"
-                      aria-live="polite"
-                    >
-                      {errors.originalLyrics.map((error, index) => (
-                        <span key={index}>
-                          {error}
-                          <br />
-                        </span>
-                      ))}
-                    </p>
-                  )}
+
                   <input
                     type="hidden"
                     name="translated_lyrics"
                     value={translatedLyrics}
                   />
                 </Field>
+                <FieldLegend className="text-xl">Translation</FieldLegend>
+                <FieldDescription>
+                  Select the source and target languages for translation. You
+                  can also edit translations line-by-line.
+                  {errors.translatedLyrics &&
+                    errors.translatedLyrics.map((error, index) => (
+                      <>
+                        <br />
+                        <span key={index} className="text-destructive">
+                          {error}
+                          <br />
+                        </span>
+                      </>
+                    ))}
+                  {errors.targetLanguage && (
+                    <span>
+                      {errors.targetLanguage.map((error, index) => (
+                        <span key={index} className="text-destructive">
+                          {error}
+                          <br />
+                        </span>
+                      ))}
+                    </span>
+                  )}
+                </FieldDescription>
                 <Suspense
                   fallback={
                     <div className="grid place-items-center px-4 py-2">
@@ -586,16 +611,6 @@ export function AddPageClientWrapper({
                 >
                   {children}
                 </Suspense>
-                {errors.targetLanguage && (
-                  <p className="text-destructive">
-                    {errors.targetLanguage.map((error, index) => (
-                      <span key={index}>
-                        {error}
-                        <br />
-                      </span>
-                    ))}
-                  </p>
-                )}
                 <Field>
                   <Button
                     className="w-full"

@@ -23,8 +23,8 @@ export type SongState = {
     title?: string[]
     artist?: string[]
     album?: string[]
-    original_lyrics?: string[]
-    translated_lyrics?: string[]
+    originalLyrics?: string[]
+    translatedLyrics?: string[]
     cover?: string[]
   }
   message?: string | null
@@ -71,8 +71,8 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
       title: [],
       artist: [],
       album: [],
-      original_lyrics: [],
-      translated_lyrics: [],
+      originalLyrics: [],
+      translatedLyrics: [],
       cover: [],
     },
     message: null,
@@ -94,11 +94,11 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
       }
 
       if (error.message.toLowerCase().includes("original_lyrics")) {
-        state.errors?.original_lyrics?.push(error.message)
+        state.errors?.originalLyrics?.push(error.message)
       }
 
       if (error.message.toLowerCase().includes("translated_lyrics")) {
-        state.errors?.translated_lyrics?.push(error.message)
+        state.errors?.translatedLyrics?.push(error.message)
       }
     })
     return state

@@ -28,8 +28,8 @@ export function LanguagesSelect({
   })
   return (
     <FieldGroup className="gap-2">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-        <Field>
+      <div className="flex flex-wrap gap-2">
+        <Field className="flex-1">
           <FieldLabel>Source Language</FieldLabel>
           <FieldContent>
             <Select
@@ -56,7 +56,7 @@ export function LanguagesSelect({
             </Select>
           </FieldContent>
         </Field>
-        <Field>
+        <Field className="flex-1">
           <FieldLabel>Target Language</FieldLabel>
           <FieldContent>
             <Select
