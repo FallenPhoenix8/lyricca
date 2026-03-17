@@ -253,7 +253,7 @@ export function LyricsView({
 
           <Activity mode={isEditable ? "visible" : "hidden"}>
             <Button
-              variant="secondary"
+              variant="default"
               onClick={(e) => {
                 e.preventDefault()
                 startTransition(() => {
