@@ -24,6 +24,7 @@ import {
   Minimize2Icon,
 } from "lucide-react"
 import Link from "next/link"
+import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
 
 function SkeletonLyricsPair() {
   return (
@@ -123,6 +124,7 @@ export function LyricsView({
   isMaximized = false,
   maximizedURL,
   minimizedURL,
+  isPreventEnterKey = false,
 }: {
   translatedLyrics: string[]
   originalLyrics: string[]
@@ -140,6 +142,7 @@ export function LyricsView({
   isMaximized?: boolean
   maximizedURL?: string
   minimizedURL?: string
+  isPreventEnterKey?: boolean
 }) {
   const skeletonLyricsPairs: null[] = new Array(20).fill(null)
   const [isFirstRender, setIsFirstRender] = useState(true)
@@ -230,6 +233,13 @@ export function LyricsView({
       handleSubmitNewLyrics()
     }
   }, [isEditable])
+
+  isPreventEnterKey &&
+    usePreventEnterKey(() => {
+      setIsEditable(false)
+      handleSubmitNewLyrics()
+    }, [])
+
   return (
     <ViewTransition name="lyrics-view">
       <VStack

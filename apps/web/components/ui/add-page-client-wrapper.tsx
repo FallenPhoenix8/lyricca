@@ -342,6 +342,7 @@ export function AddPageClientWrapper({
                 "group w-full aspect-video md:aspect-square rounded-xl border-2",
                 isLoading && "animate-pulse",
                 easeOvershootClassName,
+                !!state.errors?.cover && "border-destructive",
               )}
               onMouseOver={() => updateImageActionsVisibility(true)}
               onContextMenu={(event) => {
@@ -429,7 +430,10 @@ export function AddPageClientWrapper({
             </ZStackGrid>
           </ViewTransition>
         </div>
-        <div className="col-span-12 md:col-span-8 row-span-2 md:col-start-5">
+        <div
+          className="col-span-12 md:col-span-8 row-span-2 md:col-start-5"
+          onClick={() => updateImageActionsVisibility(false)}
+        >
           <form
             className="pl-4 gap-4"
             aria-describedby="add-song-error"
@@ -461,7 +465,10 @@ export function AddPageClientWrapper({
                     <Input
                       placeholder="Song title"
                       required
-                      className="max-w-lg"
+                      className={cn(
+                        "max-w-lg",
+                        !!state.errors?.title && "border-destructive",
+                      )}
                       id="title"
                       onChange={(event) => {
                         const target = event.target as HTMLInputElement
@@ -494,7 +501,10 @@ export function AddPageClientWrapper({
                     </FieldDescription>
                     <Input
                       placeholder="Artist"
-                      className="max-w-md"
+                      className={cn(
+                        "max-w-md",
+                        !!state.errors?.artist && "border-destructive",
+                      )}
                       id="artist"
                       onChange={(event) => {
                         const target = event.target as HTMLInputElement
@@ -525,7 +535,10 @@ export function AddPageClientWrapper({
                     </FieldDescription>
                     <Input
                       placeholder="Album"
-                      className="max-w-md"
+                      className={cn(
+                        "max-w-md",
+                        !!state.errors?.album && "border-destructive",
+                      )}
                       id="album"
                       onChange={(event) => {
                         const target = event.target as HTMLInputElement
@@ -561,7 +574,10 @@ export function AddPageClientWrapper({
                     id="original_lyrics"
                     placeholder="Original lyrics"
                     required
-                    className="resize-none"
+                    className={cn(
+                      "resize-none",
+                      state.errors?.originalLyrics && "border-destructive",
+                    )}
                     onChange={(event) => {
                       const target = event.target as HTMLTextAreaElement
                       setOriginalLyrics(target.value)
@@ -630,6 +646,7 @@ export function AddPageClientWrapper({
                 isReadyTranslation={!translateMutation.isLoading}
                 isEditable={isEditableLyrics}
                 setIsEditable={setIsEditableLyrics}
+                isPreventEnterKey={true}
               />
             </FieldGroup>
             <input type="file" name="cover" hidden ref={coverFileRef} />
