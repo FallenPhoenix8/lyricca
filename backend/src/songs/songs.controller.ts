@@ -84,6 +84,8 @@ export class SongsController {
       ...body,
       user_id: user.id,
       cover_id: cover.id,
+      album: body.album?.trim() || null,
+      artist: body.artist?.trim() || null,
     })
 
     return new SongDTOImpl(song)
@@ -132,6 +134,8 @@ export class SongsController {
     //* MARK: - Update song with remaining details
     const song = await this.songsService.update(id, {
       ...body,
+      album: body.album?.trim() || undefined,
+      artist: body.artist?.trim() || undefined,
     })
 
     return new SongDTOImpl(song)

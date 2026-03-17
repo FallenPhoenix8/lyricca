@@ -27,7 +27,6 @@ import { ImageRosetta } from "@/components/ui/svg/ImageRosetta"
 import { Badge } from "@/components/ui/badge"
 import { LyricsView } from "@/components/ui/lyrics-view"
 import { SongUpateSchema } from "@/lib/model/Song"
-import { useDebounce, useDebouncedCallback } from "use-debounce"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PlaceholderImage } from "@/components/ui/svg/PlaceholderImage"
 import { useSongsContext } from "@/components/ui/SongsContext"
@@ -37,9 +36,13 @@ import { cn } from "@/lib/utils"
 import { useQueryState } from "nuqs"
 import { easeOvershootClassName } from "@/components/ui/constants"
 import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
+import { SongUpdateDTO } from "@shared/ts-types"
+import { useReferralSongContext } from "@/components/ui/ReferralSongContext"
 
-export default function SongLyricsPage() {
+export default function SongDetailsPage() {
   const { songId } = useParams<{ songId: string }>()
+  const maximizedURL = `/app/library/${songId}/lyrics`
+  const minimizedURL = `/app/library/${songId}`
 
   const unknownArtist = "Unknown Artist"
   const unknownAlbum = "Unknown Album"
@@ -57,6 +60,8 @@ export default function SongLyricsPage() {
     redirect(`/app/library`)
   }
   const [isEditable, setIsEditable] = useState(false)
+  const [isFirstRender, setIsFirstRender] = useState(true)
+  const { setReferralSongId } = useReferralSongContext()
 
   function updateTitle(newTitle: string, target: HTMLDivElement) {
     console.log(`Updating title to "${newTitle}"...`)
@@ -97,73 +102,57 @@ export default function SongLyricsPage() {
     return song?.original_lyrics.split("\n") ?? []
   }, [song])
 
-  function updateOriginalLyrics(lineIndex: number, newOriginalLyrics: string) {
-    console.log("Updating original lyrics...")
-    const newOriginalLyricsArray = [...originalLyrics]
-    newOriginalLyricsArray[lineIndex] = newOriginalLyrics
-
+  function handleLyricsChange({
+    translatedLyrics,
+    originalLyrics,
+  }: {
+    translatedLyrics: string
+    originalLyrics: string
+  }) {
+    console.log("Updating lyrics...")
     try {
       const input = SongUpateSchema.assert({
-        original_lyrics: newOriginalLyricsArray.join("\n"),
+        translated_lyrics: translatedLyrics,
+        original_lyrics: originalLyrics,
       })
       update.mutate({ id: songId, input })
     } catch (error) {
-      console.error("Failed to update original lyrics:", error)
-      return
-    }
-  }
-  function updateTranslatedLyrics(
-    lineIndex: number,
-    newTranslatedLyrics: string,
-  ) {
-    console.log("Updating translated lyrics...")
-    const newTranslatedLyricsArray = [...translatedLyrics]
-    newTranslatedLyricsArray[lineIndex] = newTranslatedLyrics
-    try {
-      const input = SongUpateSchema.assert({
-        translated_lyrics: newTranslatedLyricsArray.join("\n"),
-      })
-      update.mutate({ id: songId, input })
-    } catch (error) {
-      console.error("Failed to update translated lyrics:", error)
+      console.error("Failed to update lyrics:", error)
       return
     }
   }
 
-  const debouncedUpdateTitle = useDebouncedCallback(updateTitle, 2000)
-  function handleChangeTitle(event: React.InputEvent<HTMLDivElement>) {
-    const { textContent } = event.target as HTMLDivElement
-    if (textContent.length > 0) {
-      debouncedUpdateTitle(textContent, event.target as HTMLDivElement)
+  /**
+   * Responsible for updating the song details (title, artist, album) in the database.
+   */
+  function updateSongDetails({
+    title,
+    artist,
+    album,
+  }: {
+    title?: string
+    artist?: string
+    album?: string
+  }) {
+    console.log("Updating song details...")
+    try {
+      const details: SongUpdateDTO = {}
+      if (title) {
+        details.title = title
+      }
+      if (artist) {
+        details.artist = artist
+      }
+      if (album) {
+        details.album = album
+      }
+      const input = SongUpateSchema.assert(details)
+      update.mutate({ id: songId, input })
+    } catch (error) {
+      console.error("Failed to update song details:", error)
+      return
     }
   }
-
-  const debouncedUpdateArtist = useDebouncedCallback(updateArtist, 2000)
-  function handleChangeArtist(event: React.InputEvent<HTMLSpanElement>) {
-    const target = event.target as HTMLDivElement
-    const { textContent } = target
-
-    const artist = textContent.trim() === "" ? null : textContent
-    debouncedUpdateArtist(artist, target)
-  }
-
-  const debouncedUpdateAlbum = useDebouncedCallback(updateAlbum, 2000)
-  function handleChangeAlbum(event: React.InputEvent<HTMLDivElement>) {
-    const target = event.target as HTMLDivElement
-    const { textContent } = target
-
-    const album = textContent.trim() === "" ? null : textContent
-    debouncedUpdateAlbum(album, target)
-  }
-
-  const debouncedUpdateTranslatedLyrics = useDebouncedCallback(
-    updateTranslatedLyrics,
-    1000,
-  )
-  const debouncedUpdateOriginalLyrics = useDebouncedCallback(
-    updateOriginalLyrics,
-    1000,
-  )
 
   usePreventEnterKey(() => {
     const titleElement = titleElementRef.current
@@ -179,9 +168,47 @@ export default function SongLyricsPage() {
     if (albumElement) {
       albumElement.blur()
     }
+
     setIsEditable(false)
   }, [isEditable])
 
+  useLayoutEffect(() => {
+    if (isFirstRender) {
+      setIsFirstRender(false)
+    } else {
+      if (!isEditable) {
+        const titleElement = titleElementRef.current
+        const artistElement = artistElementRef.current
+        const albumElement = albumElementRef.current
+        if (!titleElement || !artistElement || !albumElement) {
+          return
+        }
+
+        const newTitle = titleElement.textContent
+        const newArtist = artistElement.textContent
+        const newAlbum = albumElement.textContent
+
+        const newSongDetails: {
+          title?: string
+          artist?: string
+          album?: string
+        } = {}
+        if (newTitle !== song?.title) {
+          newSongDetails.title = newTitle
+        }
+        if (newArtist !== song?.artist) {
+          newSongDetails.artist = newArtist
+        }
+        if (newAlbum !== song?.album) {
+          newSongDetails.album = newAlbum
+        }
+        if (Object.keys(newSongDetails).length > 0) {
+          updateSongDetails(newSongDetails)
+        }
+      }
+    }
+  }, [isEditable])
+  console.log(song)
   return (
     <>
       {/* <ViewTransition default="auto"> */}
@@ -189,7 +216,12 @@ export default function SongLyricsPage() {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href={`/app/library?q=${encodeURIComponent(searchParams)}`}>
+              <Link
+                href={`/app/library?q=${encodeURIComponent(searchParams)}`}
+                onNavigate={() => {
+                  setReferralSongId(songId)
+                }}
+              >
                 Library
               </Link>
             </BreadcrumbLink>
@@ -227,7 +259,6 @@ export default function SongLyricsPage() {
                     isEditable &&
                       "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
                   )}
-                  onInput={handleChangeTitle}
                   contentEditable={isEditable}
                   tabIndex={isEditable ? 0 : -1}
                   suppressContentEditableWarning
@@ -243,7 +274,6 @@ export default function SongLyricsPage() {
                     variant="secondary"
                     contentEditable={isEditable}
                     tabIndex={isEditable ? 0 : -1}
-                    onInput={handleChangeArtist}
                     suppressContentEditableWarning
                     className={cn(
                       "min-w-1 px-2 py-1 border-0 transition-[border-color, border-radius, border-width, outline] duration-300 outline-0",
@@ -255,7 +285,7 @@ export default function SongLyricsPage() {
                   >
                     {isEditable
                       ? (song.artist ?? "")
-                      : (artist ?? unknownArtist)}
+                      : artist?.trim() || unknownArtist}
                   </Badge>
                 ) : (
                   <Skeleton className="h-5 w-20 rounded-full" />
@@ -265,7 +295,6 @@ export default function SongLyricsPage() {
                     variant="secondary"
                     contentEditable={isEditable}
                     tabIndex={isEditable ? 0 : -1}
-                    onInput={handleChangeAlbum}
                     suppressContentEditableWarning
                     className={cn(
                       "min-w-1 px-2 py-1 border-0 transition-[border-color, border-radius, border-width, outline] duration-300 outline-0",
@@ -285,11 +314,12 @@ export default function SongLyricsPage() {
             <LyricsView
               translatedLyrics={translatedLyrics}
               originalLyrics={originalLyrics}
-              handleTranslatedLyricsChange={debouncedUpdateTranslatedLyrics}
-              handleOriginalLyricsChange={debouncedUpdateOriginalLyrics}
+              handleLyricsChange={handleLyricsChange}
               isLoading={isLoading}
               isEditable={isEditable}
               setIsEditable={setIsEditable}
+              maximizedURL={maximizedURL}
+              minimizedURL={minimizedURL}
             />
           </VStack>
         </div>

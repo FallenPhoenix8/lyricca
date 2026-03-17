@@ -103,13 +103,15 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
     })
     return state
   }
-
   const file = formData.get("cover") as File | null
   if (!file || file.size < 1) {
     console.log("Cover file is empty.")
+    console.log(file)
     state.errors?.cover?.push("Cover file is required.")
     return state
   }
+
+  console.log("here2")
 
   if (file) {
     const fileObj = file as File
@@ -129,9 +131,6 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
     }
   } else {
     state.errors?.cover?.push("Cover file is required.")
-    return state
-  }
-  if (Object.keys(state.errors ?? {}).length > 0 || state.message) {
     return state
   }
 
@@ -161,6 +160,7 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
         Authorization: `Bearer ${token}`,
       },
     })
+    console.log("response:", response)
 
     if (!response.ok) {
       const errorData = await response.json()

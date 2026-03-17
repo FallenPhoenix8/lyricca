@@ -2,6 +2,7 @@ import {
   startTransition,
   use,
   useEffect,
+  useRef,
   useState,
   ViewTransition,
 } from "react"
@@ -48,6 +49,7 @@ import { Badge } from "./badge"
 import { XIcon } from "@phosphor-icons/react"
 import db from "@/lib/client/db"
 import { useLiveQuery } from "dexie-react-hooks"
+import { useReferralSongContext } from "./ReferralSongContext"
 
 type TSortBy = "title" | "artist" | "album"
 
@@ -72,8 +74,8 @@ export function SongCardList() {
   })
   const [sortBy, setSortBy] = useQueryState("by", { defaultValue: "title" })
 
-  const { isLoading, count, syncNow } = useSongsContext()
-  const [isFirstRender, setIsFirstRender] = useState(true)
+  const { isLoading, count, syncNow, findOneLocally } = useSongsContext()
+  const { referralSong, referralSongListIndex } = useReferralSongContext()
   /**
    * Actual songs to be displayed in the list. This is a state that is updated whenever the songsCollection hook changes. It is used to trigger ViewTransition.
    */
@@ -121,7 +123,7 @@ export function SongCardList() {
       return await collection.toArray()
     },
     [debouncedSearchQuery, filterTags],
-    [],
+    referralSong ? [referralSong] : [],
   )
 
   // Trigger ViewTransition when songsToShow actually changes
@@ -188,7 +190,11 @@ export function SongCardList() {
     setSortBy(event as TSortBy)
   }
 
-  const skeletonCards: null[] = new Array(10).fill(null)
+  const skeletonCards: null[] = new Array(20).fill(null)
+  const skeletonCardsWithReferralSong: (SongDTO | null)[] = new Array(
+    referralSongListIndex + 10,
+  ).fill(null)
+  skeletonCardsWithReferralSong[referralSongListIndex] = referralSong
 
   const noResultsHeadingContent =
     count === 0 ? <>No songs found</> : <>No results found</>
@@ -314,11 +320,30 @@ export function SongCardList() {
           countToShow === 0 && "justify-center",
         )}
       >
+        {songsToShow.length === 0 &&
+          referralSong &&
+          skeletonCardsWithReferralSong.map((song, index) =>
+            song ? (
+              <SongCardResponsiveClient
+                isAlbumTagActive={isIncludesTag(song?.album ?? "Unknown Album")}
+                isArtistTagActive={isIncludesTag(
+                  song?.artist ?? "Unknown Artist",
+                )}
+                onTagClick={pushTag}
+                key={song?.id}
+                song={song ?? null}
+                className="h-full"
+                index={index}
+              />
+            ) : (
+              <SkeletonSongCard key={`skeleton-card-${index}`} />
+            ),
+          )}
         {!isLoading &&
           songsCollection.length !== 0 &&
           songsToShow.length !== 0 &&
           countToShow !== 0 &&
-          songsToShow.map((song) => (
+          songsToShow.map((song, index) => (
             <SongCardResponsiveClient
               isAlbumTagActive={isIncludesTag(song.album ?? "Unknown Album")}
               isArtistTagActive={isIncludesTag(song.artist ?? "Unknown Artist")}
@@ -326,6 +351,7 @@ export function SongCardList() {
               key={song.id}
               song={song}
               className="h-full"
+              index={index}
             />
           ))}
 

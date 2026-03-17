@@ -2,16 +2,28 @@ import { EyeIcon, PenIcon } from "@phosphor-icons/react"
 import AnimatedButtonGroup, { ButtonGroupItem } from "./animated-button-group"
 import { HStack, Spacer, VStack } from "./layout"
 import React, {
+  Activity,
+  startTransition,
   useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  ViewTransition,
 } from "react"
 import { Skeleton } from "./skeleton"
 import { cn } from "@/lib/utils"
 import { easeOvershootClassName } from "./constants"
+import { useDebouncedCallback } from "use-debounce"
+import { Button } from "./button"
+import {
+  CheckIcon,
+  Maximize2,
+  Maximize2Icon,
+  Minimize2Icon,
+} from "lucide-react"
+import Link from "next/link"
 
 function SkeletonLyricsPair() {
   return (
@@ -103,29 +115,34 @@ function LyricsPair({
 export function LyricsView({
   translatedLyrics,
   originalLyrics,
-  handleTranslatedLyricsChange,
-  handleOriginalLyricsChange,
+  handleLyricsChange,
   isLoading = false,
   isReadyTranslation = true,
   isEditable,
   setIsEditable,
+  isMaximized = false,
+  maximizedURL,
+  minimizedURL,
 }: {
   translatedLyrics: string[]
   originalLyrics: string[]
-  handleTranslatedLyricsChange: (
-    lineIndex: number,
-    newTranslatedLyrics: string,
-  ) => void
-  handleOriginalLyricsChange: (
-    lineIndex: number,
-    newOriginalLyrics: string,
-  ) => void
+  handleLyricsChange: ({
+    translatedLyrics,
+    originalLyrics,
+  }: {
+    translatedLyrics: string
+    originalLyrics: string
+  }) => void
   isEditable: boolean
   setIsEditable: React.Dispatch<React.SetStateAction<boolean>>
   isLoading?: boolean
   isReadyTranslation?: boolean
+  isMaximized?: boolean
+  maximizedURL?: string
+  minimizedURL?: string
 }) {
   const skeletonLyricsPairs: null[] = new Array(20).fill(null)
+  const [isFirstRender, setIsFirstRender] = useState(true)
 
   const buttons = useCallback(
     () =>
@@ -157,35 +174,147 @@ export function LyricsView({
       translated: translatedLyrics[index] ?? "",
       original,
     }))
+
+  const originalLyricsRef = useRef(originalLyrics.join("\n"))
+  const translatedLyricsRef = useRef(translatedLyrics.join("\n"))
+
+  function handleChangeSingleTranslatedLyrics(
+    lineIndex: number,
+    newLyrics: string,
+  ) {
+    const newLyricsArray = [...lyricsPairs]
+    newLyricsArray[lineIndex].translated = newLyrics
+    const newTranslatedLyrics = newLyricsArray.map((pair) =>
+      pair.translated.replace("\n", "").replace("\r", ""),
+    )
+    translatedLyricsRef.current = newTranslatedLyrics.join("\n")
+  }
+
+  function handleChangeSingleOriginalLyrics(
+    lineIndex: number,
+    newLyrics: string,
+  ) {
+    const newLyricsArray = [...lyricsPairs]
+    newLyricsArray[lineIndex].original = newLyrics
+    const newOriginalLyrics = newLyricsArray.map((pair) =>
+      pair.original.replace("\n", "").replace("\r", ""),
+    )
+    originalLyricsRef.current = newOriginalLyrics.join("\n")
+  }
+
+  const debouncedHandleChangeSingleTranslatedLyrics = useDebouncedCallback(
+    handleChangeSingleTranslatedLyrics,
+    500,
+  )
+  const debouncedHandleChangeSingleOriginalLyrics = useDebouncedCallback(
+    handleChangeSingleOriginalLyrics,
+    500,
+  )
+
+  function handleSubmitNewLyrics() {
+    handleLyricsChange({
+      translatedLyrics:
+        translatedLyricsRef.current || translatedLyrics.join("\n"),
+      originalLyrics: originalLyricsRef.current || originalLyrics.join("\n"),
+    })
+  }
+
+  useEffect(() => {
+    console.log("translatedLyricsRef changed:", translatedLyricsRef.current)
+  }, [translatedLyricsRef])
+
+  useEffect(() => {
+    if (isFirstRender) {
+      setIsFirstRender(false)
+    } else {
+      handleSubmitNewLyrics()
+    }
+  }, [isEditable])
   return (
-    <VStack className="relative px-4 py-2 shadow-lg drop-shadow-card-foreground gap-0.5 mx-auto w-full">
-      <div className="absolute bg-card rounded-xl inset-0 -z-20"></div>
-      <HStack className="gap-2 w-full" alignItems="center">
-        <h3 className="text-xl font-extrabold">Lyrics</h3>
-        <Spacer />
-        <AnimatedButtonGroup buttons={buttons()} />
-      </HStack>
-      <hr className="border-white" />
-      <VStack className="gap-5 py-4 h-162.5 overflow-y-auto w-full">
-        {!isLoading &&
-          lyricsPairs.map((pair, index) => {
-            return (
-              <LyricsPair
-                key={`lyrics-pair-${index}`}
-                {...pair}
-                index={index}
-                isEditable={isEditable}
-                handleTranslatedLyricsChange={handleTranslatedLyricsChange}
-                handleOriginalLyricsChange={handleOriginalLyricsChange}
-                isReadyTranslation={isReadyTranslation}
-              />
-            )
-          })}
-        {isLoading &&
-          skeletonLyricsPairs.map((_, index) => (
-            <SkeletonLyricsPair key={`skeleton-lyrics-pair-${index}`} />
-          ))}
+    <ViewTransition name="lyrics-view">
+      <VStack
+        className={cn(
+          "relative px-4 py-2 shadow-lg drop-shadow-card-foreground gap-0.5 mx-auto w-full",
+          easeOvershootClassName,
+          isMaximized && "fixed inset-0 z-100",
+        )}
+      >
+        <div
+          className={cn(
+            "absolute bg-card rounded-xl inset-0 -z-20 transition-[border-radius]",
+            easeOvershootClassName,
+            isMaximized && "rounded-none",
+          )}
+        ></div>
+        <HStack className="gap-2 w-full" alignItems="center">
+          <h3 className="text-xl font-extrabold">Lyrics</h3>
+          <Spacer />
+          <AnimatedButtonGroup buttons={buttons()} />
+
+          <Activity mode={isEditable ? "visible" : "hidden"}>
+            <Button
+              variant="secondary"
+              onClick={(e) => {
+                e.preventDefault()
+                startTransition(() => {
+                  setIsEditable(false)
+                })
+                handleSubmitNewLyrics()
+              }}
+              type="button"
+            >
+              <CheckIcon />
+            </Button>
+          </Activity>
+
+          <Activity
+            mode={
+              !isEditable && maximizedURL && minimizedURL ? "visible" : "hidden"
+            }
+          >
+            <Button variant="secondary" type="button">
+              {isMaximized ? (
+                <Link href={minimizedURL!}>
+                  <Minimize2Icon />
+                </Link>
+              ) : (
+                <Link href={maximizedURL!}>
+                  <Maximize2Icon />
+                </Link>
+              )}
+            </Button>
+          </Activity>
+        </HStack>
+        <hr className="border-white" />
+        <VStack
+          className={cn(
+            "gap-5 py-4 h-162.5 overflow-y-auto w-full",
+            easeOvershootClassName,
+            isMaximized && "h-full",
+          )}
+        >
+          {!isLoading &&
+            lyricsPairs.map((pair, index) => {
+              return (
+                <LyricsPair
+                  key={`lyrics-pair-${index}`}
+                  {...pair}
+                  index={index}
+                  isEditable={isEditable}
+                  handleTranslatedLyricsChange={
+                    handleChangeSingleTranslatedLyrics
+                  }
+                  handleOriginalLyricsChange={handleChangeSingleOriginalLyrics}
+                  isReadyTranslation={isReadyTranslation}
+                />
+              )
+            })}
+          {isLoading &&
+            skeletonLyricsPairs.map((_, index) => (
+              <SkeletonLyricsPair key={`skeleton-lyrics-pair-${index}`} />
+            ))}
+        </VStack>
       </VStack>
-    </VStack>
+    </ViewTransition>
   )
 }

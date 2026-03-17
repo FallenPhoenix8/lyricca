@@ -110,10 +110,10 @@ export function AddPageClientWrapper({
       return
     }
     const temporaryFileURL = URL.createObjectURL(file)
-    startTransition(() => {
-      setCoverURL(temporaryFileURL)
-      updateImageActionsVisibility(false)
-    })
+
+    setCoverURL(temporaryFileURL)
+    updateImageActionsVisibility(false)
+    setCoverFileMutation.mutate()
   }
   function updateOverlayVisibility(newState: boolean) {
     startTransition(() => {
@@ -184,6 +184,7 @@ export function AddPageClientWrapper({
         ? `/api/proxy?url=${suggestion.url}`
         : "/default.png"
       setCoverURL(suggestionURL)
+      setCoverFileMutation.mutate()
     },
     onError: (error) => {
       updateLoadingState(false)
@@ -245,40 +246,17 @@ export function AddPageClientWrapper({
       })
     })
   }
-
-  function handleTranslatedLyricsChange(
-    lineIndex: number,
-    newTranslatedLyrics: string,
-  ) {
-    startTransition(() => {
-      setTranslatedLyrics((prev) => {
-        const newTranslatedLyricsArray = prev.split("\n")
-        newTranslatedLyricsArray[lineIndex] = newTranslatedLyrics
-        return newTranslatedLyricsArray.join("\n")
-      })
-    })
+  function handleLyricsChange({
+    translatedLyrics,
+    originalLyrics,
+  }: {
+    translatedLyrics: string
+    originalLyrics: string
+  }) {
+    console.log("TEST", translatedLyrics)
+    setTranslatedLyrics(translatedLyrics)
+    setOriginalLyrics(originalLyrics)
   }
-  const debouncedHandleTranslatedLyricsChange = useDebouncedCallback(
-    handleTranslatedLyricsChange,
-    500,
-  )
-
-  function handleOriginalLyricsChange(
-    lineIndex: number,
-    newOriginalLyrics: string,
-  ) {
-    startTransition(() => {
-      setOriginalLyrics((prev) => {
-        const newOriginalLyricsArray = prev.split("\n")
-        newOriginalLyricsArray[lineIndex] = newOriginalLyrics
-        return newOriginalLyricsArray.join("\n")
-      })
-    })
-  }
-  const debouncedHandleOriginalLyricsChange = useDebouncedCallback(
-    handleOriginalLyricsChange,
-    500,
-  )
 
   const [isEditableLyrics, setIsEditableLyrics] = useState(false)
 
@@ -322,6 +300,10 @@ export function AddPageClientWrapper({
   // }
 
   useEffect(() => {
+    console.log("translatedLyrics changed:", translatedLyrics)
+  }, [translatedLyrics])
+
+  useEffect(() => {
     console.log(state)
   }, [state])
   return (
@@ -340,14 +322,14 @@ export function AddPageClientWrapper({
             <FieldDescription>
               Upload a cover image or get a suggestion from the internet.
               {state.errors?.cover && (
-                <div className="text-destructive">
+                <span className="text-destructive">
                   {state.errors.cover.map((error, index) => (
                     <span key={index}>
                       {error}
                       <br />
                     </span>
                   ))}
-                </div>
+                </span>
               )}
             </FieldDescription>
           </div>
@@ -629,10 +611,7 @@ export function AddPageClientWrapper({
               <LyricsView
                 translatedLyrics={translatedLyrics.split("\n")}
                 originalLyrics={originalLyrics.split("\n")}
-                handleTranslatedLyricsChange={
-                  debouncedHandleTranslatedLyricsChange
-                }
-                handleOriginalLyricsChange={debouncedHandleOriginalLyricsChange}
+                handleLyricsChange={handleLyricsChange}
                 isReadyTranslation={!translateMutation.isLoading}
                 isEditable={isEditableLyrics}
                 setIsEditable={setIsEditableLyrics}
