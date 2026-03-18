@@ -9,6 +9,7 @@ import { hash, compare } from "bcrypt"
 import { JwtService } from "@nestjs/jwt"
 import { jwtConstants, saltOrRounds } from "./constants"
 import type { VerifiedTokenPayload } from "./auth.guard"
+import { UserDTOImpl, UserImpl } from "../user/dto/user-dto"
 
 @Injectable()
 export class AuthService {
@@ -22,11 +23,15 @@ export class AuthService {
     return await hash(password, this.saltOrRounds)
   }
 
-  async signIn(username: string, password: string): Promise<AuthPayload> {
+  async signIn({name, password}: {name: string, password: string}): Promise<AuthPayload> {
     const invalidCredentialsException = new UnauthorizedException(
       "Invalid username or password.",
     )
-    const user = await this.userService.findOne({ username })
+    let user: UserImpl | null = null
+    user = await this.userService.findOne({ username: name })
+    if (!user && name.includes("@")) {
+      user = await this.userService.findOne({ email: name })
+    }
     if (!user) {
       throw invalidCredentialsException
     }
@@ -38,7 +43,7 @@ export class AuthService {
     return { token: this.generateToken(user.id, user.username) }
   }
 
-  async signUp(username: string, password: string): Promise<AuthPayload> {
+  async signUp({username, email, password}:{username: string, password: string, email: string}): Promise<AuthPayload> {
     const usernameExistsException = new ConflictException(
       "Username already exists.",
     )
@@ -49,6 +54,7 @@ export class AuthService {
     const hashedPassword = await this.hashPassword(password)
     const newUser = await this.userService.create({
       username,
+      email,
       password: hashedPassword,
     })
 

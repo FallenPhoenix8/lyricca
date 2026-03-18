@@ -11,6 +11,7 @@ export type State = {
   errors?: {
     username?: string[]
     password?: string[]
+    email?: string[]
   }
   message?: string | null
 }
@@ -22,11 +23,13 @@ export async function signUpAction(
   const validatedFields = UserCreateSchema({
     username: formData.get("username"),
     password: formData.get("password"),
+    email: formData.get("email"),
   })
   const state: State = {
     errors: {
       username: [],
       password: [],
+      email: [],
     },
     message: null,
   }
@@ -39,6 +42,10 @@ export async function signUpAction(
 
       if (error.message.toLowerCase().includes("password")) {
         state.errors?.password?.push(error.message)
+      }
+
+      if (error.message.toLowerCase().includes("email")) {
+        state.errors?.email?.push(error.message)
       }
     })
     return state

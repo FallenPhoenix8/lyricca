@@ -32,6 +32,7 @@ const UserCreateSchema = type({
    * - 1 symbol
    * */
   password: PasswordSchema,
+  email: "string > 0",
 })
 const TUserCreate = UserCreateSchema.infer satisfies UserCreate
 

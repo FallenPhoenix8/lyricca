@@ -40,6 +40,7 @@ export class UserService {
       data: {
         username: createUserDto.username,
         password: createUserDto.password,
+        email: createUserDto.email,
       },
       include: {
         songs: {
@@ -69,13 +70,15 @@ export class UserService {
   async findOne(properties: {
     id?: string
     username?: string
+    email?: string
   }): Promise<UserImpl | null> {
-    if (!properties.id && !properties.username) {
+    if (!properties.id && !properties.username && !properties.email) {
       return null
     }
 
-    const user = properties.id
-      ? await this.databaseService.user.findUnique({
+    let user: UserImpl | null = null
+    if (properties.id) {
+      user = await this.databaseService.user.findUnique({
           where: { id: properties.id },
           include: {
             songs: {
@@ -85,7 +88,9 @@ export class UserService {
             },
           },
         })
-      : await this.databaseService.user.findUnique({
+    }
+    if (properties.username) {
+    user = await this.databaseService.user.findUnique({
           where: { username: properties.username },
           include: {
             songs: {
@@ -95,6 +100,20 @@ export class UserService {
             },
           },
         })
+    }
+
+    if (properties.email) {
+      user = await this.databaseService.user.findUnique({
+          where: { email: properties.email },
+          include: {
+            songs: {
+              include: {
+                cover: true,
+              },
+            },
+          },
+        })
+      }
     if (!user) {
       return null
     }
@@ -138,11 +157,20 @@ export class UserService {
     return new UserImpl(user)
   }
 
-  async checkAvailability(username: string): Promise<boolean> {
-    const user = await this.databaseService.user.findUnique({
-      where: { username },
-    })
-    return user ? false : true
+  async checkAvailability({username, email}: {username?: string, email?: string}): Promise<boolean> {
+    let user: UserDTOImpl | null = null
+    if (username ) {
+      user = await this.databaseService.user.findUnique({
+        where: { username },
+      })
+    }
+    if (email) {
+      user = await this.databaseService.user.findUnique({
+        where: { email },
+      })
+    }
+  
+    return user === null
   }
 
   async uploadProfilePicture(id: string, file: Express.Multer.File) {

@@ -10,6 +10,7 @@ const ALLOWED_PREFIXES = [
   "/status",
   "/covers/suggestion",
   "/translate",
+  "/email/verify",
 ]
 
 function isAllowedPrefix(path: string) {

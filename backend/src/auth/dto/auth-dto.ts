@@ -1,5 +1,5 @@
 import type { LoginDTO } from "@shared/ts-types"
-import { IsNotEmpty, IsString } from "class-validator"
+import { IsEmail, IsNotEmpty, IsString } from "class-validator"
 
 class LoginDTOImpl implements LoginDTO {
   @IsNotEmpty()
@@ -10,9 +10,14 @@ class LoginDTOImpl implements LoginDTO {
   @IsString()
   password: string
 
-  constructor(username: string, password: string) {
+  @IsNotEmpty()
+  @IsEmail()
+  email: string
+
+  constructor(username: string, password: string, email: string) {
     this.username = username
     this.password = password
+    this.email = email
   }
 }
 

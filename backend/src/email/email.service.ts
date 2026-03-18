@@ -1,6 +1,7 @@
-import { BadGatewayException, Injectable } from '@nestjs/common';
+import { BadGatewayException, BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { Resend } from 'resend'
 import type { EmailVerificationDTO } from '@shared/ts-types'
+import { UserService } from '../user/user.service';
 const resendApiKey = process.env.RESEND_API_KEY
 if (!resendApiKey) {
     throw new Error('RESEND_API_KEY environment variable is not set')
@@ -8,6 +9,8 @@ if (!resendApiKey) {
 const fromEmailAddress = process.env.FROM_EMAIL_ADDRESS ?? 'lyricca@resend.dev'
 @Injectable()
 export class EmailService {
+    constructor(private readonly userService: UserService) {}
+
     private readonly resendClient = new Resend(resendApiKey)
 
     fillOTPEmailTemplate(title: string, otp: string) {
@@ -156,13 +159,24 @@ export class EmailService {
     }
 
     async verifyEmail(email: string) {
+        // * MARK: - Check if email address is valid
+        const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+        if (!emailRegex.test(email)) {
+            throw new BadRequestException("Invalid email address.")
+        }
+
+        // * MARK: - Check if email address is already in use
+        const user = await this.userService.findOne({email})
+        if (user) {
+            throw new ConflictException("Email address is already in use.")
+        }
+
         // * MARK: - Generate random 6-digit OTP
         let otp: string = ""
         for (let i = 0; i < 6; i++) {
             otp += Math.floor(Math.random() * 10).toString()
         }
         // * MARK: - Send verification email
-
         await this.sendEmail(email, "Verify your email address", this.fillOTPEmailTemplate("Verify your email address", otp))
         return {
             email,

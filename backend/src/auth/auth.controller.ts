@@ -25,9 +25,12 @@ export class AuthController {
     @Body() body: LoginDTOImpl,
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthPayload> {
+    const { username, password } = body
     const authPayload = await this.authService.signIn(
-      body.username,
-      body.password,
+      {
+        name: username,
+        password
+      }
     )
     response.cookie("token", authPayload.token)
     return authPayload
@@ -38,9 +41,13 @@ export class AuthController {
     @Body() body: LoginDTOImpl,
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthPayload> {
+    const { username, password, email } = body
     const authPayload = await this.authService.signUp(
-      body.username,
-      body.password,
+      {
+        username,
+        password,
+        email
+      }
     )
     response.cookie("token", authPayload.token)
     return authPayload

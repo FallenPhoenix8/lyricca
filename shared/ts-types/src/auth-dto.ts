@@ -5,5 +5,6 @@ type AuthPayload = {
 type LoginDTO = {
   username: string
   password: string
+  email: string
 }
 export type { AuthPayload, LoginDTO }

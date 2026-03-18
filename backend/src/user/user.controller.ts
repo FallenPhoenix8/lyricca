@@ -46,7 +46,7 @@ export class UserController {
   async checkAvailability(
     @Query("username") username: string,
   ): Promise<AvailabilityCheckDTOImpl> {
-    const isAvailable = await this.userService.checkAvailability(username)
+    const isAvailable = await this.userService.checkAvailability({username})
     return new AvailabilityCheckDTOImpl(username, isAvailable)
   }
 
