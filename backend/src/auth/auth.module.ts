@@ -9,9 +9,11 @@ import { ImageService } from "../image/image.service"
 import { SupabaseService } from "../supabase/supabase.service"
 import { ImageModule } from "../image/image.module"
 import { SupabaseModule } from "../supabase/supabase.module"
+import { EmailModule } from "../email/email.module"
+import { EmailService } from "../email/email.service"
 
 @Module({
-  providers: [AuthService, UserService, ImageService, SupabaseService],
+  providers: [AuthService, UserService, ImageService, SupabaseService, EmailService],
   imports: [
     UserModule,
     JwtModule.register({
@@ -21,6 +23,7 @@ import { SupabaseModule } from "../supabase/supabase.module"
     }),
     ImageModule,
     SupabaseModule,
+    EmailModule
   ],
   controllers: [AuthController],
 })
