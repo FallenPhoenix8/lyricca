@@ -44,6 +44,7 @@ import {
   BreadcrumbPage,
 } from "./breadcrumb"
 import { addSongAction, SongState } from "@/app/app/add/actions"
+import { FieldDescriptionWithErrors } from "./field-description-with-errors"
 
 async function translateAction({
   text,
@@ -319,22 +320,13 @@ export function AddPageClientWrapper({
         <div className="col-span-12 md:col-span-4 row-span-1 md:h-screen flex flex-col md:sticky top-0">
           <div className="py-2 px-4">
             <FieldLabel>Cover</FieldLabel>
-            <FieldDescription>
-              Upload a cover image or get a suggestion from the internet.
-              {state.errors?.cover && (
-                <>
-                  <br />
-                  <span className="text-destructive">
-                    {state.errors.cover.map((error, index) => (
-                      <span key={index}>
-                        {error}
-                        <br />
-                      </span>
-                    ))}
-                  </span>
-                </>
-              )}
-            </FieldDescription>
+            <FieldDescriptionWithErrors
+              errors={state.errors?.cover ?? []}
+              id="cover-description"
+            >
+              Upload a cover image or get a suggestion from the internet. You
+              can also edit translations line-by-line.
+            </FieldDescriptionWithErrors>
           </div>
           <ViewTransition>
             <ZStackGrid
@@ -346,6 +338,7 @@ export function AddPageClientWrapper({
               )}
               onMouseOver={() => updateImageActionsVisibility(true)}
               onContextMenu={(event) => {
+                event.preventDefault()
                 updateImageActionsVisibility(true)
               }}
             >
@@ -353,6 +346,13 @@ export function AddPageClientWrapper({
                 src={coverURL}
                 alt="Empty Cover"
                 className="w-full aspect-video md:aspect-square object-cover rounded-xl"
+                aria-describedby="cover-description"
+                onLoadStart={(e) => {
+                  e.currentTarget.classList.add("animate-pulse")
+                }}
+                onLoad={(e) => {
+                  e.currentTarget.classList.remove("animate-pulse")
+                }}
               />
               <div
                 className={cn(
@@ -372,7 +372,7 @@ export function AddPageClientWrapper({
                     <Button
                       variant="secondary"
                       size="icon-lg"
-                      onClick={(e) => {
+                      onClick={() => {
                         buttonFileInputRef.current?.click()
                       }}
                     >
@@ -436,7 +436,6 @@ export function AddPageClientWrapper({
         >
           <form
             className="pl-4 gap-4"
-            aria-describedby="add-song-error"
             action={formAction}
             // onSubmit={handleSubmit}
           >
@@ -449,19 +448,12 @@ export function AddPageClientWrapper({
                 <FieldGroup>
                   <Field>
                     <FieldLabel htmlFor="title">Title</FieldLabel>
-                    <FieldDescription id="title-description">
+                    <FieldDescriptionWithErrors
+                      errors={state.errors?.title ?? []}
+                      id="title-description"
+                    >
                       Enter the song title.
-                      {state.errors?.title &&
-                        state.errors?.title.map((error, index) => (
-                          <>
-                            <br />
-                            <span key={index} className="text-destructive">
-                              {error}
-                              <br />
-                            </span>
-                          </>
-                        ))}
-                    </FieldDescription>
+                    </FieldDescriptionWithErrors>
                     <Input
                       placeholder="Song title"
                       required
@@ -486,19 +478,12 @@ export function AddPageClientWrapper({
                         (optional, required for cover suggestion)
                       </span>
                     </FieldLabel>
-                    <FieldDescription id="artist-description">
+                    <FieldDescriptionWithErrors
+                      errors={state.errors?.artist ?? []}
+                      id="artist-description"
+                    >
                       Enter the artist name.
-                      {state.errors?.artist &&
-                        state.errors?.artist.map((error, index) => (
-                          <>
-                            <br />
-                            <span key={index} className="text-destructive">
-                              {error}
-                              <br />
-                            </span>
-                          </>
-                        ))}
-                    </FieldDescription>
+                    </FieldDescriptionWithErrors>
                     <Input
                       placeholder="Artist"
                       className={cn(
@@ -520,19 +505,12 @@ export function AddPageClientWrapper({
                       Album
                       <span className="text-muted-foreground">(optional)</span>
                     </FieldLabel>
-                    <FieldDescription id="album-description">
+                    <FieldDescriptionWithErrors
+                      errors={state.errors?.album ?? []}
+                      id="album-description"
+                    >
                       Enter the album name.
-                      {state.errors?.album &&
-                        state.errors?.album.map((error, index) => (
-                          <>
-                            <br />
-                            <span key={index} className="text-destructive">
-                              {error}
-                              <br />
-                            </span>
-                          </>
-                        ))}
-                    </FieldDescription>
+                    </FieldDescriptionWithErrors>
                     <Input
                       placeholder="Album"
                       className={cn(
@@ -557,19 +535,12 @@ export function AddPageClientWrapper({
                   <FieldLabel htmlFor="original_lyrics">
                     Original Lyrics
                   </FieldLabel>
-                  <FieldDescription id="original-lyrics-description">
+                  <FieldDescriptionWithErrors
+                    errors={state.errors?.originalLyrics ?? []}
+                    id="original-lyrics-description"
+                  >
                     Paste the original lyrics here.
-                    {errors.originalLyrics &&
-                      errors.originalLyrics.map((error, index) => (
-                        <>
-                          <br />
-                          <span key={index} className="text-destructive">
-                            {error}
-                            <br />
-                          </span>
-                        </>
-                      ))}
-                  </FieldDescription>
+                  </FieldDescriptionWithErrors>
                   <Textarea
                     id="original_lyrics"
                     placeholder="Original lyrics"
@@ -594,30 +565,16 @@ export function AddPageClientWrapper({
                   />
                 </Field>
                 <FieldLegend className="text-xl">Translation</FieldLegend>
-                <FieldDescription>
-                  Select the source and target languages for translation. You
-                  can also edit translations line-by-line.
-                  {errors.translatedLyrics &&
-                    errors.translatedLyrics.map((error, index) => (
-                      <>
-                        <br />
-                        <span key={index} className="text-destructive">
-                          {error}
-                          <br />
-                        </span>
-                      </>
-                    ))}
-                  {errors.targetLanguage && (
-                    <span>
-                      {errors.targetLanguage.map((error, index) => (
-                        <span key={index} className="text-destructive">
-                          {error}
-                          <br />
-                        </span>
-                      ))}
-                    </span>
-                  )}
-                </FieldDescription>
+                <FieldDescriptionWithErrors
+                  errors={[
+                    ...(errors.targetLanguage ?? []),
+                    ...(errors.translatedLyrics ?? []),
+                  ]}
+                  id="translation-description"
+                >
+                  Select the target language for translation. You can also edit
+                  translations line-by-line.
+                </FieldDescriptionWithErrors>
                 <Suspense
                   fallback={
                     <div className="grid place-items-center px-4 py-2">
@@ -647,6 +604,7 @@ export function AddPageClientWrapper({
                 isEditable={isEditableLyrics}
                 setIsEditable={setIsEditableLyrics}
                 isPreventEnterKey={true}
+                aria-describedby="translation-description"
               />
             </FieldGroup>
             <input type="file" name="cover" hidden ref={coverFileRef} />
