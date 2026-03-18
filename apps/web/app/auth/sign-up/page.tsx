@@ -357,7 +357,6 @@ function PasswordInput({
   setPassword: React.Dispatch<string>
   onValidityChange?: (isValid: boolean) => void
 }) {
-  //   const [password, setPassword] = useState("")
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [passwordConfirmation, setPasswordConfirmation] = useState("")
   const [isPasswordConfirmationVisible, setIsPasswordConfirmationVisible] =
@@ -367,8 +366,8 @@ function PasswordInput({
   const [debouncedPasswordConfirmation] = useDebounce(passwordConfirmation, 500)
 
   // * MARK: - Check if password is valid
-  // 1. Check if password is strong enough
-  // 2. Check if password and password confirmation match
+  // *       -   1. Check if password is strong enough
+  // *       -   2. Check if password and password confirmation match
 
   const validation = useMemo(() => {
     return checkIsPasswordValid(

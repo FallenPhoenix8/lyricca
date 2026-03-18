@@ -22,7 +22,7 @@ export class AuthController {
 
   @Post("sign-in")
   async signIn(
-    @Body() body: LoginDTOImpl,
+    @Body() body: { username: string; password: string },
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthPayload> {
     const { username, password } = body

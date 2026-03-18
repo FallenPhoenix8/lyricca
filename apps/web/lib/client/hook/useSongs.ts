@@ -155,14 +155,6 @@ export function useSongs(
   searchQuery: string,
   filterTags: { type: "artist" | "album"; value: string }[],
 ) {
-  // const songs = useLiveQuery(
-  //   () => {
-  //     const songs = db.songs.toArray()
-  //     return songs
-  //   },
-  //   [],
-  //   null,
-  // )
   const songs = useLiveQuery(
     async () => {
       let collection
@@ -212,7 +204,7 @@ export function useSongs(
     songsRef.current = songs
   }, [songs])
 
-  // MARK: - Prevent overlapping sync calls
+  // * MARK: - Prevent overlapping sync calls
   const isSyncingRef = useRef(false)
   const apiUrl = process.env.NEXT_PUBLIC_API_URL
   if (!apiUrl) {

@@ -1,17 +1,10 @@
 "use server"
 
-import APIClient from "@/lib/data/APIClient"
 import { SongCreateSchema } from "@/lib/model/Song"
-import {
-  AvailableLanguages,
-  LanguageDTO,
-  SongDTO,
-  TranslationOutputDTO,
-} from "@shared/ts-types"
+import { AvailableLanguages } from "@shared/ts-types"
 import { ArkErrors } from "arktype"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { makeRequest } from "@/app/api/backend/[...path]/route"
 
 const apiURL = process.env.NEXT_PUBLIC_API_URL
 if (!apiURL) {
@@ -39,6 +32,10 @@ export type TranslationState = {
   message?: string | null
 }
 
+/**
+ * This function fetches the available languages from the API.
+ * @returns Languages available for translation.
+ */
 export async function fetchLanguages(): Promise<AvailableLanguages> {
   const token = (await cookies()).get("token")?.value ?? ""
   const endpoint = "translate/languages"
@@ -57,7 +54,13 @@ export async function fetchLanguages(): Promise<AvailableLanguages> {
   return data
 }
 
+/**
+ * This action is used to add a new song to the database.
+ * It's a server-side action that interacts with the API to create a new song.
+ */
 export async function addSongAction(prevState: SongState, formData: FormData) {
+  // * MARK: - Extract fields from form and validate them
+
   const validatedFields = SongCreateSchema({
     title: formData.get("title"),
     artist: formData.get("artist") ?? null,
@@ -103,15 +106,14 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
     })
     return state
   }
+
+  // * MARK: - Verify if cover file is included with the submitted form
+
   const file = formData.get("cover") as File | null
   if (!file || file.size < 1) {
-    console.log("Cover file is empty.")
-    console.log(file)
     state.errors?.cover?.push("Cover file is required.")
     return state
   }
-
-  console.log("here2")
 
   if (file) {
     const fileObj = file as File
@@ -135,24 +137,22 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
   }
 
   try {
-    // 1. Create a new FormData instance
+    // * MARK: - Create new `FormData` and append all validated fields
     const dataToSend = new FormData()
 
-    // 2. Append all your validated text fields
-    // Assuming validatedFields is a flat object
     Object.entries(validatedFields).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
         dataToSend.append(key, value as string)
       }
     })
 
-    // 3. Append the file
+    // * MARK: - Append file to `FormData`
     if (file && file instanceof File) {
       dataToSend.append("cover", file)
     }
 
+    // * MARK: - Make request to authenticated request to the API
     const token = (await cookies()).get("token")?.value ?? ""
-
     const response = await fetch(new URL("/songs", apiURL), {
       method: "POST",
       body: dataToSend, // Fetch automatically sets the correct boundary & Content-Type
@@ -160,7 +160,6 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
         Authorization: `Bearer ${token}`,
       },
     })
-    console.log("response:", response)
 
     if (!response.ok) {
       const errorData = await response.json()
@@ -172,5 +171,6 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
     return { errors: {}, message: "Something went wrong." }
   }
 
+  // * MARK: - Redirect to library page if successful
   redirect("/app/library")
 }

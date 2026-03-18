@@ -88,7 +88,7 @@ export function SongCardList() {
       const q = debouncedSearchQuery.toLowerCase()
       let collection
 
-      // 1. DATA ACCESS (Using Indexes)
+      // * MARK: - Access the data in IndexedDB (optimized by using database indexes)
       const artistTag = filterTags
         .find((t) => t.type === "artist")
         ?.value.toLowerCase()
@@ -108,7 +108,7 @@ export function SongCardList() {
         collection = db.songs.toCollection()
       }
 
-      // 2. FILTERING
+      // * MARK: - Filter songs based on search query
       if (q !== "") {
         collection = collection.filter(
           (song) =>
@@ -118,23 +118,20 @@ export function SongCardList() {
         )
       }
 
-      // 3. RELIABLE SORTING
-      // Extract the array first
       return await collection.toArray()
     },
     [debouncedSearchQuery, filterTags],
     referralSong ? [referralSong] : [],
   )
 
-  // Trigger ViewTransition when songsToShow actually changes
   useEffect(() => {
     if (!songsCollection) return
 
     const updateUI = () => {
-      // 1. Create a NEW array reference (Crucial for React to see the change)
+      // * MARK: - Create new reference to the collection of songs
       const baseArray = [...songsCollection]
 
-      // 2. Sort using a predictable comparator
+      // * MARK: - Sort based on `sortDirection` and `sortBy`
       baseArray.sort((a, b) => {
         // Use the 'sortBy' state dynamically
         const valA = String(a[sortBy as TSortBy] || "unknown").toLowerCase()
@@ -149,7 +146,7 @@ export function SongCardList() {
       setSongsToShow(baseArray)
     }
 
-    // 3. Trigger View Transition if supported
+    // * MARK: - Trigger View Transition if supported
     if (document.startViewTransition !== undefined) {
       startTransition(() => {
         updateUI()
