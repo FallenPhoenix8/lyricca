@@ -45,6 +45,7 @@ import {
 } from "./breadcrumb"
 import { addSongAction, SongState } from "@/app/app/add/actions"
 import { FieldDescriptionWithErrors } from "./field-description-with-errors"
+import { ClipboardCheckIcon, ClipboardIcon } from "lucide-react"
 
 async function translateAction({
   text,
@@ -174,7 +175,6 @@ export function AddPageClientWrapper({
       updateLoadingState(true)
     },
     onSuccess: (response) => {
-      updateLoadingState(false)
       if (!response.ok) {
         console.error("Failed to get cover suggestion:", response.error)
         return
@@ -300,6 +300,15 @@ export function AddPageClientWrapper({
   //   })
   // }
 
+  const [isPasted, setIsPasted] = useState(false)
+  function pasteOriginalLyrics() {
+    const text = navigator.clipboard.readText()
+    text.then((content) => {
+      setOriginalLyrics(content)
+      setIsPasted(true)
+    })
+  }
+
   useEffect(() => {
     console.log("translatedLyrics changed:", translatedLyrics)
   }, [translatedLyrics])
@@ -347,11 +356,8 @@ export function AddPageClientWrapper({
                 alt="Empty Cover"
                 className="w-full aspect-video md:aspect-square object-cover rounded-xl"
                 aria-describedby="cover-description"
-                onLoadStart={(e) => {
-                  e.currentTarget.classList.add("animate-pulse")
-                }}
-                onLoad={(e) => {
-                  e.currentTarget.classList.remove("animate-pulse")
+                onLoad={() => {
+                  updateLoadingState(false)
                 }}
               />
               <div
@@ -434,11 +440,7 @@ export function AddPageClientWrapper({
           className="col-span-12 md:col-span-8 row-span-2 md:col-start-5"
           onClick={() => updateImageActionsVisibility(false)}
         >
-          <form
-            className="pl-4 gap-4"
-            action={formAction}
-            // onSubmit={handleSubmit}
-          >
+          <form className="pl-4 gap-4" action={formAction}>
             <FieldGroup>
               <FieldSet>
                 <FieldLegend>Song Details</FieldLegend>
@@ -534,6 +536,13 @@ export function AddPageClientWrapper({
                 <Field>
                   <FieldLabel htmlFor="original_lyrics">
                     Original Lyrics
+                    <Button
+                      variant="ghost"
+                      onClick={pasteOriginalLyrics}
+                      type="button"
+                    >
+                      {isPasted ? <ClipboardCheckIcon /> : <ClipboardIcon />}
+                    </Button>
                   </FieldLabel>
                   <FieldDescriptionWithErrors
                     errors={state.errors?.originalLyrics ?? []}
