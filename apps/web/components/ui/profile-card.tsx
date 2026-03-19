@@ -62,6 +62,9 @@ export async function ProfileCard() {
           >
             {user.username}
           </p>
+          <p className="text-xs text-muted-foreground font-bold line-clamp-1 overflow-elipsis">
+            {user.email}
+          </p>
         </VStack>
         <TotalUsageChart limitUsage={usage.limit} currentUsage={usage.count} />
       </HStack>

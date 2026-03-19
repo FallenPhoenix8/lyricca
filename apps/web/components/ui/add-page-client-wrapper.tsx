@@ -176,7 +176,8 @@ export function AddPageClientWrapper({
     },
     onSuccess: (response) => {
       if (!response.ok) {
-        console.error("Failed to get cover suggestion:", response.error)
+        console.error("Failed to get cover suggestion: ", response.error)
+        updateLoadingState(false)
         return
       }
       console.log(response)
