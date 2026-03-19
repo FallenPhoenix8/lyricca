@@ -32,7 +32,7 @@ class APIClient {
       baseURL = trimString(process.env.SELF_URL, "/") + baseURL
     }
     const url = `${baseURL}/${trimString(endpoint, "/")}`
-    console.log(`Making ${method} request to ${url} with body:`, body)
+    console.log(`Making ${method} request to ${url}`)
     const headers = this.getHeaders()
     try {
       const response = await fetch(url, {

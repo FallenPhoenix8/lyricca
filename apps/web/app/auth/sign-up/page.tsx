@@ -238,7 +238,7 @@ function EmailInput({
       isValid,
       isVerified,
     }
-  }, [emailOTP, email])
+  }, [emailOTP, email, userOTP])
 
   const [countdown, setCountdown] = useState(10)
 
@@ -262,6 +262,10 @@ function EmailInput({
 
     return () => clearTimeout(timer)
   }, [countdown])
+
+  useEffect(() => {
+    onValidityChange?.((validation.isValid && validation.isVerified) ?? false)
+  }, [validation])
   return (
     <VStack>
       <FieldGroup>
@@ -308,7 +312,12 @@ function EmailInput({
             pattern={REGEXP_ONLY_DIGITS}
             id="email-verification-code"
           >
-            <InputOTPGroup>
+            <InputOTPGroup
+              className={cn(
+                "rounded-lg outline-2 outline-offset-1",
+                isOTPSent && !validation.isVerified && "outline-destructive",
+              )}
+            >
               <InputOTPSlot index={0}></InputOTPSlot>
               <InputOTPSlot index={1}></InputOTPSlot>
               <InputOTPSlot index={2}></InputOTPSlot>

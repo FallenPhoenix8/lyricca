@@ -1,20 +1,52 @@
-import { BadGatewayException, BadRequestException, ConflictException, Injectable } from '@nestjs/common';
-import { Resend } from 'resend'
-import type { EmailVerificationDTO } from '@shared/ts-types'
-import { UserService } from '../user/user.service';
-const resendApiKey = process.env.RESEND_API_KEY
-if (!resendApiKey) {
-    throw new Error('RESEND_API_KEY environment variable is not set')
-    }
-const fromEmailAddress = process.env.FROM_EMAIL_ADDRESS ?? 'lyricca@resend.dev'
+import {
+  BadGatewayException,
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from "@nestjs/common"
+import nodemailer from "nodemailer"
+
+import type { EmailVerificationDTO } from "@shared/ts-types"
+import { UserService } from "../user/user.service"
+import SMTPTransport from "nodemailer/lib/smtp-transport"
+
+const smtpHost = process.env.SMTP_HOST
+if (!smtpHost) {
+  throw new Error("SMTP_HOST environment variable is not set")
+}
+const smtpPort = process.env.SMTP_PORT
+if (!smtpPort) {
+  throw new Error("SMTP_PORT environment variable is not set")
+}
+const smtpUser = process.env.SMTP_USER
+if (!smtpUser) {
+  throw new Error("SMTP_USER environment variable is not set")
+}
+const smtpPass = process.env.SMTP_PASS
+if (!smtpPass) {
+  throw new Error("SMTP_PASSWORD environment variable is not set")
+}
+const fromEmailAddress = process.env.FROM_EMAIL_ADDRESS
+
+if (!fromEmailAddress) {
+  throw new Error("FROM_EMAIL_ADDRESS environment variable is not set")
+}
+
 @Injectable()
 export class EmailService {
-    constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) {}
+  readonly transporter = nodemailer.createTransport({
+    host: smtpHost,
+    port: smtpPort,
+    secure: false,
+    auth: {
+      user: smtpUser,
+      pass: smtpPass,
+    },
+  } as SMTPTransport.Options)
 
-    private readonly resendClient = new Resend(resendApiKey)
-
-    fillOTPEmailTemplate(title: string, otp: string) {
-                return `
+  fillOTPEmailTemplate(title: string, otp: string) {
+    return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -29,6 +61,16 @@ export class EmailService {
       --muted: #f5f5f5;
       --muted-foreground: #737373;
       --border: #e5e5e5;
+    }
+
+    @media(prefers-color-scheme: dark) {
+      :root {
+        --background: #0a0a0a;
+        --foreground: #ffffff;
+        --muted: #4a4a4a;
+        --muted-foreground: #737373;
+        --border: #e5e5e5;
+      }
     }
 
     body {
@@ -113,6 +155,13 @@ export class EmailService {
     img {
       display: block;
     }
+
+    @media(prefers-color-scheme: dark) {
+      img {
+          -webkit-filter: invert(100%); /* Safari/Chrome */
+          filter: invert(100%);
+      }  
+    }
   </style>
 </head>
 <body>
@@ -143,44 +192,49 @@ export class EmailService {
 </body>
 </html>
         `
+  }
+
+  async sendEmail(email: string, subject: string, body: string) {
+    const emailData = {
+      from: `Lyricca <${fromEmailAddress}>`,
+      to: email,
+      subject,
+      html: body,
+    }
+    const emailCreateResponse = await this.transporter.sendMail(emailData)
+    if (emailCreateResponse.rejected.length > 0) {
+      throw new BadGatewayException("Email was rejected by the SMTP server.")
+    }
+  }
+
+  async verifyEmail(email: string) {
+    // * MARK: - Check if email address is valid
+    const emailRegex =
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+    if (!emailRegex.test(email)) {
+      throw new BadRequestException("Invalid email address.")
     }
 
-    async sendEmail(email: string, subject: string, body: string) {
-        const emailData = {
-            from: `Lyricca <${fromEmailAddress}>`,
-            to: email,
-            subject,
-            html: body,
-        }
-        const emailCreateResponse = await this.resendClient.emails.send(emailData)
-        if (emailCreateResponse.error) {
-            throw new BadGatewayException(emailCreateResponse.error.message)
-        }
+    // * MARK: - Check if email address is already in use
+    const user = await this.userService.findOne({ email })
+    if (user) {
+      throw new ConflictException("Email address is already in use.")
     }
 
-    async verifyEmail(email: string) {
-        // * MARK: - Check if email address is valid
-        const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
-        if (!emailRegex.test(email)) {
-            throw new BadRequestException("Invalid email address.")
-        }
-
-        // * MARK: - Check if email address is already in use
-        const user = await this.userService.findOne({email})
-        if (user) {
-            throw new ConflictException("Email address is already in use.")
-        }
-
-        // * MARK: - Generate random 6-digit OTP
-        let otp: string = ""
-        for (let i = 0; i < 6; i++) {
-            otp += Math.floor(Math.random() * 10).toString()
-        }
-        // * MARK: - Send verification email
-        await this.sendEmail(email, "Verify your email address", this.fillOTPEmailTemplate("Verify your email address", otp))
-        return {
-            email,
-            otp
-        }
+    // * MARK: - Generate random 6-digit OTP
+    let otp: string = ""
+    for (let i = 0; i < 6; i++) {
+      otp += Math.floor(Math.random() * 10).toString()
     }
+    // * MARK: - Send verification email
+    await this.sendEmail(
+      email,
+      "Verify your email address",
+      this.fillOTPEmailTemplate("Verify your email address", otp),
+    )
+    return {
+      email,
+      otp,
+    }
+  }
 }
