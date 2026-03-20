@@ -22,15 +22,12 @@ export class CoversController {
     @Req() req: AuthenticatedRequest,
     @Query("artist") artist: string | undefined,
     @Query("title") title: string | undefined,
+    @Query("album") album: string | undefined,
   ): Promise<SuggestionDTO> {
     const errors: string[] = []
     const decodedArtist = decodeURIComponent(artist ?? "") ?? ""
     const decodedTitle = decodeURIComponent(title ?? "") ?? ""
-    if (!decodedArtist.trim()) {
-      errors.push(
-        "`artist` query parameter is required. It must be a non-empty string.",
-      )
-    }
+    const decodedAlbum = decodeURIComponent(album ?? "") ?? ""
 
     if (!decodedTitle.trim()) {
       errors.push(
@@ -42,11 +39,12 @@ export class CoversController {
       throw new BadRequestException(errors)
     }
 
-    const userAgent = req.headers["user-agent"] ?? "LyriccaApp/1.0"
+    const userAgent = req.headers["user-agent"] ?? "LyriccaApp/1.0.0"
     const coverURL = await this.coversService.getSuggestionURL({
-      artist: decodedArtist,
-      title: decodedTitle,
       userAgent,
+      title: decodedTitle,
+      artist: decodedArtist || null,
+      album: decodedAlbum || null,
     })
 
     return {

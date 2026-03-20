@@ -187,6 +187,7 @@ export function AddPageClientWrapper({
         : "/default.png"
       setCoverURL(suggestionURL)
       setCoverFileMutation.mutate()
+      updateLoadingState(false)
     },
     onError: (error) => {
       updateLoadingState(false)

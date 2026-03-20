@@ -1,14 +1,18 @@
-import { Injectable } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { SupabaseService } from "../supabase/supabase.service"
 import { v7 as uuid } from "uuid"
 import { DatabaseService } from "../database/database.service"
 import { CoverDTOImpl, CoverUpdateDTOImpl } from "./dto/cover-dto"
 import { ImageService } from "../image/image.service"
+import puppeteer, { Browser, Page } from "puppeteer"
 
 @Injectable()
 export class CoversService {
   private readonly bucketName = "covers"
-  private readonly searchAPIURL = "https://musicbrainz.org/"
+  private readonly searchEngineBaseURL = "https://duckduckgo.com/"
+  private readonly logger = new Logger(CoversService.name)
+  private browser: Browser | null = null
+  private browserWSEndpoint: string | null = null
 
   constructor(
     private readonly supabaseService: SupabaseService,
@@ -75,81 +79,79 @@ export class CoversService {
   }
 
   async getSuggestionURL({
-    artist,
     title,
+    artist,
+    album,
     userAgent,
   }: {
-    artist: string
     title: string
     userAgent: string
+    artist: string | null
+    album: string | null
   }): Promise<URL | null> {
-    const recordingSearchURL = this.getSuggestionSearchURL(
-      artist,
-      title,
-      "recording",
-    )
-    let coverURL = await this.getSuggestionCoverURL(
-      recordingSearchURL,
-      userAgent,
-    )
-    if (!coverURL) {
-      const releaseSearchURL = this.getSuggestionSearchURL(
-        artist,
-        title,
-        "release",
-      )
-      coverURL = await this.getSuggestionCoverURL(releaseSearchURL, userAgent)
-    }
-
-    return coverURL
-  }
-
-  private getSuggestionSearchURL(
-    artist: string,
-    title: string,
-    type: "recording" | "release" = "recording",
-  ): URL {
-    // * MARK: - Build Lucene query
-    const queryParts: string[] = [
-      `recording:"${title.toLowerCase()}"`,
-      `artist:"${artist.toLowerCase()}"`,
+    const page = await this.browserOpenEmptyPage(userAgent)
+    const queryTechnicalParts: string[] = [
+      `ia=images`,
+      `t=h_`,
+      `iax=images`,
+      "origin=funnel_home_website_duckaihomepage_topbanner",
+      "chip-select=images",
     ]
-    const query = encodeURIComponent(queryParts.join(" AND "))
+    let querySearch: string = `q=${encodeURIComponent(title)}`
+    if (artist) {
+      querySearch += `+${encodeURIComponent(artist)}`
+    }
+    if (album) {
+      querySearch += `+${encodeURIComponent(album)}`
+    }
+    querySearch += "+song"
 
-    // * MARK: - Build search URL
-    const url = new URL(
-      `ws/2/${type}/?query=${query}&fmt=json`,
-      this.searchAPIURL,
-    )
-    return url
-  }
+    const queryParams = queryTechnicalParts.join(`&`) + `&` + querySearch
+    const searchURL = new URL(this.searchEngineBaseURL)
+    searchURL.search = queryParams
 
-  private async getSuggestionCoverURL(
-    searchURL: URL,
-    userAgent: string,
-  ): Promise<URL | null> {
-    try {
-      const response = await fetch(searchURL, {
-        headers: {
-          "User-Agent": userAgent,
-        },
-      })
-      const data = await response.json()
-      //* MARK: - Get the MBID of the first release associated with this recording.
-      // Recordings don't have images directly; their "Releases" (albums/singles) do.
-      // If there is no release, then return null to indicate that no cover has been found.
-      const firstRelease = data.recordings?.[0]?.releases?.[0]
+    await page.goto(searchURL.toString())
 
-      if (!firstRelease || !firstRelease.id) {
+    await page.waitForSelector(`img[loading="lazy"]`)
+    const imageURL = await page.evaluate(() => {
+      const imageElement = document.querySelector(
+        `img[loading="lazy"]`,
+      ) as HTMLImageElement | null
+      if (!imageElement) {
         return null
       }
-      const suggestedCoverURL = new URL(
-        `https://coverartarchive.org/release/${firstRelease.id}/front`,
-      )
-      return suggestedCoverURL
-    } catch (error) {
-      console.error("Failed to get cover suggestion URL:", error)
-      return null
+      return imageElement.src
+    })
+
+    await page.close()
+    return imageURL ? new URL(imageURL) : null
+  }
+
+  private async browserOpenEmptyPage(userAgent: string): Promise<Page> {
+    if (!this.browser || !this.browserWSEndpoint) {
+      this.logger.log("Launching browser...")
+      this.browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+        ],
+      })
+      this.browserWSEndpoint = this.browser.wsEndpoint()
+      this.browser.disconnect()
+      this.logger.log("Browser launched successfully.")
     }
+    const browser = await puppeteer.connect({
+      browserWSEndpoint: this.browserWSEndpoint,
+    })
+    const page = await browser.newPage()
+    await page.setUserAgent(userAgent)
+    await page.setViewport({
+      width: 1280,
+      height: 720,
+    })
+
+    return page
   }
 }
