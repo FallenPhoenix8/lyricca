@@ -13,8 +13,9 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb"
+import { AppearanceSettingsIsland } from "@/components/ui/appearance-settings-island"
 
-// TODO: Implement appearance settings
+// TODO: Update the appearance settings looks
 export default function PreferencesPage() {
   return (
     <ViewTransition default="auto">
@@ -32,37 +33,7 @@ export default function PreferencesPage() {
       </SettingsIsland>
       <div className="max-w-2xl mx-auto p-1 md:py-10 md:px-4 space-y-4 md:space-y-8">
         {/* Section 1: Appearance */}
-
-        <SettingsIsland title="Appearance">
-          {/* Row 1: Theme Selection */}
-          <SettingsItem
-            label="Theme"
-            description="Select your preferred interface style."
-          >
-            <NativeSelect defaultValue="system">
-              <NativeSelectOption value="light">Light</NativeSelectOption>
-              <NativeSelectOption value="dark">Dark</NativeSelectOption>
-              <NativeSelectOption value="system">System</NativeSelectOption>
-            </NativeSelect>
-          </SettingsItem>
-
-          <Separator />
-
-          {/* Row 2: Animations Toggle */}
-          <SettingsItem
-            label="Accent Color"
-            description="Choose your preferred accent color."
-          >
-            <NativeSelect defaultValue="rose">
-              <NativeSelectOption value="neutral">Neutral</NativeSelectOption>
-              <NativeSelectOption value="rose">Rose</NativeSelectOption>
-              <NativeSelectOption value="violet">Violet</NativeSelectOption>
-              <NativeSelectOption value="blue">Blue</NativeSelectOption>
-              <NativeSelectOption value="green">Green</NativeSelectOption>
-            </NativeSelect>
-          </SettingsItem>
-        </SettingsIsland>
-
+        <AppearanceSettingsIsland />
         <SettingsIsland title="Account">
           <SettingsItem
             label="Account"
