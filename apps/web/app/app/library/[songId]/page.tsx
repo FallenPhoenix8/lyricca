@@ -154,23 +154,27 @@ export default function SongDetailsPage() {
     }
   }
 
-  usePreventEnterKey(() => {
-    const titleElement = titleElementRef.current
-    const artistElement = artistElementRef.current
-    const albumElement = albumElementRef.current
+  usePreventEnterKey(
+    document.body,
+    () => {
+      const titleElement = titleElementRef.current
+      const artistElement = artistElementRef.current
+      const albumElement = albumElementRef.current
 
-    if (titleElement) {
-      titleElement.blur()
-    }
-    if (artistElement) {
-      artistElement.blur()
-    }
-    if (albumElement) {
-      albumElement.blur()
-    }
+      if (titleElement) {
+        titleElement.blur()
+      }
+      if (artistElement) {
+        artistElement.blur()
+      }
+      if (albumElement) {
+        albumElement.blur()
+      }
 
-    setIsEditable(false)
-  }, [isEditable])
+      setIsEditable(false)
+    },
+    [isEditable],
+  )
 
   useLayoutEffect(() => {
     if (isFirstRender) {

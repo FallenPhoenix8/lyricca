@@ -2,11 +2,12 @@
 import { DependencyList, useLayoutEffect } from "react"
 
 export function usePreventEnterKey(
+  element: HTMLElement,
   callback: () => void,
   deps?: DependencyList,
 ) {
   useLayoutEffect(() => {
-    window.addEventListener("keydown", handleKeyDown)
+    element.addEventListener("keydown", handleKeyDown)
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key.toLowerCase() === "enter") {
         event.preventDefault()
@@ -15,7 +16,7 @@ export function usePreventEnterKey(
     }
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown)
+      element.removeEventListener("keydown", handleKeyDown)
     }
   }, deps)
 }

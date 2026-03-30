@@ -6,6 +6,7 @@ export function VStack(
     justifyContent?: "start" | "end" | "center" | "between" | "around"
     alignItems?: "start" | "end" | "center" | "stretch"
     className?: string
+    ref?: React.Ref<HTMLDivElement>
   } & React.HTMLAttributes<HTMLDivElement>,
 ) {
   const { justifyContent, alignItems, ...rest } = props
@@ -18,6 +19,7 @@ export function VStack(
         alignItems ? `items-${alignItems}` : "items-start",
         props.className,
       )}
+      ref={props.ref}
     >
       {props.children}
     </div>

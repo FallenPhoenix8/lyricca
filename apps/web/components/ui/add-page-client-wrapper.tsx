@@ -34,7 +34,6 @@ import { useMutation } from "react-query"
 import { useQueryState } from "nuqs"
 import { LyricsView } from "./lyrics-view"
 import { useDebounce, useDebouncedCallback } from "use-debounce"
-import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
 import { SuggestionDTO } from "@shared/ts-types/cover-dto"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./hover-card"
 import {
@@ -56,6 +55,13 @@ async function translateAction({
   from: string | null
   to: string
 }): Promise<Result<TranslationOutputDTO, ErrorResponseDTO>> {
+  if (!text.trim() || !to.trim()) {
+    return Err({
+      error: "Invalid input",
+      message: ["Please enter a valid input."],
+      statusCode: 400,
+    })
+  }
   const result = await APIClient.shared.post<TranslationOutputDTO>(
     "/translate",
     {
@@ -152,7 +158,7 @@ export function AddPageClientWrapper({
     album?: string[]
   }>({})
   const [sourceLanguage] = useQueryState("sl", { defaultValue: "auto" })
-  const [targetLanguage] = useQueryState("tl")
+  const [targetLanguage] = useQueryState("tl", { defaultValue: "en-US" })
   const translateMutation = useMutation(translateAction, {
     onSuccess: (response) => {
       if (!response.ok) {
@@ -256,6 +262,7 @@ export function AddPageClientWrapper({
     translatedLyrics: string
     originalLyrics: string
   }) {
+    console.log("TESTING", translatedLyrics, originalLyrics)
     console.log("TEST", translatedLyrics)
     setTranslatedLyrics(translatedLyrics)
     setOriginalLyrics(originalLyrics)
@@ -614,7 +621,6 @@ export function AddPageClientWrapper({
                 isReadyTranslation={!translateMutation.isLoading}
                 isEditable={isEditableLyrics}
                 setIsEditable={setIsEditableLyrics}
-                isPreventEnterKey={true}
                 aria-describedby="translation-description"
               />
             </FieldGroup>

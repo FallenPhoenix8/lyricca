@@ -70,11 +70,12 @@ async function handler(
 
   // Forward body only when present
   const hasBody = !["GET", "HEAD"].includes(req.method)
+  const body = hasBody ? await req.arrayBuffer() : undefined
   // * MARK: - Make request to backend
   const response = await makeRequest({
     method: req.method,
     url: backendFullURL,
-    body: hasBody ? await req.arrayBuffer() : undefined,
+    body: body,
     headers: {
       cookie: cookieHeader,
       Authorization: `Bearer ${token}`,

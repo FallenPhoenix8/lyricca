@@ -15,7 +15,7 @@ export function FieldDescriptionWithErrors({
         errors.map((error, index) => (
           <>
             <br />
-            <span key={index} className="text-destructive">
+            <span key={`${error}-${index}`} className="text-destructive">
               {error}
               <br />
             </span>

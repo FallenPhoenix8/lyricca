@@ -40,9 +40,13 @@ export default function SongLyricsPage() {
     }
   }
 
-  usePreventEnterKey(() => {
-    setIsEditable(false)
-  }, [])
+  usePreventEnterKey(
+    document.body,
+    () => {
+      setIsEditable(false)
+    },
+    [],
+  )
 
   return (
     <LyricsView

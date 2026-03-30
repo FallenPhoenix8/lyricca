@@ -113,7 +113,7 @@ export class TranslationService {
     let result: deepl.TextResult[] | null = null
     try {
       result = await this.client.translateText(
-        lines,
+        lines.map((l) => (!l ? " " : l)), // Deepl API does not accept empty strings, so we replace them with a space
         properties.from ?? null,
         properties.to,
       )
@@ -124,6 +124,7 @@ export class TranslationService {
         )
       }
     }
+
     if (result === null) {
       throw new InternalServerErrorException("Translation failed.")
     }

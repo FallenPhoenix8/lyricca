@@ -147,6 +147,8 @@ export function LyricsView({
   const skeletonLyricsPairs: null[] = new Array(20).fill(null)
   const [isFirstRender, setIsFirstRender] = useState(true)
 
+  const lyricsContainerRef = useRef<HTMLDivElement>(null)
+
   const buttons = useCallback(
     () =>
       [
@@ -235,10 +237,15 @@ export function LyricsView({
   }, [isEditable])
 
   isPreventEnterKey &&
-    usePreventEnterKey(() => {
-      setIsEditable(false)
-      handleSubmitNewLyrics()
-    }, [])
+    lyricsContainerRef.current &&
+    usePreventEnterKey(
+      lyricsContainerRef.current,
+      () => {
+        setIsEditable(false)
+        handleSubmitNewLyrics()
+      },
+      [],
+    )
 
   return (
     <ViewTransition name="lyrics-view">
@@ -282,17 +289,11 @@ export function LyricsView({
               !isEditable && maximizedURL && minimizedURL ? "visible" : "hidden"
             }
           >
-            <Button variant="secondary" type="button">
-              {isMaximized ? (
-                <Link href={minimizedURL!}>
-                  <Minimize2Icon />
-                </Link>
-              ) : (
-                <Link href={maximizedURL!}>
-                  <Maximize2Icon />
-                </Link>
-              )}
-            </Button>
+            <Link href={isMaximized ? minimizedURL! : maximizedURL!}>
+              <Button variant="secondary" type="button">
+                {isMaximized ? <Minimize2Icon /> : <Maximize2Icon />}
+              </Button>
+            </Link>
           </Activity>
         </HStack>
         <hr className="border-white" />
@@ -302,6 +303,7 @@ export function LyricsView({
             easeOvershootClassName,
             isMaximized && "h-full",
           )}
+          ref={lyricsContainerRef}
         >
           {!isLoading &&
             lyricsPairs.map((pair, index) => {
