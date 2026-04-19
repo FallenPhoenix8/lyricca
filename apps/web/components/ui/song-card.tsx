@@ -5,7 +5,7 @@ import { Card, CardTitle, CardHeader, CardDescription } from "./card"
 import { ImageRosetta } from "./svg/ImageRosetta"
 import { SongDTO } from "@shared/ts-types"
 import Image from "next/image"
-import { DotIcon } from "lucide-react"
+import { DotIcon, MoreHorizontal, Trash2, TrashIcon } from "lucide-react"
 import { XIcon } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -20,6 +20,33 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useQueryState } from "nuqs"
 import { useReferralSongContext } from "./ReferralSongContext"
 import { useWindowDimensions } from "@/lib/client/hook/useWindowDimensions"
+import { Button } from "./button"
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "./dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogTitle,
+  AlertDialogHeader,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogTrigger,
+} from "./alert-dialog"
+import { useSongsContext } from "./SongsContext"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "./drawer"
 
 gsap.registerPlugin(useGSAP)
 /**
@@ -86,6 +113,9 @@ function SongCardRegular(props: {
     useReferralSongContext()
   const router = useRouter()
   const href = `/app/library/${props.song.id}?q=${encodedSearchParams}`
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const { remove } = useSongsContext()
   return (
     <Card
       className={cn(
@@ -96,6 +126,75 @@ function SongCardRegular(props: {
       style={props.style}
       ref={props.ref}
     >
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                console.log("Delete action canceled.")
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                remove.mutate(
+                  {
+                    id: props.song.id,
+                  },
+                  {
+                    onSuccess: () => {
+                      console.log(
+                        `Successfully deleted song with id = ${props.song.id}`,
+                      )
+                      setIsDeleteDialogOpen(false)
+                    },
+                    onError: (error) => {
+                      console.error("Failed to delete song:", error)
+                      setIsDeleteDialogOpen(false)
+                    },
+                  },
+                )
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="secondary"
+            className="absolute rounded-full group-hover:top-3 group-hover:right-3 top-2 right-2 z-30 transition-[top,right] duration-300"
+          >
+            <MoreHorizontal />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem
+            onClick={() => {
+              console.log(`Deleting ${props.song.id}...`)
+              setIsDeleteDialogOpen(true)
+            }}
+            variant="destructive"
+          >
+            <TrashIcon className="mr-2 h-4 w-4" />
+            <span>Delete</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
       <div
         className={cn(
           "absolute inset-0 z-10 aspect-square bg-foreground/10 dark:bg-background/50 rounded-t-xl shadow-muted/50 shadow-none group-hover:shadow-sm transition-[border-radius,shadow] duration-300 group-hover:rounded-b-xl group-hover:rounded-t-2xl",
@@ -208,12 +307,62 @@ function SongCardCompact(props: {
   const href = `/app/library/${props.song.id}?q=${encodeURIComponent(
     searchParams,
   )}`
+
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const { remove } = useSongsContext()
   return (
     <div
       ref={props.ref}
-      className={cn("relative w-full p-1 rounded-md", props.className)}
+      className={cn("flex relative w-full p-1 rounded-md", props.className)}
       style={props.style}
     >
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                console.log("Delete action canceled.")
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                remove.mutate(
+                  {
+                    id: props.song.id,
+                  },
+                  {
+                    onSuccess: () => {
+                      console.log(
+                        `Successfully deleted song with id = ${props.song.id}`,
+                      )
+                      setIsDeleteDialogOpen(false)
+                    },
+                    onError: (error) => {
+                      console.error("Failed to delete song:", error)
+                      setIsDeleteDialogOpen(false)
+                    },
+                  },
+                )
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <Link
         href={href}
         className="flex w-full"
@@ -264,6 +413,60 @@ function SongCardCompact(props: {
           </div>
         </VStack>
       </Link>
+      <Drawer open={isMoreMenuOpen} onOpenChange={setIsMoreMenuOpen}>
+        <DrawerTrigger asChild>
+          <Button variant="ghost">
+            <MoreHorizontal />
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent className="px-2 pb-10">
+          <DrawerHeader>
+            <div className="flex">
+              <Image
+                src={props.song.cover?.url ?? "/empty.png"}
+                alt={props.song.title}
+                className="h-full aspect-square object-cover rounded-xs squircle bg-accent animate-pulse"
+                onLoad={(event) => {
+                  const target = event.target as HTMLImageElement
+                  target.classList.remove("animate-pulse")
+                }}
+                width={40}
+                height={40}
+              />
+              <DrawerTitle>
+                <VStack className="px-2 justify-around">
+                  <div className="text-sm font-semibold line-clamp-1">
+                    {props.song.title}
+                  </div>
+
+                  <div className="text-xs text-muted-foreground line-clamp-1">
+                    <span>{props.song.artist || "Unknown Artist"}</span>
+                    <DotIcon className="inline" size={16} />
+                    <span>{props.song.album || "Unknown Album"}</span>
+                  </div>
+                </VStack>
+              </DrawerTitle>
+            </div>
+          </DrawerHeader>
+          <DrawerDescription>
+            What do you want to do with this song?
+          </DrawerDescription>
+          <div className="flex flex-col gap-2 pt-2">
+            <Button
+              variant="outline"
+              className="text-destructive w-full"
+              onClick={() => {
+                console.log(`Asking to delete ${props.song.id}...`)
+                setIsMoreMenuOpen(false)
+                setIsDeleteDialogOpen(true)
+              }}
+            >
+              <Trash2 />
+              Delete
+            </Button>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   )
 }
