@@ -368,6 +368,10 @@ function SongCardCompact(props: {
         className="flex w-full"
         onTouchStart={() => setIsActive(true)}
         onTouchEnd={() => setIsActive(false)}
+        onContextMenu={(e) => {
+          e.preventDefault()
+          setIsMoreMenuOpen(true)
+        }}
         onNavigate={(event) => {
           event.preventDefault()
           setReferralSongId(props.song.id)
