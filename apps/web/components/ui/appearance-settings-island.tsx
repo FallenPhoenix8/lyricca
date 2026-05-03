@@ -38,6 +38,7 @@ export function AppearanceSettingsIsland() {
     console.log("Setting theme to", theme)
     setTheme(theme)
   }
+  console.log("MODE: ", mode)
   return (
     <SettingsIsland title="Appearance">
       {/* Row 1: Theme Selection */}
@@ -45,7 +46,7 @@ export function AppearanceSettingsIsland() {
         label="Theme"
         description="Select your preferred interface style."
       >
-        <NativeSelect defaultValue={mode} onChange={handleModeChange}>
+        <NativeSelect value={mode} onChange={handleModeChange}>
           <NativeSelectOption value="light">Light</NativeSelectOption>
           <NativeSelectOption value="dark">Dark</NativeSelectOption>
         </NativeSelect>
@@ -58,7 +59,7 @@ export function AppearanceSettingsIsland() {
         label="Accent Color"
         description="Choose your preferred accent color."
       >
-        <NativeSelect defaultValue={vibe} onChange={handleVibeChange}>
+        <NativeSelect value={vibe} onChange={handleVibeChange}>
           <NativeSelectOption value="neutral">Neutral</NativeSelectOption>
           <NativeSelectOption value="mocha">Mocha</NativeSelectOption>
           <NativeSelectOption value="pastel">Pastel</NativeSelectOption>
