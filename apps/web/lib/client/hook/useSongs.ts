@@ -64,6 +64,21 @@ async function update(
 }
 
 async function remove(id: string): Promise<Result<SongDTO, ErrorResponseDTO>> {
+  // * MARK: - Optimistically update local database before API call to make the app feel more responsive. If the API call fails, we can revert the change in the local database.
+  const existingSong: SongDTO | undefined = { ...(await db.songs.get(id)) } as
+    | SongDTO
+    | undefined
+  if (!existingSong) {
+    console.error(`Failed to find song with id ${id} for deletion.`)
+    return Err({
+      statusCode: 404,
+      error: "Song not found in local database",
+      message: ["Song not found in local database"],
+    })
+  }
+  await db.transaction("rw", db.songs, async () => {
+    await db.songs.delete(id)
+  })
   // * MARK: - Remove song from the API
   const endpoint = `songs/${id}`
   const result = await APIClient.shared.delete<SongDTO>(endpoint, {})
@@ -71,20 +86,22 @@ async function remove(id: string): Promise<Result<SongDTO, ErrorResponseDTO>> {
     console.error("Failed to remove song:", result.error)
     return Err(result.error)
   }
-  // * MARK: - Update local database
-  await db.transaction("rw", db.songs, async () => {
-    await db.songs.delete(id)
-  })
+
   return Ok(result.value)
 }
 
 async function checkAndUpdateAllLocally(
   input: SongCheckAllInput,
   isLoading: boolean,
+  isPendingMutation: boolean,
 ) {
   console.log("Syncing local songs...")
   if (isLoading) {
     console.log("Skipping syncing local songs because loading is in progress.")
+    return
+  }
+  if (isPendingMutation) {
+    console.log("Skipping syncing local songs because mutation is in progress.")
     return
   }
   // * Check all songs in the API
@@ -115,27 +132,37 @@ async function checkAndUpdateAllLocally(
     return
   }
   // * MARK: - Update songs in local database
-  await db.transaction("rw", db.songs, async () => {
-    for (const songId of upToDateSongs.toBeCreated) {
-      try {
-        const song = await getDetails(songId)
-        if (song) {
-          await db.songs.add(song, song.id)
-        }
-      } catch (error) {
-        console.error("Failed to add song:", error)
+  const songsToBeCreated = [] as SongDTO[]
+  for (const songId of upToDateSongs.toBeCreated) {
+    try {
+      const song = await getDetails(songId)
+      if (song) {
+        songsToBeCreated.push(song)
       }
+    } catch (error) {
+      console.error("Failed to add song:", error)
+    }
+  }
+
+  const songsToBeUpdated = [] as SongDTO[]
+  for (const songId of upToDateSongs.toBeUpdated) {
+    try {
+      const song = await getDetails(songId)
+      if (song) {
+        songsToBeUpdated.push(song)
+      }
+    } catch (error) {
+      console.error("Failed to update song:", error)
+    }
+  }
+
+  await db.transaction("rw", db.songs, async () => {
+    for (const song of songsToBeCreated) {
+      await db.songs.add(song, song.id)
     }
 
-    for (const songId of upToDateSongs.toBeUpdated) {
-      try {
-        const song = await getDetails(songId)
-        if (song) {
-          await db.songs.put(song, song.id)
-        }
-      } catch (error) {
-        console.error("Failed to update song:", error)
-      }
+    for (const song of songsToBeUpdated) {
+      await db.songs.put(song, song.id)
     }
 
     for (const songId of upToDateSongs.toBeDeleted) {
@@ -199,6 +226,7 @@ export function useSongs(
   const count = useLiveQuery(() => db.songs.count(), [], null)
 
   // * MARK: - Keep latest songs without re-binding listeners
+  const isPendingMutation = useRef(false)
   const songsRef = useRef(songs)
   useEffect(() => {
     songsRef.current = songs
@@ -251,7 +279,11 @@ export function useSongs(
     }
 
     try {
-      await checkAndUpdateAllLocally(songCheckAllInput, isLoading)
+      await checkAndUpdateAllLocally(
+        songCheckAllInput,
+        isLoading,
+        isPendingMutation.current,
+      )
       isSyncingRef.current = false
     } finally {
       isSyncingRef.current = false
@@ -298,6 +330,12 @@ export function useSongs(
     onSuccess: (res) => {
       if (!res.ok) return
     },
+    onMutate: () => {
+      isPendingMutation.current = true
+    },
+    onSettled: () => {
+      isPendingMutation.current = false
+    },
   })
   const updateMutation = useMutation(
     ({ id, input }: { id: string; input: SongUpdateDTO }) => update(id, input),
@@ -305,11 +343,23 @@ export function useSongs(
       onSuccess: (res) => {
         if (!res.ok) return
       },
+      onMutate: () => {
+        isPendingMutation.current = true
+      },
+      onSettled: () => {
+        isPendingMutation.current = false
+      },
     },
   )
   const removeMutation = useMutation(({ id }: { id: string }) => remove(id), {
     onSuccess: (res) => {
       if (!res.ok) return
+    },
+    onMutate: () => {
+      isPendingMutation.current = true
+    },
+    onSettled: () => {
+      isPendingMutation.current = false
     },
   })
 
