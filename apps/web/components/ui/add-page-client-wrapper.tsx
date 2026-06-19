@@ -45,6 +45,7 @@ import {
 import { addSongAction, SongState } from "@/app/app/add/actions"
 import { FieldDescriptionWithErrors } from "./field-description-with-errors"
 import { ClipboardCheckIcon, ClipboardIcon } from "lucide-react"
+import { ActionButton } from "./action-button"
 
 async function translateAction({
   text,
@@ -108,7 +109,7 @@ export function AddPageClientWrapper({
   children: React.ReactNode
 }) {
   const [isOverlayVisible, setIsOverlayVisible] = useState(true)
-  const [isImageActionsVisible, setIsImageActionsVisible] = useState(true)
+  // const [isImageActionsVisible, setIsImageActionsVisible] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
 
   function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
@@ -120,7 +121,6 @@ export function AddPageClientWrapper({
     const temporaryFileURL = URL.createObjectURL(file)
 
     setCoverURL(temporaryFileURL)
-    updateImageActionsVisibility(false)
     setCoverFileMutation.mutate()
   }
   function updateOverlayVisibility(newState: boolean) {
@@ -129,16 +129,8 @@ export function AddPageClientWrapper({
     })
   }
 
-  function updateImageActionsVisibility(newState: boolean) {
-    startTransition(() => {
-      updateOverlayVisibility(newState)
-      setIsImageActionsVisible(newState)
-    })
-  }
-
   function updateLoadingState(newState: boolean) {
     startTransition(() => {
-      updateImageActionsVisibility(false)
       updateOverlayVisibility(newState)
       setIsLoading(newState)
     })
@@ -187,7 +179,6 @@ export function AddPageClientWrapper({
   }, [coverURL])
   const getSuggestionMutation = useMutation(getCoverSuggestionAction, {
     onMutate: () => {
-      updateImageActionsVisibility(false)
       updateLoadingState(true)
     },
     onSuccess: (response) => {
@@ -355,6 +346,55 @@ export function AddPageClientWrapper({
               Upload a cover image or get a suggestion from the internet. You
               can also edit translations line-by-line.
             </FieldDescriptionWithErrors>
+            <div className="flex justify-evenly">
+              <HoverCard closeDelay={10} openDelay={50}>
+                <HoverCardTrigger>
+                  <ActionButton
+                    onClick={() => {
+                      buttonFileInputRef.current?.click()
+                    }}
+                  >
+                    <UploadSimpleIcon />
+                    <input
+                      type="file"
+                      hidden
+                      ref={buttonFileInputRef}
+                      name="cover"
+                      accept="image/jpeg, image/png, image/webp"
+                      onChange={(event) => {
+                        handleFileUpload(event)
+                      }}
+                    />
+                  </ActionButton>
+                </HoverCardTrigger>
+                <HoverCardContent>
+                  <p>Upload cover</p>
+                </HoverCardContent>
+              </HoverCard>
+
+              <HoverCard closeDelay={10} openDelay={50}>
+                <HoverCardTrigger>
+                  <ActionButton
+                    onClick={() => {
+                      getSuggestionMutation.mutate({
+                        artist,
+                        title,
+                      })
+                    }}
+                  >
+                    <SparkleIcon className="h-full" />
+                  </ActionButton>
+                </HoverCardTrigger>
+                <HoverCardContent>
+                  <p>
+                    Get automatic suggestion{" "}
+                    <span className="text-muted-foreground">
+                      (based on artist and title)
+                    </span>
+                  </p>
+                </HoverCardContent>
+              </HoverCard>
+            </div>
           </div>
           <ViewTransition>
             <ZStackGrid
@@ -364,11 +404,6 @@ export function AddPageClientWrapper({
                 easeOvershootClassName,
                 !!state.errors?.cover && "border-destructive",
               )}
-              onMouseOver={() => updateImageActionsVisibility(true)}
-              onContextMenu={(event) => {
-                event.preventDefault()
-                updateImageActionsVisibility(true)
-              }}
             >
               {/* <img
                 src={coverURL}
@@ -397,64 +432,6 @@ export function AddPageClientWrapper({
               ></div>
               <div
                 className={cn(
-                  "justify-center items-center w-full h-full gap-2",
-                  easeOvershootClassName,
-                  isImageActionsVisible ? "flex" : "hidden",
-                )}
-              >
-                <HoverCard closeDelay={10} openDelay={50}>
-                  <HoverCardTrigger asChild>
-                    <Button
-                      variant="secondary"
-                      size="icon-lg"
-                      onClick={() => {
-                        buttonFileInputRef.current?.click()
-                      }}
-                    >
-                      <UploadSimpleIcon className="h-full" />
-                      <input
-                        type="file"
-                        hidden
-                        ref={buttonFileInputRef}
-                        name="cover"
-                        accept="image/jpeg, image/png, image/webp"
-                        onChange={(event) => {
-                          handleFileUpload(event)
-                        }}
-                      />
-                    </Button>
-                  </HoverCardTrigger>
-                  <HoverCardContent>
-                    <p>Upload cover</p>
-                  </HoverCardContent>
-                </HoverCard>
-                <HoverCard>
-                  <HoverCardTrigger asChild>
-                    <Button
-                      variant="secondary"
-                      size="icon-lg"
-                      onClick={() => {
-                        getSuggestionMutation.mutate({
-                          artist,
-                          title,
-                        })
-                      }}
-                    >
-                      <SparkleIcon className="h-full" />
-                    </Button>
-                  </HoverCardTrigger>
-                  <HoverCardContent>
-                    <p>
-                      Get automatic suggestion{" "}
-                      <span className="text-muted-foreground">
-                        (based on artist and title)
-                      </span>
-                    </p>
-                  </HoverCardContent>
-                </HoverCard>
-              </div>
-              <div
-                className={cn(
                   "justify-center items-center w-full h-full",
                   easeOvershootClassName,
                   isLoading ? "flex" : "hidden",
@@ -465,10 +442,7 @@ export function AddPageClientWrapper({
             </ZStackGrid>
           </ViewTransition>
         </div>
-        <div
-          className="col-span-12 md:col-span-8 row-span-2 md:col-start-5"
-          onClick={() => updateImageActionsVisibility(false)}
-        >
+        <div className="col-span-12 md:col-span-8 row-span-2 md:col-start-5">
           <form className="pl-4 gap-4" action={formAction}>
             <FieldGroup>
               <FieldSet>

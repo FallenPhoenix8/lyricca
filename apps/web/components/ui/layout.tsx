@@ -69,6 +69,7 @@ export function ZStackGrid(
   props: {
     children: React.ReactNode[] | React.ReactNode
     className?: string
+    ref?: React.Ref<HTMLDivElement>
   } & React.HTMLAttributes<HTMLDivElement>,
 ) {
   return (
