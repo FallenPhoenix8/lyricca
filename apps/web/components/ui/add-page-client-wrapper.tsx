@@ -399,7 +399,7 @@ export function AddPageClientWrapper({
             Upload a cover image or get a suggestion from the internet. You can
             also edit translations line-by-line.
           </FieldDescriptionWithErrors>
-          <div className="flex justify-evenly">
+          <div className="flex justify-start gap-2">
             <HoverCard closeDelay={10} openDelay={50}>
               <HoverCardTrigger>
                 <ActionButton

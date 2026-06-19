@@ -217,7 +217,7 @@ export function SongCardList() {
 
   return (
     <>
-      <HStack className="gap-2 mb-2">
+      <HStack className="gap-2 mb-2 px-2">
         {filterTags.map((tag) => {
           return (
             <Badge
@@ -236,7 +236,7 @@ export function SongCardList() {
           )
         })}
       </HStack>
-      <HStack className="gap-2" justifyContent="center">
+      <HStack className="gap-2 px-2" justifyContent="center">
         <InputGroup className="max-w-lg bg-background">
           <InputGroupInput
             placeholder="Search..."
@@ -313,7 +313,7 @@ export function SongCardList() {
 
       <div
         className={cn(
-          "flex flex-wrap gap-2 place-items-center my-3 mx-auto",
+          "flex flex-wrap gap-2 place-items-center my-3 mx-auto px-2",
           countToShow === 0 && "justify-center",
         )}
       >

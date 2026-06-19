@@ -112,7 +112,6 @@ export class SongsController {
       throw new ForbiddenException("You can only update your own songs.")
     }
 
-    console.log("Cover file:", coverFile)
     if (coverFile && coverFile.size > 0) {
       // * MARK: - Convert `Express.Multer.File` to `File` object
       const file = await this.imageService.convertToOptimizedFile(coverFile)
