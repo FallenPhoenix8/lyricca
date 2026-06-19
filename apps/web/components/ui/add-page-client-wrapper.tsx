@@ -174,7 +174,17 @@ export function AddPageClientWrapper({
     },
   })
 
-  const [coverURL, setCoverURL] = useState<string>("/empty.png")
+  const [coverURL, setCoverURL] = useState<string>("default")
+  const isCoverDefault = coverURL === "default" || isLoading
+  const displayCoverURL = useMemo(() => {
+    if (coverURL === "default") {
+      return "/cover-default.svg"
+    } else if (coverURL === "empty") {
+      return "/empty.png"
+    } else {
+      return coverURL
+    }
+  }, [coverURL])
   const getSuggestionMutation = useMutation(getCoverSuggestionAction, {
     onMutate: () => {
       updateImageActionsVisibility(false)
@@ -203,7 +213,7 @@ export function AddPageClientWrapper({
 
   const setCoverFileMutation = useMutation(
     async () => {
-      if (coverURL === "/default.png" || coverURL === "/empty.png") {
+      if (coverURL === "default" || coverURL === "empty") {
         console.log("Cover URL is empty or default, skipping...")
         return
       }
@@ -360,7 +370,7 @@ export function AddPageClientWrapper({
                 updateImageActionsVisibility(true)
               }}
             >
-              <img
+              {/* <img
                 src={coverURL}
                 alt="Empty Cover"
                 className="w-full aspect-video md:aspect-square object-cover rounded-xl"
@@ -368,7 +378,17 @@ export function AddPageClientWrapper({
                 onLoad={() => {
                   updateLoadingState(false)
                 }}
+              /> */}
+
+              <img
+                src={displayCoverURL}
+                className="w-full aspect-video md:aspect-square object-cover rounded-xl"
+                aria-describedby="cover-description"
+                onLoad={() => {
+                  updateLoadingState(false)
+                }}
               />
+
               <div
                 className={cn(
                   "w-full h-full bg-accent/50 rounded-xl",
@@ -625,6 +645,11 @@ export function AddPageClientWrapper({
               />
             </FieldGroup>
             <input type="file" name="cover" hidden ref={coverFileRef} />
+            <input
+              type="hidden"
+              name="default-cover"
+              value={isCoverDefault ? "default" : ""}
+            />
             <Button className="my-3 w-full" disabled={isPending}>
               {isPending && <LoadingSpinner />} Add Song
             </Button>

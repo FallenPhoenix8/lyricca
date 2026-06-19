@@ -110,12 +110,13 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
   // * MARK: - Verify if cover file is included with the submitted form
 
   const file = formData.get("cover") as File | null
+
+  let isDefaultCover = formData.get("default-cover") === "default"
   if (!file || file.size < 1) {
-    state.errors?.cover?.push("Cover file is required.")
-    return state
+    isDefaultCover = true
   }
 
-  if (file) {
+  if (file && file.size > 0) {
     const fileObj = file as File
     const fileName = fileObj.name
     const fileExtension = fileName.split(".").pop()
@@ -131,9 +132,6 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
       )
       return state
     }
-  } else {
-    state.errors?.cover?.push("Cover file is required.")
-    return state
   }
 
   try {
@@ -145,9 +143,9 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
         dataToSend.append(key, value as string)
       }
     })
-
     // * MARK: - Append file to `FormData`
-    if (file && file instanceof File) {
+    const isFileValid = file && file instanceof File
+    if (isFileValid && !isDefaultCover) {
       dataToSend.append("cover", file)
     }
 

@@ -15,7 +15,7 @@ export class SongsService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async create(
-    createSongDto: SongCreateDTO & { user_id: string; cover_id: string },
+    createSongDto: SongCreateDTO & { user_id: string; cover_id?: string },
   ): Promise<SongImpl> {
     const song = await this.databaseService.song.create({
       data: {

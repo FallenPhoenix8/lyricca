@@ -69,23 +69,25 @@ export class SongsController {
   async create(
     @Req() req: AuthenticatedRequest,
     @Body() body: SongCreateDTOImpl,
-    @UploadedFile() coverFile: Express.Multer.File,
+    @UploadedFile() coverFile?: Express.Multer.File,
   ): Promise<SongDTOImpl> {
     //* MARK: - Get user from request
     const user = await req.user()
 
+    const songToBeCreated: SongCreateDTOImpl & { cover_id?: string } = {
+      ...body,
+    }
     // * MARK: - Convert `Express.Multer.File` to `File` object
-    const file = await this.imageService.convertToOptimizedFile(coverFile)
-
-    const cover = await this.coversService.create(file)
+    if (coverFile && coverFile.size > 0) {
+      const file = await this.imageService.convertToOptimizedFile(coverFile)
+      const cover = await this.coversService.create(file)
+      songToBeCreated.cover_id = cover.id
+    }
 
     // * MARK: - Create song
     const song = await this.songsService.create({
-      ...body,
+      ...songToBeCreated,
       user_id: user.id,
-      cover_id: cover.id,
-      album: body.album?.trim() || null,
-      artist: body.artist?.trim() || null,
     })
 
     return new SongDTOImpl(song)
@@ -110,7 +112,8 @@ export class SongsController {
       throw new ForbiddenException("You can only update your own songs.")
     }
 
-    if (coverFile) {
+    console.log("Cover file:", coverFile)
+    if (coverFile && coverFile.size > 0) {
       // * MARK: - Convert `Express.Multer.File` to `File` object
       const file = await this.imageService.convertToOptimizedFile(coverFile)
 

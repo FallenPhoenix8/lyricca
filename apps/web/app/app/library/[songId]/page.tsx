@@ -69,7 +69,7 @@ export default function SongDetailsPage() {
     target.blur()
   }
 
-  const [artist, setArtist] = useState<string | null>(song?.artist ?? null)
+  const [artist, setArtist] = useState<string | null>(song?.artist || null)
   function updateArtist(newArtist: string | null, target: HTMLDivElement) {
     console.log(`Updating artist to "${newArtist}"...`)
     startTransition(() => {
@@ -79,7 +79,7 @@ export default function SongDetailsPage() {
     target.blur()
   }
 
-  const [album, setAlbum] = useState<string | null>(song?.album ?? null)
+  const [album, setAlbum] = useState<string | null>(song?.album || null)
   function updateAlbum(newAlbum: string | null, target: HTMLDivElement) {
     console.log(`Updating album to "${newAlbum}"...`)
     startTransition(() => {
@@ -90,16 +90,16 @@ export default function SongDetailsPage() {
   }
   useEffect(() => {
     startTransition(() => {
-      setArtist(song?.artist ?? null)
-      setAlbum(song?.album ?? null)
+      setArtist(song?.artist || null)
+      setAlbum(song?.album || null)
     })
   }, [song])
 
   const translatedLyrics = useMemo(() => {
-    return song?.translated_lyrics.split("\n") ?? []
+    return song?.translated_lyrics.split("\n") || []
   }, [song])
   const originalLyrics = useMemo(() => {
-    return song?.original_lyrics.split("\n") ?? []
+    return song?.original_lyrics.split("\n") || []
   }, [song])
 
   function handleLyricsChange({
@@ -240,8 +240,8 @@ export default function SongDetailsPage() {
         <div className="col-span-12 md:col-span-4 row-span-1 md:h-screen flex justify-center items-center">
           <ViewTransition name={`${songId}-cover`}>
             <Image
-              src={song?.cover?.url ?? "/empty.png"}
-              alt={song?.title ?? ""}
+              src={song?.cover?.url || "/cover-default.svg"}
+              alt={song?.title || ""}
               className="w-full aspect-video md:aspect-square object-cover rounded-xl border-2 bg-accent animate-pulse"
               onLoad={(event) => {
                 const target = event.target as HTMLImageElement
@@ -268,7 +268,7 @@ export default function SongDetailsPage() {
                   suppressContentEditableWarning
                   ref={titleElementRef}
                 >
-                  {song?.title ?? ""}
+                  {song?.title || ""}
                 </div>
                 {isLoading && <Skeleton className="h-8 w-[50vw] rounded-sm" />}
               </ViewTransition>
@@ -288,7 +288,7 @@ export default function SongDetailsPage() {
                     ref={artistElementRef}
                   >
                     {isEditable
-                      ? (song.artist ?? "")
+                      ? song.artist || ""
                       : artist?.trim() || unknownArtist}
                   </Badge>
                 ) : (
@@ -308,7 +308,7 @@ export default function SongDetailsPage() {
                     )}
                     ref={albumElementRef}
                   >
-                    {isEditable ? (song.album ?? "") : (album ?? unknownAlbum)}
+                    {isEditable ? song.album || "" : album || unknownAlbum}
                   </Badge>
                 ) : (
                   <Skeleton className="h-5 w-24 rounded-full" />
