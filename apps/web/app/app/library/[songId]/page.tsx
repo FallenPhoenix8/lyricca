@@ -216,33 +216,20 @@ export default function SongDetailsPage() {
   return (
     <>
       {/* <ViewTransition default="auto"> */}
-      <Breadcrumb className="my-2">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link
-                href={`/app/library?q=${encodeURIComponent(searchParams)}`}
-                onNavigate={() => {
-                  setReferralSongId(songId)
-                }}
-              >
-                Library
-              </Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Lyrics</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-      <div className="grid grid-cols-12 grid-rows-[200px 200px] gap-4">
+
+      <div className="fixed inset-0 z-0 bg-background/65 backdrop-blur-lg"></div>
+      <div
+        className="grid grid-cols-12 grid-rows-[200px 200px] gap-4 -z-10 bg-cover bg-center"
+        style={{
+          backgroundImage: `url("${song?.cover?.url || "/cover-default.svg"}")`,
+        }}
+      >
         <div className="col-span-12 md:col-span-4 row-span-1 md:h-screen flex justify-center items-center">
           <ViewTransition name={`${songId}-cover`}>
             <Image
               src={song?.cover?.url || "/cover-default.svg"}
               alt={song?.title || ""}
-              className="w-full aspect-video md:aspect-square object-cover rounded-xl border-2 bg-accent animate-pulse"
+              className="w-full aspect-square object-cover rounded-xl border-2 bg-accent animate-pulse absolute top-0 z-5"
               onLoad={(event) => {
                 const target = event.target as HTMLImageElement
                 target.classList.remove("animate-pulse")
@@ -252,13 +239,33 @@ export default function SongDetailsPage() {
             />
           </ViewTransition>
         </div>
-        <div className="col-span-12 md:col-span-8 row-span-2 md:col-start-5">
-          <VStack className="pl-4 gap-4">
+        <div className="col-span-12 md:col-span-8 row-span-2 md:col-start-5 mt-[40vw] md:mt-10 z-20 bg-background/50 backdrop-blur-lg rounded-t-2xl pb-2 md:pb-4 rounded-b-sm shadow-md shadow-border/50">
+          <VStack className="px-2 md:px-4 gap-4">
             <VStack className="gap-1">
+              <Breadcrumb className="my-2">
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <Link
+                        href={`/app/library?q=${encodeURIComponent(searchParams)}`}
+                        onNavigate={() => {
+                          setReferralSongId(songId)
+                        }}
+                      >
+                        Library
+                      </Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Lyrics</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
               <ViewTransition name={`${songId}-title`}>
                 <div
                   className={cn(
-                    "app-title-heading mt-3 min-w-1 px-2 bg-transparent py-1 border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] duration-300 outline-0",
+                    "app-title-heading mt-3 min-w-1 px-2 bg-transparent border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] duration-300 outline-0",
                     easeOvershootClassName,
                     isEditable &&
                       "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",

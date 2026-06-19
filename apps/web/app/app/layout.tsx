@@ -15,7 +15,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <SongsProvider>
             <main className="select-none">
               <Navigation origin="app" />
-              <section className="px-4 pt-2">{children}</section>
+              <section>{children}</section>
             </main>
           </SongsProvider>
         </QueryClientProvider>

@@ -258,7 +258,7 @@ export function LyricsView({
       >
         <div
           className={cn(
-            "absolute bg-card rounded-xl inset-0 -z-20 transition-[border-radius]",
+            "absolute bg-secondary/90 rounded-xl inset-0 -z-20 transition-[border-radius]",
             easeOvershootClassName,
             isMaximized && "rounded-none",
           )}

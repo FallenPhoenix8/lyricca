@@ -64,7 +64,9 @@ gsap.registerPlugin(CustomEase)
 export function ActionButton(
   props: React.ComponentProps<"div"> & { children: React.ReactNode },
 ) {
-  const [shape, setShape] = useState<Shape>("triangle")
+  const defaultShape: Shape = "cookie-9"
+  const activeShape: Shape = "pentagon"
+  const [shape, setShape] = useState<Shape>(defaultShape)
   const transitionDurationType = useRef<"touch" | "hover">("hover")
   const touchTransitionDuration = 0.3
   const hoverTransitionDuration = 0.4
@@ -108,7 +110,7 @@ export function ActionButton(
       tl.to(
         group,
         {
-          rotation: shape === "triangle" ? 0 : 180,
+          rotation: shape === defaultShape ? 0 : 180,
           svgOrigin: "190 190",
         },
         0,
@@ -117,7 +119,7 @@ export function ActionButton(
       tl.to(
         container,
         {
-          scale: shape === "triangle" ? 1 : 1.1,
+          scale: shape === defaultShape ? 1 : 1.1,
           transformOrigin: "50% 50%",
         },
         0,
@@ -125,36 +127,16 @@ export function ActionButton(
     },
     { dependencies: [shape] },
   )
-
-  useEffect(() => {
-    console.log(shape)
-  }, [shape])
   return (
     <>
       <ZStackGrid
-        onTouchStart={() => {
-          transitionDurationType.current = "touch"
-          setShape("pentagon")
-        }}
-        onTouchEnd={() => {
-          transitionDurationType.current = "touch"
-          setShape("triangle")
-        }}
         onMouseEnter={() => {
           transitionDurationType.current = "hover"
           setShape("pentagon")
         }}
         onMouseLeave={() => {
           transitionDurationType.current = "hover"
-          setShape("triangle")
-        }}
-        onFocus={() => {
-          transitionDurationType.current = "hover"
-          setShape("pentagon")
-        }}
-        onBlur={() => {
-          transitionDurationType.current = "hover"
-          setShape("triangle")
+          setShape(defaultShape)
         }}
         ref={containerRef}
         {...props}
@@ -168,20 +150,28 @@ export function ActionButton(
           height="380"
           viewBox="0 0 380 380"
           xmlns="http://www.w3.org/2000/svg"
-          className="fill-secondary w-full h-10 aspect-square stroke-4 stroke-border"
+          className="fill-secondary w-full h-16 aspect-square stroke-[1.5rem] stroke-border"
         >
           <g ref={shapeGroupRef}>
-            <path d={getPathData("triangle")} fill="inherit" ref={pathRef} />
+            <path d={getPathData(defaultShape)} fill="inherit" ref={pathRef} />
           </g>
         </svg>
         <Button
           variant="ghost"
           size="icon-sm"
           className={cn(
-            shape === "triangle" ? "translate-y-0.5" : "-translate-y-0.5",
+            shape === defaultShape ? "translate-y-0.5" : "-translate-y-0.5",
             `duration-[${duration()}s]`,
             easeOvershootClassName,
           )}
+          onFocus={() => {
+            transitionDurationType.current = "touch"
+            setShape("pentagon")
+          }}
+          onBlur={() => {
+            transitionDurationType.current = "touch"
+            setShape(defaultShape)
+          }}
         >
           {props.children}
         </Button>

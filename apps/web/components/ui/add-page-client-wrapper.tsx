@@ -328,78 +328,25 @@ export function AddPageClientWrapper({
   }, [state])
   return (
     <ViewTransition>
-      <Breadcrumb className="my-2">
+      {/* <Breadcrumb className="my-2">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbPage>Add</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
-      </Breadcrumb>
-      <div className="grid grid-cols-12 grid-rows-[200px 200px] gap-4">
-        <div className="col-span-12 md:col-span-4 row-span-1 md:h-screen flex flex-col md:sticky top-0">
-          <div className="py-2 px-4">
-            <FieldLabel>Cover</FieldLabel>
-            <FieldDescriptionWithErrors
-              errors={state.errors?.cover ?? []}
-              id="cover-description"
-            >
-              Upload a cover image or get a suggestion from the internet. You
-              can also edit translations line-by-line.
-            </FieldDescriptionWithErrors>
-            <div className="flex justify-evenly">
-              <HoverCard closeDelay={10} openDelay={50}>
-                <HoverCardTrigger>
-                  <ActionButton
-                    onClick={() => {
-                      buttonFileInputRef.current?.click()
-                    }}
-                  >
-                    <UploadSimpleIcon />
-                    <input
-                      type="file"
-                      hidden
-                      ref={buttonFileInputRef}
-                      name="cover"
-                      accept="image/jpeg, image/png, image/webp"
-                      onChange={(event) => {
-                        handleFileUpload(event)
-                      }}
-                    />
-                  </ActionButton>
-                </HoverCardTrigger>
-                <HoverCardContent>
-                  <p>Upload cover</p>
-                </HoverCardContent>
-              </HoverCard>
-
-              <HoverCard closeDelay={10} openDelay={50}>
-                <HoverCardTrigger>
-                  <ActionButton
-                    onClick={() => {
-                      getSuggestionMutation.mutate({
-                        artist,
-                        title,
-                      })
-                    }}
-                  >
-                    <SparkleIcon className="h-full" />
-                  </ActionButton>
-                </HoverCardTrigger>
-                <HoverCardContent>
-                  <p>
-                    Get automatic suggestion{" "}
-                    <span className="text-muted-foreground">
-                      (based on artist and title)
-                    </span>
-                  </p>
-                </HoverCardContent>
-              </HoverCard>
-            </div>
-          </div>
+      </Breadcrumb> */}
+      <div className="fixed inset-0 z-0 bg-background/65 backdrop-blur-lg"></div>
+      <div
+        className="grid grid-cols-12 grid-rows-[300px 1fr] -z-10 bg-cover bg-center"
+        style={{
+          backgroundImage: `url("${displayCoverURL}")`,
+        }}
+      >
+        <div className="col-span-12 md:col-span-4 row-span-2 md:h-screen flex flex-col md:sticky top-14">
           <ViewTransition>
             <ZStackGrid
               className={cn(
-                "group w-full aspect-video md:aspect-square rounded-xl border-2",
+                "group w-full absolute top-0 aspect-square rounded-xl border-2 z-5",
                 isLoading && "animate-pulse",
                 easeOvershootClassName,
                 !!state.errors?.cover && "border-destructive",
@@ -417,7 +364,7 @@ export function AddPageClientWrapper({
 
               <img
                 src={displayCoverURL}
-                className="w-full aspect-video md:aspect-square object-cover rounded-xl"
+                className="w-full aspect-square object-cover rounded-xl"
                 aria-describedby="cover-description"
                 onLoad={() => {
                   updateLoadingState(false)
@@ -442,8 +389,68 @@ export function AddPageClientWrapper({
             </ZStackGrid>
           </ViewTransition>
         </div>
-        <div className="col-span-12 md:col-span-8 row-span-2 md:col-start-5">
-          <form className="pl-4 gap-4" action={formAction}>
+        <div className="py-2 px-4 col-span-12 md:col-span-8 row-span-1 mt-[40vw] md:mt-10 bg-background/80 rounded-t-2xl z-10">
+          <h1 className="text-2xl font-extrabold py-4">Add a new song</h1>
+          <FieldLabel>Cover</FieldLabel>
+          <FieldDescriptionWithErrors
+            errors={state.errors?.cover ?? []}
+            id="cover-description"
+          >
+            Upload a cover image or get a suggestion from the internet. You can
+            also edit translations line-by-line.
+          </FieldDescriptionWithErrors>
+          <div className="flex justify-evenly">
+            <HoverCard closeDelay={10} openDelay={50}>
+              <HoverCardTrigger>
+                <ActionButton
+                  onClick={() => {
+                    buttonFileInputRef.current?.click()
+                  }}
+                >
+                  <UploadSimpleIcon />
+                  <input
+                    type="file"
+                    hidden
+                    ref={buttonFileInputRef}
+                    name="cover"
+                    accept="image/jpeg, image/png, image/webp"
+                    onChange={(event) => {
+                      handleFileUpload(event)
+                    }}
+                  />
+                </ActionButton>
+              </HoverCardTrigger>
+              <HoverCardContent>
+                <p>Upload cover</p>
+              </HoverCardContent>
+            </HoverCard>
+
+            <HoverCard closeDelay={10} openDelay={50}>
+              <HoverCardTrigger>
+                <ActionButton
+                  onClick={() => {
+                    getSuggestionMutation.mutate({
+                      artist,
+                      title,
+                    })
+                  }}
+                >
+                  <SparkleIcon className="h-full" />
+                </ActionButton>
+              </HoverCardTrigger>
+              <HoverCardContent>
+                <p>
+                  Get automatic suggestion{" "}
+                  <span className="text-muted-foreground">
+                    (based on artist and title)
+                  </span>
+                </p>
+              </HoverCardContent>
+            </HoverCard>
+          </div>
+        </div>
+        <div className="col-span-12 md:col-span-8 row-span-2 md:col-start-5 z-10 bg-background/80">
+          <form className="px-2 md:px-4 gap-4 py-2" action={formAction}>
             <FieldGroup>
               <FieldSet>
                 <FieldLegend>Song Details</FieldLegend>

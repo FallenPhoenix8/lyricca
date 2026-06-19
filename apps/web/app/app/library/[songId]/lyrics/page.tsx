@@ -49,16 +49,27 @@ export default function SongLyricsPage() {
   )
 
   return (
-    <LyricsView
-      translatedLyrics={song?.translated_lyrics.split("\n") ?? []}
-      originalLyrics={song?.original_lyrics.split("\n") ?? []}
-      handleLyricsChange={updateLyrics}
-      isEditable={isEditable}
-      setIsEditable={setIsEditable}
-      isLoading={isLoading}
-      isMaximized={true}
-      maximizedURL={maximizedURL}
-      minimizedURL={minimizedURL}
-    />
+    <>
+      <div className="fixed inset-0 z-89 backdrop-blur-md"></div>
+      <div
+        className="fixed inset-0 bg-cover bg-no-repeat"
+        style={{
+          backgroundImage: `url("${song?.cover?.url || "/cover-default.svg"}")`,
+        }}
+      >
+        {/* </div> */}
+      </div>
+      <LyricsView
+        translatedLyrics={song?.translated_lyrics.split("\n") ?? []}
+        originalLyrics={song?.original_lyrics.split("\n") ?? []}
+        handleLyricsChange={updateLyrics}
+        isEditable={isEditable}
+        setIsEditable={setIsEditable}
+        isLoading={isLoading}
+        isMaximized={true}
+        maximizedURL={maximizedURL}
+        minimizedURL={minimizedURL}
+      />
+    </>
   )
 }

@@ -87,10 +87,10 @@ export default function AnimatedButtonGroup({
     }
   }, [buttons])
   return (
-    <ZStack className="bg-secondary/20 rounded-sm w-min shadow-md">
+    <div className="relative z-20 rounded-sm w-min shadow-md bg-card">
       {/* MARK: - Render selection background */}
       <div
-        className="absolute inset-x-0 bottom-0 bg-secondary transition-[top, left, width, height] duration-300 ease-in-out left-0 top-0 h-0 w-0 rounded-lg shadow-sm -z-10"
+        className="absolute inset-x-0 bottom-0 bg-accent transition-[top, left, width, height] duration-300 ease-in-out left-0 top-0 h-0 w-0 rounded-lg shadow-sm z-21 bg-accent"
         ref={selectionBackgroundRef}
       ></div>
       {/* MARK: - Render buttons */}
@@ -122,12 +122,12 @@ export default function AnimatedButtonGroup({
               onBlur={() => {
                 updateActiveButtonIndex(previousActiveButtonIndex)
               }}
-              className="transition-colors duration-300"
+              className="transition-colors duration-300 z-23"
             >
               {isCompact ? (
-                button.icon
+                <span className="z-100">{button.icon}</span>
               ) : (
-                <HStack className="gap-1 items-center-safe">
+                <HStack className="gap-1 items-center-safe z-23">
                   <div>{button.icon}</div>
                   <div>{button.label}</div>
                 </HStack>
@@ -152,6 +152,6 @@ export default function AnimatedButtonGroup({
           )
         })}
       </HStack>
-    </ZStack>
+    </div>
   )
 }
