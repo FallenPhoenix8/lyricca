@@ -238,6 +238,27 @@
     animation-timing-function: var(--m3-spring-spatial-default);
     animation-duration: var(--m3-duration-spatial-default);
   }
+
+  ::view-transition {
+    animation-timing-function: var(--m3-spring-spatial-default);
+    animation-duration: var(--m3-duration-spatial-default);
+  }
+
+  ::view-transition-group(content) {
+    z-index: 50;
+  }
+
+  ::view-transition-group(.song-card-cover) {
+    z-index: 100;
+  }
+
+  ::view-transition-group(.song-card-title) {
+    z-index: 100;
+  }
+
+  ::view-transition-group(lyrics-view) {
+    z-index: 100;
+  }
 }
 
 @layer components {

@@ -230,11 +230,15 @@ export default function SongDetailsPage() {
         }}
       >
         <div className="col-span-12 md:col-span-4 row-span-1 md:h-screen flex justify-center items-center">
-          <ViewTransition name={`${songId}-cover`}>
+          <ViewTransition
+            name={`${songId}-cover`}
+            share="song-cover-details"
+            update="song-cover"
+          >
             <Image
               src={song?.cover?.url || "/cover-default.svg"}
               alt={song?.title || ""}
-              className="w-full aspect-square object-cover rounded-xl border-2 bg-accent animate-pulse absolute top-0 z-5"
+              className="w-full aspect-square object-cover rounded-xl border-2 bg-accent animate-pulse absolute top-0"
               onLoad={(event) => {
                 const target = event.target as HTMLImageElement
                 target.classList.remove("animate-pulse")
@@ -244,104 +248,111 @@ export default function SongDetailsPage() {
             />
           </ViewTransition>
         </div>
-        <div className="col-span-12 md:col-span-8 row-span-2 md:col-start-5 mt-[40vw] md:mt-10 z-20 bg-background/50 backdrop-blur-lg rounded-t-2xl pb-2 md:pb-4 rounded-b-sm shadow-md shadow-border/50">
-          <VStack className="px-2 md:px-4 gap-4">
-            <VStack className="gap-1">
-              <Breadcrumb className="my-2">
-                <BreadcrumbList>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                      <Link
-                        href={`/app/library?q=${encodeURIComponent(searchParams)}`}
-                        onNavigate={() => {
-                          setReferralSongId(songId)
-                        }}
-                      >
-                        Library
-                      </Link>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>Lyrics</BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
-              <ViewTransition name={`${songId}-title`}>
-                <div
-                  className={cn(
-                    "app-title-heading mt-3 min-w-1 px-2 bg-transparent border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0",
-                    m3ExpressiveDuration.effect.fast.className,
-                    m3ExpressiveSpring.effect.fast.className,
-                    isEditable &&
-                      "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
-                  )}
-                  contentEditable={isEditable}
-                  tabIndex={isEditable ? 0 : -1}
-                  suppressContentEditableWarning
-                  ref={titleElementRef}
+        <ViewTransition name="content">
+          <div className="col-span-12 md:col-span-8 row-span-2 md:col-start-5 mt-[40vw] md:mt-10 z-20 bg-background/50 backdrop-blur-lg rounded-t-2xl pb-2 md:pb-4 rounded-b-sm shadow-md shadow-border/50">
+            <VStack className="px-2 md:px-4 gap-4">
+              <VStack className="gap-1">
+                <Breadcrumb className="my-2">
+                  <BreadcrumbList>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink asChild>
+                        <Link
+                          href={`/app/library?q=${encodeURIComponent(searchParams)}`}
+                          onNavigate={() => {
+                            setReferralSongId(songId)
+                          }}
+                        >
+                          Library
+                        </Link>
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>Lyrics</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
+                <ViewTransition
+                  name={`${songId}-title`}
+                  share="song-card-title"
                 >
-                  {song?.title || ""}
-                </div>
-                {isLoading && <Skeleton className="h-8 w-[50vw] rounded-sm" />}
-              </ViewTransition>
-              <HStack className="gap-2">
-                {song ? (
-                  <Badge
-                    variant="secondary"
-                    contentEditable={isEditable}
-                    tabIndex={isEditable ? 0 : -1}
-                    suppressContentEditableWarning
+                  <div
                     className={cn(
-                      "min-w-1 px-2 py-1 border-0 transition-[border-color, border-radius, border-width, outline] outline-0",
+                      "app-title-heading mt-3 min-w-1 px-2 bg-transparent border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0",
                       m3ExpressiveDuration.effect.fast.className,
                       m3ExpressiveSpring.effect.fast.className,
                       isEditable &&
                         "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
                     )}
-                    ref={artistElementRef}
-                  >
-                    {isEditable
-                      ? song.artist || ""
-                      : artist?.trim() || unknownArtist}
-                  </Badge>
-                ) : (
-                  <Skeleton className="h-5 w-20 rounded-full" />
-                )}
-                {song ? (
-                  <Badge
-                    variant="secondary"
                     contentEditable={isEditable}
                     tabIndex={isEditable ? 0 : -1}
                     suppressContentEditableWarning
-                    className={cn(
-                      "min-w-1 px-2 py-1 border-0 transition-[border-color, border-radius, border-width, outline] outline-0",
-                      m3ExpressiveDuration.effect.fast.className,
-                      m3ExpressiveSpring.effect.fast.className,
-                      isEditable &&
-                        "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
-                    )}
-                    ref={albumElementRef}
+                    ref={titleElementRef}
                   >
-                    {isEditable ? song.album || "" : album || unknownAlbum}
-                  </Badge>
-                ) : (
-                  <Skeleton className="h-5 w-24 rounded-full" />
-                )}
-              </HStack>
+                    {song?.title || ""}
+                  </div>
+                  {isLoading && (
+                    <Skeleton className="h-8 w-[50vw] rounded-sm" />
+                  )}
+                </ViewTransition>
+                <HStack className="gap-2">
+                  {song ? (
+                    <Badge
+                      variant="secondary"
+                      contentEditable={isEditable}
+                      tabIndex={isEditable ? 0 : -1}
+                      suppressContentEditableWarning
+                      className={cn(
+                        "min-w-1 px-2 py-1 border-0 transition-[border-color, border-radius, border-width, outline] outline-0",
+                        m3ExpressiveDuration.effect.fast.className,
+                        m3ExpressiveSpring.effect.fast.className,
+                        isEditable &&
+                          "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
+                      )}
+                      ref={artistElementRef}
+                    >
+                      {isEditable
+                        ? song.artist || ""
+                        : artist?.trim() || unknownArtist}
+                    </Badge>
+                  ) : (
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                  )}
+                  {song ? (
+                    <Badge
+                      variant="secondary"
+                      contentEditable={isEditable}
+                      tabIndex={isEditable ? 0 : -1}
+                      suppressContentEditableWarning
+                      className={cn(
+                        "min-w-1 px-2 py-1 border-0 transition-[border-color, border-radius, border-width, outline] outline-0",
+                        m3ExpressiveDuration.effect.fast.className,
+                        m3ExpressiveSpring.effect.fast.className,
+                        isEditable &&
+                          "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
+                      )}
+                      ref={albumElementRef}
+                    >
+                      {isEditable ? song.album || "" : album || unknownAlbum}
+                    </Badge>
+                  ) : (
+                    <Skeleton className="h-5 w-24 rounded-full" />
+                  )}
+                </HStack>
+              </VStack>
+              <LyricsView
+                translatedLyrics={translatedLyrics}
+                originalLyrics={originalLyrics}
+                handleLyricsChange={handleLyricsChange}
+                isLoading={isLoading}
+                isEditable={isEditable}
+                setIsEditable={setIsEditable}
+                maximizedURL={maximizedURL}
+                minimizedURL={minimizedURL}
+              />
             </VStack>
-            <LyricsView
-              translatedLyrics={translatedLyrics}
-              originalLyrics={originalLyrics}
-              handleLyricsChange={handleLyricsChange}
-              isLoading={isLoading}
-              isEditable={isEditable}
-              setIsEditable={setIsEditable}
-              maximizedURL={maximizedURL}
-              minimizedURL={minimizedURL}
-            />
-          </VStack>
-        </div>
+          </div>
+        </ViewTransition>
       </div>
       {/* </ViewTransition> */}
     </>

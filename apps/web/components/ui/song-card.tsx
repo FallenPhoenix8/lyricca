@@ -219,7 +219,11 @@ function SongCardRegular(props: {
           router.push(href)
         }}
       >
-        <ViewTransition name={`${props.song.id}-cover`}>
+        <ViewTransition
+          name={`${props.song.id}-cover`}
+          share="song-card-cover"
+          update="song-cover"
+        >
           <Image
             src={props.song.cover?.url ?? "/cover-default.svg"}
             alt={props.song.title}
@@ -240,7 +244,7 @@ function SongCardRegular(props: {
       </Link>
 
       <CardHeader>
-        <ViewTransition name={`${props.song.id}-title`}>
+        <ViewTransition name={`${props.song.id}-title`} share="song-card-title">
           <CardTitle className="leading-normal">
             <Link
               href={href}
@@ -398,7 +402,11 @@ function SongCardCompact(props: {
         />
 
         <div className="grid place-items-center h-10 aspect-square bg-secondary rounded-xs squircle shadow-sm dark:shadow-background/50 shadow-foreground/50">
-          <ViewTransition name={`${props.song.id}-cover`}>
+          <ViewTransition
+            name={`${props.song.id}-cover`}
+            share="song-card-cover"
+            update="song-cover"
+          >
             <Image
               src={props.song.cover?.url ?? "/cover-default.svg"}
               alt={props.song.title}
@@ -414,7 +422,10 @@ function SongCardCompact(props: {
         </div>
 
         <VStack className="px-2 justify-around">
-          <ViewTransition name={`${props.song.id}-title`}>
+          <ViewTransition
+            name={`${props.song.id}-title`}
+            share="song-card-title"
+          >
             <div className="text-sm font-semibold line-clamp-1">
               {props.song.title}
             </div>

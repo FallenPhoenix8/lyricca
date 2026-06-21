@@ -12,6 +12,9 @@ export default function LibraryPage() {
   return (
     <>
       {/* <ViewTransition default="auto"> */}
+      <ViewTransition name="blur-overlay" share="blur-overlay-hidden">
+        <div className="fixed top-0 right-0 left-0 h-0 bg-background/65 backdrop-blur-lg"></div>
+      </ViewTransition>
       <Breadcrumb className="my-2">
         <BreadcrumbList>
           <BreadcrumbItem>

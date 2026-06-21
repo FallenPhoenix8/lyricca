@@ -311,62 +311,68 @@ export function SongCardList() {
         </ButtonGroup>
       </HStack>
 
-      <div
-        className={cn(
-          "flex flex-wrap gap-2 place-items-center my-3 mx-auto px-2",
-          countToShow === 0 && "justify-center",
-        )}
-      >
-        {songsToShow.length === 0 &&
-          referralSong &&
-          skeletonCardsWithReferralSong.map((song, index) =>
-            song ? (
+      <ViewTransition name="content">
+        <div
+          className={cn(
+            "flex flex-wrap gap-2 place-items-center my-3 mx-auto px-2",
+            countToShow === 0 && "justify-center",
+          )}
+        >
+          {songsToShow.length === 0 &&
+            referralSong &&
+            skeletonCardsWithReferralSong.map((song, index) =>
+              song ? (
+                <SongCardResponsiveClient
+                  isAlbumTagActive={isIncludesTag(
+                    song?.album ?? "Unknown Album",
+                  )}
+                  isArtistTagActive={isIncludesTag(
+                    song?.artist ?? "Unknown Artist",
+                  )}
+                  onTagClick={pushTag}
+                  key={song?.id}
+                  song={song ?? null}
+                  className="h-full"
+                  index={index}
+                />
+              ) : (
+                <SkeletonSongCard key={`skeleton-card-${index}`} />
+              ),
+            )}
+          {!isLoading &&
+            songsCollection.length !== 0 &&
+            songsToShow.length !== 0 &&
+            countToShow !== 0 &&
+            songsToShow.map((song, index) => (
               <SongCardResponsiveClient
-                isAlbumTagActive={isIncludesTag(song?.album ?? "Unknown Album")}
+                isAlbumTagActive={isIncludesTag(song.album ?? "Unknown Album")}
                 isArtistTagActive={isIncludesTag(
-                  song?.artist ?? "Unknown Artist",
+                  song.artist ?? "Unknown Artist",
                 )}
                 onTagClick={pushTag}
-                key={song?.id}
-                song={song ?? null}
+                key={song.id}
+                song={song}
                 className="h-full"
                 index={index}
               />
-            ) : (
-              <SkeletonSongCard key={`skeleton-card-${index}`} />
-            ),
-          )}
-        {!isLoading &&
-          songsCollection.length !== 0 &&
-          songsToShow.length !== 0 &&
-          countToShow !== 0 &&
-          songsToShow.map((song, index) => (
-            <SongCardResponsiveClient
-              isAlbumTagActive={isIncludesTag(song.album ?? "Unknown Album")}
-              isArtistTagActive={isIncludesTag(song.artist ?? "Unknown Artist")}
-              onTagClick={pushTag}
-              key={song.id}
-              song={song}
-              className="h-full"
-              index={index}
-            />
-          ))}
+            ))}
 
-        {!isLoading && countToShow === 0 && (
-          <div>
-            <h1 className="text-center text-xl font-bold">
-              {noResultsHeadingContent}
-            </h1>
-            <p className="text-center font-semibold text-muted-foreground">
-              {noResultsParagraphContent}
-            </p>
-          </div>
-        )}
-        {isLoading &&
-          skeletonCards.map((_, index) => (
-            <SkeletonSongCard key={`skeleton-card-${index}`} />
-          ))}
-      </div>
+          {!isLoading && countToShow === 0 && (
+            <div>
+              <h1 className="text-center text-xl font-bold">
+                {noResultsHeadingContent}
+              </h1>
+              <p className="text-center font-semibold text-muted-foreground">
+                {noResultsParagraphContent}
+              </p>
+            </div>
+          )}
+          {isLoading &&
+            skeletonCards.map((_, index) => (
+              <SkeletonSongCard key={`skeleton-card-${index}`} />
+            ))}
+        </div>
+      </ViewTransition>
     </>
   )
 }

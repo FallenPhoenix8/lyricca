@@ -56,9 +56,7 @@ export default function SongLyricsPage() {
         style={{
           backgroundImage: `url("${song?.cover?.url || "/cover-default.svg"}")`,
         }}
-      >
-        {/* </div> */}
-      </div>
+      ></div>
       <LyricsView
         translatedLyrics={song?.translated_lyrics.split("\n") ?? []}
         originalLyrics={song?.original_lyrics.split("\n") ?? []}
