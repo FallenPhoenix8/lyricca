@@ -216,6 +216,7 @@ function SongCardRegular(props: {
         onClick={(event) => {
           event.preventDefault()
           setReferralSongId(props.song.id)
+          setReferralSongListIndex(props.index ?? 0)
           router.push(href)
         }}
       >
