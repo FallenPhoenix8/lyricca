@@ -443,6 +443,7 @@ export function AddPageClientWrapper({
                       })
                     }}
                     icon="sparkles"
+                    activeShape="Pill"
                   ></ActionButton>
                 </HoverCardTrigger>
                 <HoverCardContent>
@@ -592,7 +593,7 @@ export function AddPageClientWrapper({
                       value={translatedLyrics}
                     />
                   </Field>
-                  <FieldLegend className="text-xl">Translation</FieldLegend>
+
                   <FieldDescriptionWithErrors
                     errors={[
                       ...(errors.targetLanguage ?? []),
@@ -600,8 +601,23 @@ export function AddPageClientWrapper({
                     ]}
                     id="translation-description"
                   >
+                    <FieldLegend className="text-xl text-foreground">
+                      Translation
+                    </FieldLegend>
                     Select the target language for translation. You can also
                     edit translations line-by-line.
+                    <br />
+                    <span className="text-muted-foreground text-xs">
+                      (Powered by{" "}
+                      <a
+                        href="https://www.deepl.com/en/translator"
+                        target="_blank"
+                        className="underline underline-offset-2"
+                      >
+                        DeepL
+                      </a>
+                      )
+                    </span>
                   </FieldDescriptionWithErrors>
                   <Suspense
                     fallback={
