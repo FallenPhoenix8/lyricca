@@ -5,3 +5,68 @@ export const easeOvershootGSAP =
 
 export const easeBezierClassName = "ease-[cubic-bezier(0.32,0,0.67,0)]"
 export const easeBezierGSAP = "M0,0 C0.32,0 0.67,0 1,1"
+
+export const m3ExpressiveSpring = {
+  spatial: {
+    fast: {
+      className: "ease-spring-spatial-fast",
+      gsap: "m3SpringSpatialFast",
+    },
+    default: {
+      className: "ease-spring-spatial-default",
+      gsap: "m3SpringSpatialDefault",
+    },
+    slow: {
+      className: "ease-spring-spatial-slow",
+      gsap: "m3SpringSpatialSlow",
+    },
+  },
+  effect: {
+    fast: {
+      className: "ease-spring-effect-fast",
+      gsap: "m3SpringEffectFast",
+    },
+    default: {
+      className: "ease-spring-effect-default",
+      gsap: "m3SpringEffectDefault",
+    },
+    slow: {
+      className: "ease-spring-effect-slow",
+      gsap: "m3SpringEffectSlow",
+    },
+  },
+} as const
+
+export const m3ExpressiveDuration = {
+  spatial: {
+    fast: {
+      className: "duration-(--m3-duration-spatial-fast)",
+      seconds: 0.28,
+    },
+    default: {
+      className: "duration-(--m3-duration-spatial-default)",
+      seconds: 0.45,
+    },
+    slow: {
+      className: "duration-(--m3-duration-spatial-slow)",
+      seconds: 0.65,
+    },
+  },
+  effect: {
+    fast: {
+      className: "duration-(--m3-duration-effect-fast)",
+      seconds: 0.12,
+    },
+    default: {
+      className: "duration-(--m3-duration-effect-default)",
+      seconds: 0.18,
+    },
+    slow: {
+      className: "duration-(--m3-duration-effect-slow)",
+      seconds: 0.26,
+    },
+  },
+} as const
+
+export type M3SpringKind = keyof typeof m3ExpressiveSpring
+export type M3SpringSpeed = keyof typeof m3ExpressiveSpring.spatial

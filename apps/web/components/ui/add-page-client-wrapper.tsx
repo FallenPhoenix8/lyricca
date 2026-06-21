@@ -15,7 +15,10 @@ import {
 } from "react"
 import { UploadSimpleIcon, SparkleIcon } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
-import { easeOvershootClassName } from "@/components/ui/constants"
+import {
+  m3ExpressiveDuration,
+  m3ExpressiveSpring,
+} from "@/components/ui/constants"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import {
   Field,
@@ -348,7 +351,8 @@ export function AddPageClientWrapper({
               className={cn(
                 "group w-full absolute top-0 aspect-square rounded-xl border-2 z-5",
                 isLoading && "animate-pulse",
-                easeOvershootClassName,
+                m3ExpressiveDuration.effect.fast.className,
+                m3ExpressiveSpring.effect.fast.className,
                 !!state.errors?.cover && "border-destructive",
               )}
             >
@@ -380,7 +384,8 @@ export function AddPageClientWrapper({
               <div
                 className={cn(
                   "justify-center items-center w-full h-full",
-                  easeOvershootClassName,
+                  m3ExpressiveDuration.effect.fast.className,
+                  m3ExpressiveSpring.effect.fast.className,
                   isLoading ? "flex" : "hidden",
                 )}
               >
@@ -406,22 +411,21 @@ export function AddPageClientWrapper({
                   onClick={() => {
                     buttonFileInputRef.current?.click()
                   }}
-                >
-                  <UploadSimpleIcon />
-                  <input
-                    type="file"
-                    hidden
-                    ref={buttonFileInputRef}
-                    name="cover"
-                    accept="image/jpeg, image/png, image/webp"
-                    onChange={(event) => {
-                      handleFileUpload(event)
-                    }}
-                  />
-                </ActionButton>
+                  icon="upload"
+                ></ActionButton>
+                <input
+                  type="file"
+                  hidden
+                  ref={buttonFileInputRef}
+                  name="cover"
+                  accept="image/jpeg, image/png, image/webp"
+                  onChange={(event) => {
+                    handleFileUpload(event)
+                  }}
+                />
               </HoverCardTrigger>
               <HoverCardContent>
-                <p>Upload cover</p>
+                <p className="text-sm">Upload cover</p>
               </HoverCardContent>
             </HoverCard>
 
@@ -434,14 +438,13 @@ export function AddPageClientWrapper({
                       title,
                     })
                   }}
-                >
-                  <SparkleIcon className="h-full" />
-                </ActionButton>
+                  icon="sparkles"
+                ></ActionButton>
               </HoverCardTrigger>
               <HoverCardContent>
-                <p>
-                  Get automatic suggestion{" "}
-                  <span className="text-muted-foreground">
+                <p className="text-sm">
+                  Get automatic suggestion <br />
+                  <span className="text-muted-foreground text-xs">
                     (based on artist and title)
                   </span>
                 </p>

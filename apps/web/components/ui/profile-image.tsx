@@ -4,7 +4,6 @@ import { ZStack, ZStackGrid } from "./layout"
 import { PlaceholderImage } from "./svg/PlaceholderImage"
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useWindowDimensions } from "@/lib/client/hook/useWindowDimensions"
-import { Cookie9 } from "./svg/shapes/Cookie9"
 
 export function ProfileImage({ profileURL }: { profileURL: string | null }) {
   const imageRef = useRef<HTMLImageElement>(null)

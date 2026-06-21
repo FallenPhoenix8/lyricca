@@ -3,7 +3,7 @@
 import { HStack, VStack } from "./layout"
 import { Skeleton } from "./skeleton"
 import { TotalUsageChartSkeleton } from "./total-usage-chart"
-import { Cookie9 } from "./svg/shapes/Cookie9"
+import { Shape } from "./svg/shapes/Shape"
 
 export function ProfileCardSkeleton() {
   return (
@@ -12,7 +12,10 @@ export function ProfileCardSkeleton() {
         className="h-20 gap-4 rounded-xl w-full justify-between"
         alignItems="center"
       >
-        <Cookie9 className="h-20 w-20 animate-pulse fill-accent" />
+        <Shape
+          className="h-20 w-20 animate-pulse fill-accent"
+          shape="9-sided cookie"
+        />
         <VStack className="flex-1 h-full justify-start py-2">
           <Skeleton className="h-5 md:h-6 w-3/4 rounded-sm" />
         </VStack>

@@ -14,7 +14,6 @@ import React, {
 } from "react"
 import { Skeleton } from "./skeleton"
 import { cn } from "@/lib/utils"
-import { easeOvershootClassName } from "./constants"
 import { useDebouncedCallback } from "use-debounce"
 import { Button } from "./button"
 import {
@@ -25,6 +24,8 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
+import { m3ExpressiveDuration, m3ExpressiveSpring } from "./constants"
+import { useM3Motion } from "@/lib/client/hook/useM3Motion"
 
 function SkeletonLyricsPair() {
   return (
@@ -70,8 +71,9 @@ function LyricsPair({
     <VStack className="gap-1">
       <div
         className={cn(
-          "text-foreground font-bold leading-4 px-2 bg-transparent py-1 border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] duration-300 outline-0 mx-0.5",
-          easeOvershootClassName,
+          "text-foreground font-bold leading-4 px-2 bg-transparent py-1 border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0 mx-0.5",
+          m3ExpressiveDuration.effect.fast.className,
+          m3ExpressiveSpring.effect.fast.className,
           isEditable &&
             "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
         )}
@@ -89,8 +91,9 @@ function LyricsPair({
       {(isReadyTranslation || isEditable) && (
         <div
           className={cn(
-            "text-muted-foreground font-bold leading-4 px-2 bg-transparent py-1 border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] duration-300 outline-0 mx-0.5",
-            easeOvershootClassName,
+            "text-muted-foreground font-bold leading-4 px-2 bg-transparent py-1 border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0 mx-0.5",
+            m3ExpressiveDuration.effect.fast.className,
+            m3ExpressiveSpring.effect.fast.className,
             isEditable &&
               "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
           )}
@@ -144,6 +147,7 @@ export function LyricsView({
   minimizedURL?: string
   isPreventEnterKey?: boolean
 }) {
+  useM3Motion()
   const skeletonLyricsPairs: null[] = new Array(20).fill(null)
   const [isFirstRender, setIsFirstRender] = useState(true)
 
@@ -252,14 +256,16 @@ export function LyricsView({
       <VStack
         className={cn(
           "relative px-4 py-2 shadow-lg drop-shadow-card-foreground gap-0.5 mx-auto w-full",
-          easeOvershootClassName,
+          m3ExpressiveDuration.effect.fast.className,
+          m3ExpressiveSpring.effect.fast.className,
           isMaximized && "fixed inset-0 z-100",
         )}
       >
         <div
           className={cn(
             "absolute bg-secondary/90 rounded-xl inset-0 -z-20 transition-[border-radius]",
-            easeOvershootClassName,
+            m3ExpressiveDuration.effect.fast.className,
+            m3ExpressiveSpring.effect.fast.className,
             isMaximized && "rounded-none",
           )}
         ></div>
@@ -300,7 +306,8 @@ export function LyricsView({
         <VStack
           className={cn(
             "gap-5 py-4 h-162.5 overflow-y-auto w-full",
-            easeOvershootClassName,
+            m3ExpressiveDuration.effect.fast.className,
+            m3ExpressiveSpring.effect.fast.className,
             isMaximized && "h-full",
           )}
           ref={lyricsContainerRef}

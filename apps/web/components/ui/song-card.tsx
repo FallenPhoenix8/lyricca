@@ -9,7 +9,7 @@ import { DotIcon, MoreHorizontal, Trash2, TrashIcon } from "lucide-react"
 import { XIcon } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
-import { easeOvershootClassName, easeBezierClassName } from "./constants"
+import { m3ExpressiveDuration, m3ExpressiveSpring } from "./constants"
 import { HStack, VStack } from "./layout"
 import { Ref, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { Skeleton } from "./skeleton"
@@ -47,6 +47,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "./drawer"
+import { useM3Motion } from "@/lib/client/hook/useM3Motion"
 
 gsap.registerPlugin(useGSAP)
 /**
@@ -81,6 +82,7 @@ function SongCardRegular(props: {
   index?: number
   onTagClick: (type: "artist" | "album", tag: string) => void
 }) {
+  useM3Motion()
   const [searchParams] = useQueryState("q", { defaultValue: "" })
   const encodedSearchParams = encodeURIComponent(searchParams)
 
@@ -119,8 +121,9 @@ function SongCardRegular(props: {
   return (
     <Card
       className={cn(
-        "relative w-52 min-h-96 pt-0 shadow-sm dark:shadow-muted/50 shadow-foreground/10 hover:shadow-lg hover:-translate-y-1 transition-[shadow,transition,border-radius] duration-300 group hover:rounded-2xl",
-        easeOvershootClassName,
+        "relative w-52 min-h-96 pt-0 shadow-sm dark:shadow-muted/50 shadow-foreground/10 hover:shadow-lg hover:-translate-y-1 transition-[shadow,transition,border-radius] group hover:rounded-2xl",
+        m3ExpressiveDuration.spatial.fast.className,
+        m3ExpressiveSpring.spatial.fast.className,
         props.className,
       )}
       style={props.style}
@@ -176,7 +179,11 @@ function SongCardRegular(props: {
         <DropdownMenuTrigger asChild>
           <Button
             variant="secondary"
-            className="absolute rounded-full group-hover:top-3 group-hover:right-3 top-2 right-2 z-30 transition-[top,right] duration-300"
+            className={cn(
+              "absolute rounded-full group-hover:top-3 group-hover:right-3 top-2 right-2 z-30 transition-[top,right]",
+              m3ExpressiveSpring.spatial.fast.className,
+              m3ExpressiveDuration.spatial.fast.className,
+            )}
           >
             <MoreHorizontal />
           </Button>
@@ -197,8 +204,9 @@ function SongCardRegular(props: {
 
       <div
         className={cn(
-          "absolute inset-0 z-10 aspect-square bg-foreground/10 dark:bg-background/50 rounded-t-xl shadow-muted/50 shadow-none group-hover:shadow-sm transition-[border-radius,shadow] duration-300 group-hover:rounded-b-xl group-hover:rounded-t-2xl",
-          easeOvershootClassName,
+          "absolute inset-0 z-10 aspect-square bg-foreground/10 dark:bg-background/50 rounded-t-xl shadow-muted/50 shadow-none group-hover:shadow-sm transition-[border-radius,shadow] group-hover:rounded-b-xl group-hover:rounded-t-2xl",
+          m3ExpressiveSpring.spatial.fast.className,
+          m3ExpressiveDuration.spatial.fast.className,
         )}
       />
 
@@ -216,8 +224,9 @@ function SongCardRegular(props: {
             src={props.song.cover?.url ?? "/cover-default.svg"}
             alt={props.song.title}
             className={cn(
-              "relative z-20 aspect-square object-cover rounded-t-xl group-hover:rounded-b-xl w-full transition-[border-radius,scale] duration-300 group-hover:scale-95 group-hover:rounded-t-2xl bg-accent animate-pulse",
-              easeOvershootClassName,
+              "relative z-20 aspect-square object-cover rounded-t-xl group-hover:rounded-b-xl w-full transition-[border-radius,scale] group-hover:scale-95 group-hover:rounded-t-2xl bg-accent animate-pulse",
+              m3ExpressiveSpring.spatial.fast.className,
+              m3ExpressiveDuration.spatial.fast.className,
             )}
             onLoad={(event) => {
               const target = event.target as HTMLImageElement
@@ -381,8 +390,9 @@ function SongCardCompact(props: {
       >
         <div
           className={cn(
-            "absolute inset-0 duration-300 transition-[background-color,border-radius,scale,shadow] -z-10 rounded-sm shadow-none drop-shadow-card",
-            easeBezierClassName,
+            "absolute inset-0 transition-[background-color,border-radius,scale,shadow] -z-10 rounded-sm shadow-none drop-shadow-card",
+            m3ExpressiveSpring.spatial.fast.className,
+            m3ExpressiveDuration.spatial.fast.className,
             isActive && "bg-card rounded-md scale-105 shadow-sm",
           )}
         />

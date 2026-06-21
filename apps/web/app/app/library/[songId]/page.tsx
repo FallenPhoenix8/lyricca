@@ -34,12 +34,17 @@ import { redirect } from "next/navigation"
 import { useParams } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useQueryState } from "nuqs"
-import { easeOvershootClassName } from "@/components/ui/constants"
+import {
+  m3ExpressiveDuration,
+  m3ExpressiveSpring,
+} from "@/components/ui/constants"
 import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
 import { SongUpdateDTO } from "@shared/ts-types"
 import { useReferralSongContext } from "@/components/ui/ReferralSongContext"
+import { useM3Motion } from "@/lib/client/hook/useM3Motion"
 
 export default function SongDetailsPage() {
+  useM3Motion()
   const { songId } = useParams<{ songId: string }>()
   const maximizedURL = `/app/library/${songId}/lyrics`
   const minimizedURL = `/app/library/${songId}`
@@ -265,8 +270,9 @@ export default function SongDetailsPage() {
               <ViewTransition name={`${songId}-title`}>
                 <div
                   className={cn(
-                    "app-title-heading mt-3 min-w-1 px-2 bg-transparent border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] duration-300 outline-0",
-                    easeOvershootClassName,
+                    "app-title-heading mt-3 min-w-1 px-2 bg-transparent border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0",
+                    m3ExpressiveDuration.effect.fast.className,
+                    m3ExpressiveSpring.effect.fast.className,
                     isEditable &&
                       "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
                   )}
@@ -287,8 +293,9 @@ export default function SongDetailsPage() {
                     tabIndex={isEditable ? 0 : -1}
                     suppressContentEditableWarning
                     className={cn(
-                      "min-w-1 px-2 py-1 border-0 transition-[border-color, border-radius, border-width, outline] duration-300 outline-0",
-                      easeOvershootClassName,
+                      "min-w-1 px-2 py-1 border-0 transition-[border-color, border-radius, border-width, outline] outline-0",
+                      m3ExpressiveDuration.effect.fast.className,
+                      m3ExpressiveSpring.effect.fast.className,
                       isEditable &&
                         "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
                     )}
@@ -308,8 +315,9 @@ export default function SongDetailsPage() {
                     tabIndex={isEditable ? 0 : -1}
                     suppressContentEditableWarning
                     className={cn(
-                      "min-w-1 px-2 py-1 border-0 transition-[border-color, border-radius, border-width, outline] duration-300 outline-0",
-                      easeOvershootClassName,
+                      "min-w-1 px-2 py-1 border-0 transition-[border-color, border-radius, border-width, outline] outline-0",
+                      m3ExpressiveDuration.effect.fast.className,
+                      m3ExpressiveSpring.effect.fast.className,
                       isEditable &&
                         "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
                     )}

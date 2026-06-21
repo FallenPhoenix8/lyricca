@@ -1,16 +1,18 @@
 "use client"
 
 import { ZStack, ZStackGrid } from "./layout"
-import { Cookie9, pathData as cookie9PathData } from "./svg/shapes/Cookie9"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
 import { DrawSVGPlugin, MorphSVGPlugin } from "gsap/all"
 import { useRef, useState } from "react"
-import { Circle, pathData as circlePathData } from "./svg/shapes/Circle"
+// import { Circle, pathData as circlePathData } from "./svg/shapes/Circle"
 
 import { Popover, PopoverContent, PopoverTrigger } from "./popover"
 import { LoadingSpinner } from "./loading-spinner"
 import { cn } from "@/lib/utils"
+import { getShapePathData } from "./svg/shapes/shapes"
+import { Shape } from "./svg/shapes/Shape"
+import { m3ExpressiveSpring } from "./constants"
 
 gsap.registerPlugin(useGSAP, DrawSVGPlugin, MorphSVGPlugin)
 
@@ -26,6 +28,7 @@ function AnimatedChartPart({
   className?: string
 }) {
   const maskRef = useRef<SVGPathElement>(null)
+  const circlePathData = getShapePathData("Circle")
 
   useGSAP(() => {
     if (!maskRef.current) return
@@ -39,7 +42,7 @@ function AnimatedChartPart({
       {
         drawSVG: `${chartOffset}% ${usagePercentage - chartOffset}%`,
         duration: 1.5,
-        ease: "power2.out",
+        ease: m3ExpressiveSpring.spatial.slow.gsap,
       },
     )
   })
@@ -69,7 +72,7 @@ function AnimatedChartPart({
       {/* The spinning part of the chart */}
       <g mask="url(#fixed-mask)">
         <path
-          d={cookie9PathData}
+          d={getShapePathData("9-sided cookie")}
           fill="none"
           stroke="currentColor"
           className="stroke-primary origin-center stroke-[3.5rem] animate-spin"
@@ -86,15 +89,20 @@ export function TotalUsageChartSkeleton({ className }: { className?: string }) {
       <div className="h-full w-full flex justify-center items-center text-xs font-semibold">
         <LoadingSpinner className="h-8 w-8 bg-accent" />
       </div>
-      <Circle
+      <Shape
         className="h-full w-full fill-transparent stroke-[5.5rem] stroke-background/10 rotate-90 animate-pulse"
         style={{ overflow: "visible" }}
+        shape="Circle"
       />
-      <Circle
+      <Shape
         className="h-full w-full fill-transparent stroke-[5.5rem] stroke-background/10 rotate-90 animate-pulse"
         style={{ overflow: "visible" }}
+        shape="Circle"
       />
-      <Circle className="h-full w-full fill-transparent stroke-[2.5rem] stroke-accent rotate-90 origin-center animate-pulse" />
+      <Shape
+        className="h-full w-full fill-transparent stroke-[2.5rem] stroke-accent rotate-90 origin-center animate-pulse"
+        shape="Circle"
+      />
     </ZStackGrid>
   )
 }
@@ -170,10 +178,11 @@ export function TotalUsageChart({
               className="h-full w-full rotate-70"
             />
 
-            <Circle
+            <Shape
               className="h-full w-full fill-transparent stroke-[5.1rem] stroke-accent rotate-70 origin-center"
               ref={arcRef}
               style={{ overflow: "visible" }}
+              shape="Circle"
             />
           </ZStackGrid>
         </ZStackGrid>

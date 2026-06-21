@@ -8,93 +8,76 @@ import React, {
 } from "react"
 import { ZStackGrid } from "./layout"
 import { Button } from "./button"
-import { Icon, IconNode, UploadIcon } from "lucide-react"
+
 import { cn } from "@/lib/utils"
 import { useGSAP } from "@gsap/react"
 import { MorphSVGPlugin } from "gsap/MorphSVGPlugin"
 import gsap from "gsap"
-import { easeOvershootClassName, easeOvershootGSAP } from "./constants"
+import { m3ExpressiveDuration, m3ExpressiveSpring } from "./constants"
 import { CustomEase } from "gsap/all"
-import { pathData as trianglePathData } from "@/components/ui/svg/shapes/Triangle"
-import { pathData as pillPathData } from "@/components/ui/svg/shapes/Pill"
-import { pathData as pentagonPathData } from "@/components/ui/svg/shapes/Pentagon"
-import { pathData as hexagonPathData } from "@/components/ui/svg/shapes/Hexagon"
-import { pathData as cookie9PathData } from "@/components/ui/svg/shapes/Cookie9"
-import { pathData as cookie8PathData } from "@/components/ui/svg/shapes/Cookie8"
-import { pathData as cookie4PathData } from "@/components/ui/svg/shapes/Cookie4"
-import { pathData as circlePathData } from "@/components/ui/svg/shapes/Circle"
-
-type Shape =
-  | "triangle"
-  | "pill"
-  | "pentagon"
-  | "hexagon"
-  | "cookie-9"
-  | "cookie-8"
-  | "cookie-4"
-  | "circle"
-
-function getPathData(shape: Shape) {
-  switch (shape) {
-    case "triangle":
-      return trianglePathData
-    case "pill":
-      return pillPathData
-    case "pentagon":
-      return pentagonPathData
-    case "hexagon":
-      return hexagonPathData
-    case "cookie-9":
-      return cookie9PathData
-    case "cookie-8":
-      return cookie8PathData
-    case "cookie-4":
-      return cookie4PathData
-    case "circle":
-      return circlePathData
-    default:
-      throw new Error(`Invalid shape: ${shape}`)
-  }
-}
+import { getShapePathData, type Shape } from "@/components/ui/svg/shapes/shapes"
+import { useM3Motion } from "@/lib/client/hook/useM3Motion"
+import { useWebHaptics } from "web-haptics/react"
+import { DynamicIcon, type IconName } from "lucide-react/dynamic"
 
 gsap.registerPlugin(useGSAP)
 gsap.registerPlugin(MorphSVGPlugin)
 gsap.registerPlugin(CustomEase)
 
-export function ActionButton(
-  props: React.ComponentProps<"div"> & { children: React.ReactNode },
-) {
-  const defaultShape: Shape = "cookie-9"
-  const activeShape: Shape = "pentagon"
-  const [shape, setShape] = useState<Shape>(defaultShape)
+export function ActionButton({
+  initialShape = "Square",
+  initialRotation = 45,
+  activeShape = "Pentagon",
+  activeRotation = 180,
+  icon,
+  ...props
+}: React.ComponentProps<"div"> & {
+  initialShape?: Shape
+  activeShape?: Shape
+  initialRotation?: number
+  activeRotation?: number
+  icon: IconName
+}) {
+  useM3Motion()
+  const { trigger } = useWebHaptics({ debug: true })
+  const [shape, setShape] = useState<Shape>(initialShape)
   const transitionDurationType = useRef<"touch" | "hover">("hover")
-  const touchTransitionDuration = 0.3
-  const hoverTransitionDuration = 0.4
-  const duration = useCallback(
+  const touchTransitionDuration = m3ExpressiveDuration.spatial.fast.seconds
+  const hoverTransitionDuration = m3ExpressiveDuration.spatial.default.seconds
+  const durationSpatial = useCallback(
     () =>
       transitionDurationType.current === "touch"
-        ? touchTransitionDuration
-        : hoverTransitionDuration,
+        ? m3ExpressiveDuration.spatial.fast.seconds
+        : m3ExpressiveDuration.spatial.default.seconds,
+    [touchTransitionDuration, hoverTransitionDuration],
+  )
+  const easeSpatial = useCallback(
+    () =>
+      transitionDurationType.current === "touch"
+        ? m3ExpressiveSpring.spatial.fast.gsap
+        : m3ExpressiveSpring.spatial.default.gsap,
     [touchTransitionDuration, hoverTransitionDuration],
   )
   const pathRef = useRef<SVGPathElement>(null)
   const shapeGroupRef = useRef<SVGGElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const svgRef = useRef<SVGSVGElement>(null)
 
   useGSAP(
     () => {
       const path = pathRef.current
       const group = shapeGroupRef.current
       const container = containerRef.current
+      const svg = svgRef.current
 
-      if (!path || !group || !container) return
+      if (!path || !group || !container || !svg) return
 
       gsap.killTweensOf([path, group, container])
 
       const tl = gsap.timeline({
         defaults: {
-          duration: duration(),
-          ease: "easeOvershoot",
+          duration: durationSpatial(),
+          ease: easeSpatial(),
           overwrite: true,
         },
       })
@@ -102,7 +85,23 @@ export function ActionButton(
       tl.to(
         path,
         {
-          morphSVG: getPathData(shape),
+          morphSVG: getShapePathData(shape),
+        },
+        0,
+      )
+
+      tl.to(
+        svg,
+        {
+          fill: shape === initialShape ? "var(--secondary)" : "var(--primary)",
+          duration:
+            transitionDurationType.current === "touch"
+              ? m3ExpressiveDuration.effect.fast.seconds
+              : m3ExpressiveDuration.effect.default.seconds,
+          ease:
+            transitionDurationType.current === "touch"
+              ? m3ExpressiveSpring.effect.fast.gsap
+              : m3ExpressiveSpring.effect.default.gsap,
         },
         0,
       )
@@ -110,7 +109,7 @@ export function ActionButton(
       tl.to(
         group,
         {
-          rotation: shape === defaultShape ? 0 : 180,
+          rotation: shape === initialShape ? initialRotation : activeRotation,
           svgOrigin: "190 190",
         },
         0,
@@ -119,7 +118,7 @@ export function ActionButton(
       tl.to(
         container,
         {
-          scale: shape === defaultShape ? 1 : 1.1,
+          scale: shape === initialShape ? 1 : 1.1,
           transformOrigin: "50% 50%",
         },
         0,
@@ -132,49 +131,58 @@ export function ActionButton(
       <ZStackGrid
         onMouseEnter={() => {
           transitionDurationType.current = "hover"
-          setShape("pentagon")
+          setShape(activeShape)
         }}
         onMouseLeave={() => {
           transitionDurationType.current = "hover"
-          setShape(defaultShape)
+          setShape(initialShape)
         }}
         ref={containerRef}
         {...props}
         className={cn(
-          "w-13 h-13 aspect-square place-items-center cursor-pointer",
+          "w-9 h-9 aspect-square place-items-center cursor-pointer",
           props.className,
         )}
+        onClick={(event) => {
+          trigger([{ duration: 15 }], { intensity: 0.4 }) // Trigger light haptic feedback on click
+          props.onClick?.(event)
+        }}
       >
         <svg
           width="380"
           height="380"
           viewBox="0 0 380 380"
           xmlns="http://www.w3.org/2000/svg"
-          className="fill-secondary w-full h-16 aspect-square stroke-[1.5rem] stroke-border"
+          className="fill-secondary w-full h-full aspect-square stroke-[1.5rem] stroke-border overflow-visible"
+          ref={svgRef}
         >
           <g ref={shapeGroupRef}>
-            <path d={getPathData(defaultShape)} fill="inherit" ref={pathRef} />
+            <path
+              d={getShapePathData(initialShape)}
+              fill="inherit"
+              ref={pathRef}
+            />
           </g>
         </svg>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className={cn(
-            shape === defaultShape ? "translate-y-0.5" : "-translate-y-0.5",
-            `duration-[${duration()}s]`,
-            easeOvershootClassName,
-          )}
+        <button
           onFocus={() => {
             transitionDurationType.current = "touch"
-            setShape("pentagon")
+            setShape(activeShape)
           }}
           onBlur={() => {
             transitionDurationType.current = "touch"
-            setShape(defaultShape)
+            setShape(initialShape)
           }}
+          className={cn(
+            "flex justify-center items-center cursor-pointer text-secondary-foreground h-full w-full",
+            shape === activeShape && "text-primary-foreground -translate-y-0.5",
+            transitionDurationType.current === "touch"
+              ? m3ExpressiveDuration.effect.fast.className
+              : m3ExpressiveDuration.effect.default.className,
+          )}
         >
-          {props.children}
-        </Button>
+          <DynamicIcon name={icon} strokeWidth="2px" size={16} />
+        </button>
       </ZStackGrid>
     </>
   )

@@ -1,9 +1,6 @@
 "use server"
 
 import { HStack, VStack, ZStack } from "./layout"
-import Image from "next/image"
-import { pathData } from "./svg/shapes/Cookie9"
-import { Suspense } from "react"
 import { ProfileImage } from "./profile-image"
 import { TranslationUsageDTO, UserDTO } from "@shared/ts-types"
 import { cookies } from "next/headers"

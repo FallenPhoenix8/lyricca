@@ -6,6 +6,9 @@ import { useLayoutEffect } from "react"
 import { useWindowDimensions } from "@/lib/client/hook/useWindowDimensions"
 import Link from "next/link"
 import clsx from "clsx"
+import { cn } from "@/lib/utils"
+import { useM3Motion } from "@/lib/client/hook/useM3Motion"
+import { m3ExpressiveDuration, m3ExpressiveSpring } from "./constants"
 
 /**
  * A button group item is a button or a link that can be used as a part of a button group. It can be either a button or a link, and it can have a label and an icon.
@@ -41,6 +44,7 @@ export default function AnimatedButtonGroup({
   buttons: ButtonGroupItem[]
   backgroundOffset?: number
 }) {
+  useM3Motion()
   const [activeButtonIndex, setActiveButtonIndex] = useState(
     getInitialActiveIndex(buttons),
   )
@@ -90,7 +94,11 @@ export default function AnimatedButtonGroup({
     <div className="relative z-20 rounded-sm w-min shadow-md bg-card">
       {/* MARK: - Render selection background */}
       <div
-        className="absolute inset-x-0 bottom-0 bg-accent transition-[top, left, width, height] duration-300 ease-in-out left-0 top-0 h-0 w-0 rounded-lg shadow-sm z-21 bg-accent"
+        className={cn(
+          "absolute inset-x-0 bottom-0 bg-accent transition-[top, left, width, height] left-0 top-0 h-0 w-0 rounded-lg shadow-sm z-21 bg-accent",
+          m3ExpressiveDuration.spatial.default.className,
+          m3ExpressiveSpring.spatial.default.className,
+        )}
         ref={selectionBackgroundRef}
       ></div>
       {/* MARK: - Render buttons */}
@@ -122,7 +130,11 @@ export default function AnimatedButtonGroup({
               onBlur={() => {
                 updateActiveButtonIndex(previousActiveButtonIndex)
               }}
-              className="transition-colors duration-300 z-23"
+              className={cn(
+                "transition-colors z-23",
+                m3ExpressiveSpring.effect.default.className,
+                m3ExpressiveDuration.effect.default.className,
+              )}
             >
               {isCompact ? (
                 <span className="z-100">{button.icon}</span>
