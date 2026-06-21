@@ -261,7 +261,7 @@
   }
 
   ::view-transition-group(lyrics-view) {
-    z-index: 100;
+    z-index: 200;
   }
 
   ::view-transition-group(.song-card-list) {
