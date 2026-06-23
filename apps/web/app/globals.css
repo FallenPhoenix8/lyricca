@@ -220,6 +220,30 @@
     }
   }
 
+  @keyframes replace-view-old {
+    0% {
+      opacity: 100%;
+    }
+    50% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes replace-view-new {
+    0% {
+      opacity: 0;
+      transform: translateX(10%);
+    }
+
+    100% {
+      opacity: 100%;
+      transform: translateX(0);
+    }
+  }
+
   /* Fade View Transition */
   ::view-transition-old(.fade) {
     animation: fade-out var(--m3-duration-effect-default)
@@ -228,6 +252,15 @@
   ::view-transition-new(.fade) {
     animation: fade-in var(--m3-duration-effect-default)
       var(--m3-spring-effect-default) forwards;
+  }
+
+  ::view-transition-old(.replace) {
+    animation: replace-view-old var(--m3-duration-effect-slow)
+      var(--m3-spring-effect-slow) forwards;
+  }
+  ::view-transition-new(.replace) {
+    animation: replace-view-new var(--m3-duration-effect-slow)
+      var(--m3-spring-effect-slow) forwards;
   }
 
   ::view-transition-old(*) {
@@ -265,6 +298,13 @@
   }
 
   ::view-transition-group(.song-card-list) {
+    z-index: 100;
+  }
+
+  ::view-transition-group(add-cover-image) {
+    z-index: 0;
+  }
+  ::view-transition-group(add-page-content) {
     z-index: 100;
   }
 }

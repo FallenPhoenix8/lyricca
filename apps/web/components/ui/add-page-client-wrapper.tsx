@@ -47,7 +47,7 @@ import {
 } from "./breadcrumb"
 import { addSongAction, SongState } from "@/app/app/add/actions"
 import { FieldDescriptionWithErrors } from "./field-description-with-errors"
-import { ClipboardCheckIcon, ClipboardIcon } from "lucide-react"
+import { ClipboardCheckIcon, ClipboardIcon, View } from "lucide-react"
 import { ActionButton } from "./action-button"
 
 async function translateAction({
@@ -330,7 +330,7 @@ export function AddPageClientWrapper({
     console.log(state)
   }, [state])
   return (
-    <>
+    <ViewTransition enter="replace" exit="replace">
       {/* <Breadcrumb className="my-2">
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -338,28 +338,33 @@ export function AddPageClientWrapper({
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb> */}
-      <ViewTransition name="blur-overlay">
-        <div className="fixed inset-0 bg-background/65 backdrop-blur-lg"></div>
-      </ViewTransition>
+
+      {/* <ViewTransition name="background-overlays"> */}
+      <div className="fixed inset-0 bg-background/65 backdrop-blur-lg -z-20"></div>
 
       <div
-        className="grid grid-cols-12 grid-rows-[300px 1fr] -z-10 bg-cover bg-center"
+        className="fixed inset-0 -z-30 bg-cover bg-center"
         style={{
           backgroundImage: `url("${displayCoverURL}")`,
         }}
-      >
-        <ViewTransition name="content">
+      ></div>
+      {/* </ViewTransition> */}
+
+      <ViewTransition name="add-page-content">
+        <div className="grid grid-cols-12 grid-rows-[300px 1fr]">
+          {/* <ViewTransition name="content"> */}
           <div className="col-span-12 md:col-span-4 row-span-2 md:h-screen flex flex-col md:sticky top-14">
-            <ZStackGrid
-              className={cn(
-                "group w-full absolute top-0 aspect-square rounded-xl border-2 z-5",
-                isLoading && "animate-pulse",
-                m3ExpressiveDuration.effect.fast.className,
-                m3ExpressiveSpring.effect.fast.className,
-                !!state.errors?.cover && "border-destructive",
-              )}
-            >
-              {/* <img
+            <ViewTransition name="add-cover-image">
+              <ZStackGrid
+                className={cn(
+                  "group w-full absolute top-0 aspect-square rounded-xl border-2 z-5",
+                  isLoading && "animate-pulse",
+                  m3ExpressiveDuration.effect.fast.className,
+                  m3ExpressiveSpring.effect.fast.className,
+                  !!state.errors?.cover && "border-destructive",
+                )}
+              >
+                {/* <img
                 src={coverURL}
                 alt="Empty Cover"
                 className="w-full aspect-video md:aspect-square object-cover rounded-xl"
@@ -369,32 +374,33 @@ export function AddPageClientWrapper({
                 }}
               /> */}
 
-              <img
-                src={displayCoverURL}
-                className="w-full aspect-square object-cover rounded-xl"
-                aria-describedby="cover-description"
-                onLoad={() => {
-                  updateLoadingState(false)
-                }}
-              />
+                <img
+                  src={displayCoverURL}
+                  className="w-full aspect-square object-cover rounded-xl"
+                  aria-describedby="cover-description"
+                  onLoad={() => {
+                    updateLoadingState(false)
+                  }}
+                />
 
-              <div
-                className={cn(
-                  "w-full h-full bg-accent/50 rounded-xl",
-                  isOverlayVisible ? "block" : "hidden",
-                )}
-              ></div>
-              <div
-                className={cn(
-                  "justify-center items-center w-full h-full",
-                  m3ExpressiveDuration.effect.fast.className,
-                  m3ExpressiveSpring.effect.fast.className,
-                  isLoading ? "flex" : "hidden",
-                )}
-              >
-                <LoadingSpinner className="bg-accent fill-accent-foreground h-1/4 w-1/4" />
-              </div>
-            </ZStackGrid>
+                <div
+                  className={cn(
+                    "w-full h-full bg-accent/50 rounded-xl",
+                    isOverlayVisible ? "block" : "hidden",
+                  )}
+                ></div>
+                <div
+                  className={cn(
+                    "justify-center items-center w-full h-full",
+                    m3ExpressiveDuration.effect.fast.className,
+                    m3ExpressiveSpring.effect.fast.className,
+                    isLoading ? "flex" : "hidden",
+                  )}
+                >
+                  <LoadingSpinner className="bg-accent fill-accent-foreground h-1/4 w-1/4" />
+                </div>
+              </ZStackGrid>
+            </ViewTransition>
           </div>
           <div className="py-2 px-4 col-span-12 md:col-span-8 row-span-1 mt-[40vw] md:mt-10 bg-background/80 rounded-t-2xl z-10">
             <h1 className="text-2xl font-extrabold py-4">Add a new song</h1>
@@ -668,8 +674,9 @@ export function AddPageClientWrapper({
               )}
             </form>
           </div>
-        </ViewTransition>
-      </div>
-    </>
+          {/* </ViewTransition> */}
+        </div>
+      </ViewTransition>
+    </ViewTransition>
   )
 }

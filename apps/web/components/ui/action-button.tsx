@@ -44,20 +44,8 @@ export function ActionButton({
   const transitionDurationType = useRef<"touch" | "hover">("hover")
   const touchTransitionDuration = m3ExpressiveDuration.spatial.fast.seconds
   const hoverTransitionDuration = m3ExpressiveDuration.spatial.default.seconds
-  const durationSpatial = useCallback(
-    () =>
-      transitionDurationType.current === "touch"
-        ? m3ExpressiveDuration.spatial.fast.seconds
-        : m3ExpressiveDuration.spatial.default.seconds,
-    [touchTransitionDuration, hoverTransitionDuration],
-  )
-  const easeSpatial = useCallback(
-    () =>
-      transitionDurationType.current === "touch"
-        ? m3ExpressiveSpring.spatial.fast.gsap
-        : m3ExpressiveSpring.spatial.default.gsap,
-    [touchTransitionDuration, hoverTransitionDuration],
-  )
+  const durationSpatial = m3ExpressiveDuration.spatial.default.seconds
+  const easeSpatial = m3ExpressiveSpring.spatial.default.gsap
   const pathRef = useRef<SVGPathElement>(null)
   const shapeGroupRef = useRef<SVGGElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -76,8 +64,8 @@ export function ActionButton({
 
       const tl = gsap.timeline({
         defaults: {
-          duration: durationSpatial(),
-          ease: easeSpatial(),
+          duration: durationSpatial,
+          ease: easeSpatial,
           overwrite: true,
         },
       })
@@ -176,9 +164,7 @@ export function ActionButton({
           className={cn(
             "flex justify-center items-center cursor-pointer text-secondary-foreground h-full w-full",
             shape === activeShape && "text-primary-foreground -translate-y-0.5",
-            transitionDurationType.current === "touch"
-              ? m3ExpressiveDuration.effect.fast.className
-              : m3ExpressiveDuration.effect.default.className,
+            m3ExpressiveDuration.effect.default.className,
           )}
         >
           <DynamicIcon name={icon} strokeWidth="2px" size={16} />

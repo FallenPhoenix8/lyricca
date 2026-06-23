@@ -7,14 +7,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { Button } from "@/components/ui/button"
-import { HStack, Spacer, VStack, ZStack } from "@/components/ui/layout"
-import { useSongs } from "@/lib/client/hook/useSongs"
+import { HStack, VStack } from "@/components/ui/layout"
 import Link from "next/link"
 import {
-  DependencyList,
   startTransition,
-  use,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -23,12 +19,10 @@ import {
   ViewTransition,
 } from "react"
 import Image from "next/image"
-import { ImageRosetta } from "@/components/ui/svg/ImageRosetta"
 import { Badge } from "@/components/ui/badge"
 import { LyricsView } from "@/components/ui/lyrics-view"
 import { SongUpateSchema } from "@/lib/model/Song"
 import { Skeleton } from "@/components/ui/skeleton"
-import { PlaceholderImage } from "@/components/ui/svg/PlaceholderImage"
 import { useSongsContext } from "@/components/ui/SongsContext"
 import { redirect } from "next/navigation"
 import { useParams } from "next/navigation"
@@ -238,7 +232,7 @@ export default function SongDetailsPage() {
             <Image
               src={song?.cover?.url || "/cover-default.svg"}
               alt={song?.title || ""}
-              className="w-full aspect-square object-cover rounded-xl border-2 bg-accent animate-pulse absolute top-0"
+              className="w-full aspect-square object-cover md:rounded-xl md:border-2 bg-accent animate-pulse absolute top-0"
               onLoad={(event) => {
                 const target = event.target as HTMLImageElement
                 target.classList.remove("animate-pulse")

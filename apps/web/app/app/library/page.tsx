@@ -10,9 +10,9 @@ import { ViewTransition } from "react"
 
 export default function LibraryPage() {
   return (
-    <>
+    <ViewTransition enter="replace" exit="replace">
       {/* <ViewTransition default="auto"> */}
-      <ViewTransition name="blur-overlay" share="blur-overlay-hidden">
+      <ViewTransition name="blur-overlay">
         <div className="fixed top-0 right-0 left-0 h-0 bg-background/65 backdrop-blur-lg"></div>
       </ViewTransition>
       <Breadcrumb className="my-2">
@@ -24,6 +24,6 @@ export default function LibraryPage() {
       </Breadcrumb>
       <SongCardList />
       {/* </ViewTransition> */}
-    </>
+    </ViewTransition>
   )
 }

@@ -18,7 +18,7 @@ import { AppearanceSettingsIsland } from "@/components/ui/appearance-settings-is
 // TODO: Update the appearance settings looks
 export default function PreferencesPage() {
   return (
-    <ViewTransition default="auto">
+    <ViewTransition enter="replace" exit="replace">
       <Breadcrumb className="my-2">
         <BreadcrumbList>
           <BreadcrumbItem>
