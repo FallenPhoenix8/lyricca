@@ -34,11 +34,11 @@ export default function Navigation({ origin }: { origin: "app" | "guest" }) {
               <Button
                 variant="secondary"
                 size="sm"
-                className="rounded-full flex justify-center items-center drop-shadow-sm drop-shadow-background/50"
+                className="rounded-full flex justify-center items-center drop-shadow-sm drop-shadow-background/50 px-0"
               >
                 <Link
                   href={backButtonPath}
-                  className="h-full w-full flex justify-center items-center"
+                  className="h-full w-full flex justify-center items-center px-3"
                 >
                   <CaretLeftIcon className="w-5 h-5" weight="bold" />
                 </Link>
