@@ -49,6 +49,7 @@ import { addSongAction, SongState } from "@/app/app/add/actions"
 import { FieldDescriptionWithErrors } from "./field-description-with-errors"
 import { ClipboardCheckIcon, ClipboardIcon, View } from "lucide-react"
 import { ActionButton } from "./action-button"
+import { BlurOverlay } from "./blur-overlay"
 
 async function translateAction({
   text,
@@ -340,7 +341,7 @@ export function AddPageClientWrapper({
       </Breadcrumb> */}
 
       {/* <ViewTransition name="background-overlays"> */}
-      <div className="fixed inset-0 bg-background/65 backdrop-blur-lg -z-20"></div>
+      <BlurOverlay />
 
       <div
         className="fixed inset-0 -z-30 bg-cover bg-center"
@@ -353,7 +354,7 @@ export function AddPageClientWrapper({
       <ViewTransition name="add-page-content">
         <div className="grid grid-cols-12 grid-rows-[300px 1fr]">
           {/* <ViewTransition name="content"> */}
-          <div className="col-span-12 md:col-span-4 row-span-2 md:h-screen flex flex-col md:sticky top-14">
+          <div className="col-span-12 md:col-span-4 row-span-2 md:h-screen flex flex-col md:sticky top-0">
             <ViewTransition name="add-cover-image">
               <ZStackGrid
                 className={cn(

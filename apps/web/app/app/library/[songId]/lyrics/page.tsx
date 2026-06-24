@@ -1,4 +1,5 @@
 "use client"
+import { BlurOverlay } from "@/components/ui/blur-overlay"
 import { LyricsView } from "@/components/ui/lyrics-view"
 import { useSongsContext } from "@/components/ui/SongsContext"
 import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
@@ -50,7 +51,7 @@ export default function SongLyricsPage() {
 
   return (
     <>
-      <div className="fixed inset-0 z-89 backdrop-blur-md"></div>
+      <BlurOverlay className="z-89 backdrop-blur-md" />
       <div
         className="fixed inset-0 bg-cover bg-no-repeat"
         style={{

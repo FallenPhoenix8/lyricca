@@ -166,6 +166,7 @@ export function ActionButton({
             shape === activeShape && "text-primary-foreground -translate-y-0.5",
             m3ExpressiveDuration.effect.default.className,
           )}
+          type="button"
         >
           <DynamicIcon name={icon} strokeWidth="2px" size={16} />
         </button>

@@ -1,5 +1,4 @@
 import { EyeIcon, PenIcon } from "@phosphor-icons/react"
-import AnimatedButtonGroup, { ButtonGroupItem } from "./animated-button-group"
 import { HStack, Spacer, VStack } from "./layout"
 import React, {
   Activity,
@@ -26,6 +25,11 @@ import Link from "next/link"
 import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
 import { m3ExpressiveDuration, m3ExpressiveSpring } from "./constants"
 import { useM3Motion } from "@/lib/client/hook/useM3Motion"
+import gsap from "gsap"
+import { useGSAP } from "@gsap/react"
+import { AnimatedButtonGroup, ButtonGroupItem } from "./animated-button-group"
+
+gsap.registerPlugin(useGSAP)
 
 function SkeletonLyricsPair() {
   return (
@@ -148,6 +152,9 @@ export function LyricsView({
   isPreventEnterKey?: boolean
 }) {
   useM3Motion()
+
+  const editButtonsRef = useRef<HTMLDivElement>(null)
+
   const skeletonLyricsPairs: null[] = new Array(20).fill(null)
   const [isFirstRender, setIsFirstRender] = useState(true)
 
@@ -272,23 +279,23 @@ export function LyricsView({
         <HStack className="gap-2 w-full" alignItems="center">
           <h3 className="text-xl font-extrabold">Lyrics</h3>
           <Spacer />
-          <AnimatedButtonGroup buttons={buttons()} />
+          <AnimatedButtonGroup
+            buttons={buttons()}
+            className={cn(
+              isEditable ? "mr-0" : "-mr-12",
+              m3ExpressiveDuration.spatial.fast.className,
+              m3ExpressiveSpring.spatial.fast.className,
+            )}
+          />
 
-          <Activity mode={isEditable ? "visible" : "hidden"}>
-            <Button
-              variant="default"
-              onClick={(e) => {
-                e.preventDefault()
-                startTransition(() => {
-                  setIsEditable(false)
-                })
-                handleSubmitNewLyrics()
-              }}
-              type="button"
-            >
-              <CheckIcon />
-            </Button>
-          </Activity>
+          <SubmitButton
+            handleClick={(e) => {
+              e.preventDefault()
+              setIsEditable(false)
+              handleSubmitNewLyrics()
+            }}
+            isVisible={isEditable}
+          />
 
           <Activity
             mode={
@@ -335,5 +342,35 @@ export function LyricsView({
         </VStack>
       </VStack>
     </ViewTransition>
+  )
+}
+
+function SubmitButton(props: {
+  handleClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
+  isVisible: boolean
+}) {
+  useM3Motion()
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  useGSAP(() => {
+    if (!buttonRef.current) return
+    const tl = gsap.timeline()
+
+    tl.to(buttonRef.current, {
+      opacity: props.isVisible ? 1 : 0,
+      scaleX: props.isVisible ? 1 : 0,
+      duration: m3ExpressiveDuration.effect.fast.seconds,
+      ease: m3ExpressiveSpring.effect.fast.gsap,
+    })
+  }, [props.isVisible])
+  return (
+    <Button
+      variant="default"
+      onClick={props.handleClick}
+      type="button"
+      ref={buttonRef}
+      className="opacity-0 scale-0 origin-right"
+    >
+      <CheckIcon />
+    </Button>
   )
 }

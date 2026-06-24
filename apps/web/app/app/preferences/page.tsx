@@ -26,23 +26,25 @@ export default function PreferencesPage() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <SettingsIsland title="" className="max-w-3xl mx-auto md:p-4 mb-6">
-        <Suspense fallback={<ProfileCardSkeleton />}>
-          <ProfileCard />
-        </Suspense>
-      </SettingsIsland>
-      <div className="max-w-2xl mx-auto p-1 md:py-10 md:px-4 space-y-4 md:space-y-8">
-        {/* Section 1: Appearance */}
-        <AppearanceSettingsIsland />
-        <SettingsIsland title="Account">
-          <SettingsItem
-            label="Account"
-            description="Manage your account settings."
-          >
-            TODO
-          </SettingsItem>
+      <section className="px-2">
+        <SettingsIsland title="" className="max-w-3xl mx-auto md:p-4 mb-6">
+          <Suspense fallback={<ProfileCardSkeleton />}>
+            <ProfileCard />
+          </Suspense>
         </SettingsIsland>
-      </div>
+        <div className="max-w-2xl mx-auto p-1 md:py-10 md:px-4 space-y-4 md:space-y-8">
+          {/* Section 1: Appearance */}
+          <AppearanceSettingsIsland />
+          <SettingsIsland title="Account">
+            <SettingsItem
+              label="Account"
+              description="Manage your account settings."
+            >
+              TODO
+            </SettingsItem>
+          </SettingsIsland>
+        </div>
+      </section>
     </ViewTransition>
   )
 }

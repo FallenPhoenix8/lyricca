@@ -244,6 +244,28 @@
     }
   }
 
+  @keyframes replace-controls-old {
+    0% {
+      opacity: 100%;
+      transform: scale(100%);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0);
+    }
+  }
+
+  @keyframes replace-controls-new {
+    0% {
+      opacity: 0;
+      transform: scale(0);
+    }
+    100% {
+      opacity: 100%;
+      transform: scale(100%);
+    }
+  }
+
   /* Fade View Transition */
   ::view-transition-old(.fade) {
     animation: fade-out var(--m3-duration-effect-default)
@@ -255,12 +277,21 @@
   }
 
   ::view-transition-old(.replace) {
-    animation: replace-view-old var(--m3-duration-effect-slow)
-      var(--m3-spring-effect-slow) forwards;
+    animation: replace-view-old var(--m3-duration-spatial-default)
+      var(--m3-spring-spatial-default) forwards;
   }
   ::view-transition-new(.replace) {
-    animation: replace-view-new var(--m3-duration-effect-slow)
-      var(--m3-spring-effect-slow) forwards;
+    animation: replace-view-new var(--m3-duration-spatial-default)
+      var(--m3-spring-spatial-default) forwards;
+  }
+
+  ::view-transition-old(.replace-controls) {
+    animation: replace-controls-old var(--m3-duration-spatial-default)
+      var(--m3-spring-spatial-default) forwards;
+  }
+  ::view-transition-new(.replace-controls) {
+    animation: replace-controls-new var(--m3-duration-spatial-default)
+      var(--m3-spring-spatial-default) forwards;
   }
 
   ::view-transition-old(*) {
@@ -302,10 +333,42 @@
   }
 
   ::view-transition-group(add-cover-image) {
+    animation-duration: 0;
+    transition-duration: 0;
+    opacity: 0;
+    display: none;
     z-index: 0;
   }
+
   ::view-transition-group(add-page-content) {
     z-index: 100;
+  }
+
+  ::view-transition-group(navigation-back-button) {
+    z-index: 110;
+  }
+
+  ::view-transition-new(navigation-back-button) {
+    animation: replace-controls-new var(--m3-duration-spatial-default)
+      var(--m3-spring-spatial-default) forwards;
+  }
+  ::view-transition-old(navigation-back-button) {
+    animation: replace-controls-old var(--m3-duration-spatial-default)
+      var(--m3-spring-spatial-default) forwards;
+  }
+
+  ::view-transition-group(nav-links) {
+    z-index: 150;
+  }
+
+  ::view-transition-new(add-page-content-submit-button) {
+    animation: replace-controls-new var(--m3-duration-spatial-default)
+      var(--m3-spring-spatial-default) forwards;
+  }
+
+  ::view-transition-old(add-page-content-submit-button) {
+    animation: replace-controls-old var(--m3-duration-spatial-default)
+      var(--m3-spring-spatial-default) forwards;
   }
 }
 

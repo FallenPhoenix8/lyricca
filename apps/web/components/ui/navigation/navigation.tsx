@@ -1,17 +1,53 @@
+"use client"
 import { HStack, Spacer } from "../layout"
 import NavLinks from "./nav-links"
 import { LogoFull } from "../svg/LogoFull"
 import Link from "next/link"
-import { ViewTransition } from "react"
+import {
+  startTransition,
+  useLayoutEffect,
+  useMemo,
+  ViewTransition,
+} from "react"
+import { usePathname } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { CaretLeftIcon } from "@phosphor-icons/react"
 
 export default function Navigation({ origin }: { origin: "app" | "guest" }) {
+  const pathname = usePathname()
+  const splittedPathname = pathname.split("/")
+  const backButtonPath = [
+    splittedPathname[0],
+    splittedPathname[1],
+    splittedPathname[2],
+  ].join("/")
+  const isShowBackButton = useMemo(() => {
+    return splittedPathname.length >= 4 && origin === "app"
+  }, [pathname, origin])
+
   return (
     <ViewTransition name="navigation">
-      <nav className="sticky z-50 top-0 border-b border-border backdrop-blur-md bg-background/60 backdrop-saturate-200 backdrop-brightness-110 shadow-sm shadow-border/50">
-        <HStack className="items-center px-4 py-2">
-          <Link href="/landing">
-            <LogoFull className="h-9" />
-          </Link>
+      <nav className="flex justify-between items-center sticky z-50 top-0 px-2 py-2">
+        <div>
+          {isShowBackButton && (
+            <ViewTransition name="navigation-back-button">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="rounded-full flex justify-center items-center drop-shadow-sm drop-shadow-background/50"
+              >
+                <Link
+                  href={backButtonPath}
+                  className="h-full w-full flex justify-center items-center"
+                >
+                  <CaretLeftIcon className="w-5 h-5" weight="bold" />
+                </Link>
+              </Button>
+            </ViewTransition>
+          )}
+        </div>
+
+        <HStack className="items-center">
           <Spacer />
           <NavLinks origin={origin} />
         </HStack>

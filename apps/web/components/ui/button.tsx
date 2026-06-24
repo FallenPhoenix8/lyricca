@@ -4,9 +4,11 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { Slot } from "radix-ui"
 import { useWebHaptics } from "web-haptics/react"
 import { cn } from "@/lib/utils"
+import { useState } from "react"
+import { m3ExpressiveDuration } from "./constants"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer disabled:cursor-not-allowed",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer disabled:cursor-not-allowed drop-shadow-sm drop-shadow-background/50",
   {
     variants: {
       variant: {
@@ -49,6 +51,13 @@ function Button({
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
   }) {
+  const [isPressed, setIsPressed] = useState(false)
+  function startPress() {
+    setIsPressed(true)
+  }
+  function endPress() {
+    setIsPressed(false)
+  }
   const Comp = asChild ? Slot.Root : "button"
   const { trigger } = useWebHaptics({ debug: true })
 
@@ -57,12 +66,21 @@ function Button({
       data-slot="button"
       data-variant={variant}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(
+        buttonVariants({ variant, size, className }),
+        m3ExpressiveDuration.effect.fast.className,
+        m3ExpressiveDuration.effect.default.className,
+        isPressed && "scale-90 bg-primary text-primary-foreground opacity-90",
+      )}
       {...props}
       onClick={(event) => {
         trigger([{ duration: 15 }], { intensity: 0.4 }) // Trigger light haptic feedback on click
         props.onClick?.(event)
       }}
+      onTouchStart={startPress}
+      onTouchEnd={endPress}
+      onMouseDown={startPress}
+      onMouseUp={endPress}
     />
   )
 }

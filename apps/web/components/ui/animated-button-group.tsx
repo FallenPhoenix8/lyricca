@@ -1,6 +1,12 @@
 "use client"
-import { HStack, ZStack } from "@/components/ui/layout"
-import { ButtonHTMLAttributes, useMemo, useRef, useState } from "react"
+import { HStack, ZStack, ZStackGrid } from "@/components/ui/layout"
+import {
+  ButtonHTMLAttributes,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { Button } from "./button"
 import { useLayoutEffect } from "react"
 import { useWindowDimensions } from "@/lib/client/hook/useWindowDimensions"
@@ -9,6 +15,14 @@ import clsx from "clsx"
 import { cn } from "@/lib/utils"
 import { useM3Motion } from "@/lib/client/hook/useM3Motion"
 import { m3ExpressiveDuration, m3ExpressiveSpring } from "./constants"
+import { useGSAP } from "@gsap/react"
+import { MorphSVGPlugin } from "gsap/MorphSVGPlugin"
+import gsap from "gsap"
+import { Shape } from "./svg/shapes/Shape"
+import { getShapePathData, Shape as ShapeType } from "./svg/shapes/shapes"
+import { Library } from "lucide-react"
+import { ViewTransition } from "react"
+import { DynamicIcon, IconName } from "lucide-react/dynamic"
 
 /**
  * A button group item is a button or a link that can be used as a part of a button group. It can be either a button or a link, and it can have a label and an icon.
@@ -29,21 +43,40 @@ export type ButtonGroupItem = (
   className?: string
 }
 
+export type LinkItem = {
+  href: string
+  label: string
+  icon: React.ReactNode
+  isInitialActive: boolean
+  className?: string
+}
+
+export type BouncyButtonItem = {
+  onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
+  label: string
+  icon: IconName
+  isInitialActive: boolean
+  className?: string
+}
+
 function getInitialActiveIndex(buttons: ButtonGroupItem[]) {
   const initialActiveIndex = buttons.findIndex((btn) => btn.isInitialActive)
   return initialActiveIndex !== -1 ? initialActiveIndex : 0
 }
 
 /**
- * The ButtonGroup component renders a group of buttons or links with a selection background that highlights the active button. The active button is determined by the `isInitialActive` property of each button, or by the first button if no button is marked as initial active. The component also adjusts the layout and content of the buttons based on the window width, showing only icons in compact mode.
+ * The AnimatedButtonGroup component renders a group of buttons or links with a selection background that highlights the active button. The active button is determined by the `isInitialActive` property of each button, or by the first button if no button is marked as initial active. The component also adjusts the layout and content of the buttons based on the window width, showing only icons in compact mode.
  */
-export default function AnimatedButtonGroup({
+export function AnimatedButtonGroup({
   buttons,
   backgroundOffset = 4,
+  ref,
+  ...props
 }: {
   buttons: ButtonGroupItem[]
   backgroundOffset?: number
-}) {
+  ref?: React.Ref<HTMLDivElement>
+} & React.HTMLAttributes<HTMLDivElement>) {
   useM3Motion()
   const [activeButtonIndex, setActiveButtonIndex] = useState(
     getInitialActiveIndex(buttons),
@@ -91,7 +124,14 @@ export default function AnimatedButtonGroup({
     }
   }, [buttons])
   return (
-    <div className="relative z-20 rounded-sm w-min shadow-md bg-card">
+    <div
+      {...props}
+      className={cn(
+        "relative z-20 rounded-sm w-min shadow-md bg-card",
+        props.className,
+      )}
+      ref={ref}
+    >
       {/* MARK: - Render selection background */}
       <div
         className={cn(
@@ -165,5 +205,51 @@ export default function AnimatedButtonGroup({
         })}
       </HStack>
     </div>
+  )
+}
+
+export function NavigationLinkGroup({
+  buttons,
+  backgroundOffset = 4,
+}: {
+  buttons: LinkItem[]
+  backgroundOffset?: number
+}) {
+  return (
+    <div className="flex gap-1">
+      {buttons.map((button, index) => {
+        return (
+          <NavigationLink
+            button={button}
+            isActive={button.isInitialActive}
+            key={index}
+          />
+        )
+      })}
+    </div>
+  )
+}
+
+function NavigationLink(props: { button: LinkItem; isActive: boolean }) {
+  return (
+    <Button
+      size="sm"
+      className={cn(
+        "flex justify-center items-center rounded-xl px-0",
+        props.isActive ? "rounded-full" : " rounded-xl",
+      )}
+      variant={props.isActive ? "default" : "secondary"}
+      type="button"
+    >
+      <Link
+        href={props.button.href}
+        className="flex h-full w-full justify-center items-center px-3"
+      >
+        <div>{props.button.icon}</div>
+        <div className={cn("overflow-clip", !props.isActive && "max-w-0")}>
+          {props.button.label}
+        </div>
+      </Link>
+    </Button>
   )
 }
