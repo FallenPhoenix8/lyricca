@@ -3,8 +3,15 @@
 import * as React from "react"
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react"
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui"
-
 import { cn } from "@/lib/utils"
+import { useM3Motion } from "@/lib/client/hook/useM3Motion"
+import { useGSAP } from "@gsap/react"
+import gsap from "gsap"
+import { MorphSVGPlugin } from "gsap/MorphSVGPlugin"
+import { getShapePathData } from "./svg/shapes/shapes"
+import { m3ExpressiveDuration, m3ExpressiveSpring } from "./constants"
+
+gsap.registerPlugin(useGSAP, MorphSVGPlugin)
 
 function DropdownMenu({
   ...props
@@ -42,7 +49,10 @@ function DropdownMenuContent({
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
         className={cn(
-          "z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+          "z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] overflow-x-hidden overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
+          "origin-top",
+          "data-[state=open]:animate-material-enter",
+          "data-[state=closed]:animate-material-exit",
           className,
         )}
         {...props}
@@ -124,6 +134,44 @@ function DropdownMenuRadioItem({
   children,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.RadioItem>) {
+  useM3Motion()
+  const [isVisible, setIsVisible] = React.useState(false)
+  const pathRef = React.useRef<SVGPathElement | null>(null)
+  const svgRef = React.useRef<SVGSVGElement | null>(null)
+  const groupRef = React.useRef<SVGGElement | null>(null)
+  React.useLayoutEffect(() => {
+    setIsVisible(true)
+    console.log("Radio item rendered")
+  }, [])
+  useGSAP(() => {
+    if (pathRef.current && svgRef.current && groupRef.current) {
+      const defaults = {
+        duration: m3ExpressiveDuration.spatial.fast.seconds,
+        ease: m3ExpressiveSpring.spatial.fast.gsap,
+        svgOrigin: "center",
+        transformOrigin: "center",
+        delay: m3ExpressiveDuration.spatial.fast.seconds - 0.1,
+      }
+
+      gsap.to(pathRef.current, {
+        morphSVG: getShapePathData("Pentagon"),
+        scale: isVisible ? 1 : 0,
+        ...defaults,
+      })
+
+      gsap.to(groupRef.current, {
+        opacity: isVisible ? 1 : 0,
+        ...defaults,
+        duration: m3ExpressiveDuration.effect.fast.seconds,
+        ease: m3ExpressiveSpring.effect.fast.gsap,
+      })
+
+      gsap.to(svgRef.current, {
+        rotation: isVisible ? 360 : 0,
+        ...defaults,
+      })
+    }
+  }, [isVisible])
   return (
     <DropdownMenuPrimitive.RadioItem
       data-slot="dropdown-menu-radio-item"
@@ -135,7 +183,22 @@ function DropdownMenuRadioItem({
     >
       <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
         <DropdownMenuPrimitive.ItemIndicator>
-          <CircleIcon className="size-2 fill-current" />
+          {/* <CircleIcon className="size-2 fill-current" /> */}
+          <svg
+            viewBox="0 0 380 380"
+            xmlns="http://www.w3.org/2000/svg"
+            className="size-3 fill-current"
+            ref={svgRef}
+          >
+            <g ref={groupRef} className="opacity-0">
+              <path
+                d={getShapePathData("Circle")}
+                fill="inherit"
+                className="scale-0"
+                ref={pathRef}
+              />
+            </g>
+          </svg>
         </DropdownMenuPrimitive.ItemIndicator>
       </span>
       {children}
@@ -155,7 +218,7 @@ function DropdownMenuLabel({
       data-slot="dropdown-menu-label"
       data-inset={inset}
       className={cn(
-        "px-2 py-1.5 text-sm font-medium data-[inset]:pl-8",
+        "px-2 py-1.5 text-sm font-semibold data-[inset]:pl-8",
         className,
       )}
       {...props}
@@ -230,7 +293,9 @@ function DropdownMenuSubContent({
     <DropdownMenuPrimitive.SubContent
       data-slot="dropdown-menu-sub-content"
       className={cn(
-        "z-50 min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+        "z-50 min-w-[8rem] origin-top overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        "data-[state=open]:animate-material-enter",
+        "data-[state=closed]:animate-material-exit",
         className,
       )}
       {...props}

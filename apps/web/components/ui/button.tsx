@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { Slot } from "radix-ui"
 import { useWebHaptics } from "web-haptics/react"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import { useLayoutEffect, useState } from "react"
 import { m3ExpressiveDuration, m3ExpressiveSpring } from "./constants"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
@@ -57,19 +57,30 @@ function Button({
   }) {
   useM3Motion()
 
-  const buttonRef = React.useRef<HTMLButtonElement | null>(null)
+  const targetRef = React.useRef<HTMLButtonElement | null>(null)
   const [isPressed, setIsPressed] = useState(false)
-  function startPress() {
+  function startPress(
+    event:
+      | React.MouseEvent<HTMLButtonElement, MouseEvent>
+      | React.TouchEvent<HTMLButtonElement>,
+  ) {
+    targetRef.current = event.target as HTMLButtonElement
     setIsPressed(true)
   }
-  function endPress() {
+  function endPress(
+    event:
+      | React.MouseEvent<HTMLButtonElement, MouseEvent>
+      | React.TouchEvent<HTMLButtonElement>,
+  ) {
+    targetRef.current = event.target as HTMLButtonElement
     setIsPressed(false)
   }
   const Comp = asChild ? Slot.Root : "button"
   const { trigger } = useWebHaptics({ debug: true })
 
-  React.useLayoutEffect(() => {
-    gsap.to(buttonRef.current, {
+  useGSAP(() => {
+    if (!targetRef.current) return
+    gsap.to(targetRef.current, {
       scale: isPressed ? 0.9 : 1,
       duration: m3ExpressiveDuration.spatial.fast.seconds,
       ease: m3ExpressiveSpring.spatial.fast.gsap,
@@ -96,7 +107,6 @@ function Button({
       onTouchEnd={endPress}
       onMouseDown={startPress}
       onMouseUp={endPress}
-      ref={buttonRef}
     />
   )
 }
