@@ -37,6 +37,7 @@ import { SongUpdateDTO } from "@shared/ts-types"
 import { useReferralSongContext } from "@/components/ui/ReferralSongContext"
 import { useM3Motion } from "@/lib/client/hook/useM3Motion"
 import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
+import { BlurOverlay, overlayBlurClassName } from "@/components/ui/blur-overlay"
 
 export default function SongDetailsPage() {
   useM3Motion()
@@ -219,7 +220,7 @@ export default function SongDetailsPage() {
     <>
       {/* <ViewTransition default="auto"> */}
 
-      <div className="fixed inset-0 z-0 bg-background/65 backdrop-blur-lg"></div>
+      <BlurOverlay className="z-0" />
       <div
         className="grid grid-cols-12 grid-rows-[200px 200px] gap-4 -z-10 bg-cover bg-center"
         style={{
@@ -235,7 +236,7 @@ export default function SongDetailsPage() {
             <Image
               src={song?.cover?.url || "/cover-default.svg"}
               alt={song?.title || ""}
-              className="w-full md:w-1/2 aspect-square object-cover md:rounded-xl md:border-2 bg-accent animate-pulse absolute top-0"
+              className="w-full md:w-1/2 aspect-square object-cover md:rounded-xl md:border-2 bg-accent animate-pulse absolute top-0 left-0"
               onLoad={(event) => {
                 const target = event.target as HTMLImageElement
                 target.classList.remove("animate-pulse")
@@ -249,7 +250,12 @@ export default function SongDetailsPage() {
           </ViewTransition>
         </div>
         <ViewTransition name="content">
-          <div className="col-span-12 md:col-span-8 row-span-2 md:col-start-5 mt-[40vw] md:mt-10 z-20 bg-background/50 backdrop-blur-lg rounded-t-2xl pb-2 md:pb-4 rounded-b-sm shadow-md shadow-border/50">
+          <div
+            className={cn(
+              "col-span-12 md:col-span-8 row-span-2 md:col-start-5 mt-[40vw] md:mt-10 z-20 rounded-t-2xl pb-2 md:pb-4 rounded-b-sm shadow-md shadow-border/50",
+              overlayBlurClassName,
+            )}
+          >
             <VStack className="px-2 md:px-4 gap-4">
               <VStack className="gap-1">
                 <Breadcrumb className="my-2">

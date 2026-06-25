@@ -262,7 +262,7 @@ export function LyricsView({
     <ViewTransition name="lyrics-view">
       <VStack
         className={cn(
-          "relative px-4 py-2 shadow-lg drop-shadow-card-foreground gap-0.5 mx-auto w-full",
+          "relative px-4 py-2 gap-0.5 mx-auto w-full",
           m3ExpressiveDuration.effect.fast.className,
           m3ExpressiveSpring.effect.fast.className,
           isMaximized && "fixed inset-0 z-100",
@@ -270,7 +270,7 @@ export function LyricsView({
       >
         <div
           className={cn(
-            "absolute bg-secondary/90 rounded-xl inset-0 -z-20 transition-[border-radius]",
+            "absolute bg-secondary/90 rounded-xl inset-0 -z-20 transition-[border-radius] drop-shadow-sm drop-shadow-black/50",
             m3ExpressiveDuration.effect.fast.className,
             m3ExpressiveSpring.effect.fast.className,
             isMaximized && "rounded-none bg-transparent",

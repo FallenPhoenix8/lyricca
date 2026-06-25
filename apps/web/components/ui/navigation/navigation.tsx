@@ -34,7 +34,7 @@ export default function Navigation({ origin }: { origin: "app" | "guest" }) {
               <Button
                 variant="secondary"
                 size="sm"
-                className="rounded-full flex justify-center items-center drop-shadow-sm drop-shadow-background/50 px-0"
+                className="rounded-full flex justify-center items-center px-0"
               >
                 <Link
                   href={backButtonPath}
