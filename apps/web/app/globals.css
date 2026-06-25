@@ -353,7 +353,7 @@ html.dark {
   }
 
   ::view-transition-group(lyrics-view) {
-    z-index: 200;
+    z-index: 300;
   }
 
   ::view-transition-group(.song-card-list) {

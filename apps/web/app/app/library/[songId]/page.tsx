@@ -63,94 +63,79 @@ export default function SongDetailsPage() {
     redirect(`/app/library`)
   }
   const [isEditable, setIsEditable] = useState(false)
-  const [isFirstRender, setIsFirstRender] = useState(true)
   const { setReferralSongId } = useReferralSongContext()
 
-  function updateTitle(newTitle: string, target: HTMLDivElement) {
-    console.log(`Updating title to "${newTitle}"...`)
-    update.mutate({ id: songId, input: { title: newTitle } })
-    target.blur()
-  }
-
   const [artist, setArtist] = useState<string | null>(song?.artist || null)
-  function updateArtist(newArtist: string | null, target: HTMLDivElement) {
-    console.log(`Updating artist to "${newArtist}"...`)
-    startTransition(() => {
-      setArtist(newArtist)
-    })
-    update.mutate({ id: songId, input: { artist: newArtist } })
-    target.blur()
-  }
-
   const [album, setAlbum] = useState<string | null>(song?.album || null)
-  function updateAlbum(newAlbum: string | null, target: HTMLDivElement) {
-    console.log(`Updating album to "${newAlbum}"...`)
-    startTransition(() => {
-      setAlbum(newAlbum)
-    })
-    update.mutate({ id: songId, input: { album: newAlbum } })
-    target.blur()
-  }
+  const [originalLyrics, setOriginalLyrics] = useState<string[]>([])
+  const [translatedLyrics, setTranslatedLyrics] = useState<string[]>([])
+
   useEffect(() => {
-    startTransition(() => {
-      setArtist(song?.artist || null)
-      setAlbum(song?.album || null)
-    })
+    if (!song) return
+    setArtist(song.artist || null)
+    setAlbum(song.album || null)
+    setOriginalLyrics(song.original_lyrics.split("\n"))
+    setTranslatedLyrics(song.translated_lyrics.split("\n"))
   }, [song])
 
-  const translatedLyrics = useMemo(() => {
-    return song?.translated_lyrics.split("\n") || []
-  }, [song])
-  const originalLyrics = useMemo(() => {
-    return song?.original_lyrics.split("\n") || []
-  }, [song])
+  function handleAlbumChange(event: React.KeyboardEvent<HTMLDivElement>) {
+    const target = event.target as HTMLDivElement
+    if (target.textContent !== unknownAlbum) {
+      setAlbum(target.textContent)
+    }
+  }
 
-  function handleLyricsChange({
+  function handleArtistChange(event: React.KeyboardEvent<HTMLDivElement>) {
+    const target = event.target as HTMLDivElement
+    if (target.textContent !== unknownArtist) {
+      setArtist(target.textContent)
+    }
+  }
+
+  function handleSongUpdateTransaction({
     translatedLyrics,
     originalLyrics,
   }: {
     translatedLyrics: string
     originalLyrics: string
   }) {
-    console.log("Updating lyrics...")
-    try {
-      const input = SongUpateSchema.assert({
-        translated_lyrics: translatedLyrics,
-        original_lyrics: originalLyrics,
-      })
-      update.mutate({ id: songId, input })
-    } catch (error) {
-      console.error("Failed to update lyrics:", error)
-      return
-    }
-  }
-
-  /**
-   * Responsible for updating the song details (title, artist, album) in the database.
-   */
-  function updateSongDetails({
-    title,
-    artist,
-    album,
-  }: {
-    title?: string
-    artist?: string
-    album?: string
-  }) {
-    console.log("Updating song details...")
+    console.log("Updating song...")
     try {
       const details: SongUpdateDTO = {}
-      if (title) {
-        details.title = title
+
+      const titleElement = titleElementRef.current
+
+      if (!titleElement) {
+        return
       }
-      if (artist) {
-        details.artist = artist
+
+      const title = titleElement.textContent
+
+      if (title.trim() !== song?.title) {
+        details.title = title.trim()
       }
-      if (album) {
-        details.album = album
+      if (artist !== null && artist?.trim() !== song?.artist) {
+        details.artist = artist?.trim() || ""
       }
+
+      if (album !== null && album?.trim() !== song?.album) {
+        details.album = album?.trim() || ""
+      }
+      if (originalLyrics.trim() !== song?.original_lyrics) {
+        details.original_lyrics = originalLyrics.trim()
+      }
+      if (translatedLyrics.trim() !== song?.translated_lyrics) {
+        details.translated_lyrics = translatedLyrics.trim()
+      }
+
       const input = SongUpateSchema.assert(details)
       update.mutate({ id: songId, input })
+
+      // Optimistically update artist and album
+      if (song) {
+        song.artist = artist?.trim() ? artist : null
+        song.album = album?.trim() ? album : null
+      }
     } catch (error) {
       console.error("Failed to update song details:", error)
       return
@@ -178,44 +163,6 @@ export default function SongDetailsPage() {
     },
     [isEditable],
   )
-
-  useLayoutEffect(() => {
-    if (isFirstRender) {
-      setIsFirstRender(false)
-    } else {
-      if (!isEditable) {
-        const titleElement = titleElementRef.current
-        const artistElement = artistElementRef.current
-        const albumElement = albumElementRef.current
-        if (!titleElement || !artistElement || !albumElement) {
-          return
-        }
-
-        const newTitle = titleElement.textContent
-        const newArtist = artistElement.textContent
-        const newAlbum = albumElement.textContent
-
-        const newSongDetails: {
-          title?: string
-          artist?: string
-          album?: string
-        } = {}
-        if (newTitle !== song?.title) {
-          newSongDetails.title = newTitle
-        }
-        if (newArtist !== song?.artist) {
-          newSongDetails.artist = newArtist
-        }
-        if (newAlbum !== song?.album) {
-          newSongDetails.album = newAlbum
-        }
-        if (Object.keys(newSongDetails).length > 0) {
-          updateSongDetails(newSongDetails)
-        }
-      }
-    }
-  }, [isEditable])
-  console.log(song)
   return (
     <>
       {/* <ViewTransition default="auto"> */}
@@ -315,6 +262,7 @@ export default function SongDetailsPage() {
                         isEditable &&
                           "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
                       )}
+                      onKeyUp={handleArtistChange}
                       ref={artistElementRef}
                     >
                       {isEditable
@@ -337,6 +285,7 @@ export default function SongDetailsPage() {
                         isEditable &&
                           "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
                       )}
+                      onKeyUp={handleAlbumChange}
                       ref={albumElementRef}
                     >
                       {isEditable ? song.album || "" : album || unknownAlbum}
@@ -349,7 +298,7 @@ export default function SongDetailsPage() {
               <LyricsView
                 translatedLyrics={translatedLyrics}
                 originalLyrics={originalLyrics}
-                handleLyricsChange={handleLyricsChange}
+                handleLyricsChange={handleSongUpdateTransaction}
                 isLoading={isLoading}
                 isEditable={isEditable}
                 setIsEditable={setIsEditable}

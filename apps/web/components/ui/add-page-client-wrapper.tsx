@@ -369,7 +369,7 @@ export function AddPageClientWrapper({
             <ViewTransition name="add-cover-image">
               <ZStackGrid
                 className={cn(
-                  "group w-full absolute top-0 aspect-square rounded-xl border-2 z-5",
+                  "group w-full absolute top-0 aspect-square rounded-b-xl rounded-t-none md:rounded-t-xl md:border-2 z-5",
                   isLoading && "animate-pulse",
                   m3ExpressiveDuration.effect.fast.className,
                   m3ExpressiveSpring.effect.fast.className,
@@ -388,7 +388,7 @@ export function AddPageClientWrapper({
 
                 <img
                   src={displayCoverURL}
-                  className="w-full aspect-square object-cover rounded-xl"
+                  className="w-full aspect-square object-cover rounded-b-xl rounded-t-none md:rounded-t-xl"
                   aria-describedby="cover-description"
                   onLoad={() => {
                     updateLoadingState(false)
@@ -398,7 +398,7 @@ export function AddPageClientWrapper({
 
                 <div
                   className={cn(
-                    "w-full h-full bg-accent/50 rounded-xl",
+                    "w-full h-full bg-accent/50 rounded-b-xl rounded-t-none md:rounded-t-xl md:border-2",
                     isOverlayVisible ? "block" : "hidden",
                   )}
                 ></div>
@@ -415,276 +415,282 @@ export function AddPageClientWrapper({
               </ZStackGrid>
             </ViewTransition>
           </div>
-          <div className="py-2 px-4 col-span-12 md:col-span-8 row-span-1 mt-[40vw] md:mt-10 bg-background/80 rounded-t-2xl z-10">
-            <h1 className="text-2xl font-extrabold py-4">Add a new song</h1>
-            <FieldLabel>Cover</FieldLabel>
-            <FieldDescriptionWithErrors
-              errors={state.errors?.cover ?? []}
-              id="cover-description"
-            >
-              Upload a cover image or get a suggestion from the internet. You
-              can also edit translations line-by-line.
-            </FieldDescriptionWithErrors>
-            <div className="flex justify-start gap-2">
-              <HoverCard closeDelay={10} openDelay={50}>
-                <HoverCardTrigger>
-                  <ActionButton
-                    onClick={() => {
-                      buttonFileInputRef.current?.click()
-                    }}
-                    icon="upload"
-                  ></ActionButton>
-                  <input
-                    type="file"
-                    hidden
-                    ref={buttonFileInputRef}
-                    name="cover"
-                    accept="image/jpeg, image/png, image/webp"
-                    onChange={(event) => {
-                      handleFileUpload(event)
-                    }}
-                  />
-                </HoverCardTrigger>
-                <HoverCardContent>
-                  <p className="text-sm">Upload cover</p>
-                </HoverCardContent>
-              </HoverCard>
+          <div className="bg-background/85 backdrop-blur-2xl col-span-12 md:col-span-8 z-10 mt-[40vw] md:mt-10 row-span-1 rounded-t-2xl">
+            <div className="py-2 px-4">
+              <h1 className="text-2xl font-extrabold py-4">Add a new song</h1>
+              <FieldLabel>Cover</FieldLabel>
+              <FieldDescriptionWithErrors
+                errors={state.errors?.cover ?? []}
+                id="cover-description"
+              >
+                Upload a cover image or get a suggestion from the internet. You
+                can also edit translations line-by-line.
+              </FieldDescriptionWithErrors>
+              <div className="flex justify-start gap-2">
+                <HoverCard closeDelay={10} openDelay={50}>
+                  <HoverCardTrigger>
+                    <ActionButton
+                      onClick={() => {
+                        buttonFileInputRef.current?.click()
+                      }}
+                      icon="upload"
+                    ></ActionButton>
+                    <input
+                      type="file"
+                      hidden
+                      ref={buttonFileInputRef}
+                      name="cover"
+                      accept="image/jpeg, image/png, image/webp"
+                      onChange={(event) => {
+                        handleFileUpload(event)
+                      }}
+                    />
+                  </HoverCardTrigger>
+                  <HoverCardContent>
+                    <p className="text-sm">Upload cover</p>
+                  </HoverCardContent>
+                </HoverCard>
 
-              <HoverCard closeDelay={10} openDelay={50}>
-                <HoverCardTrigger>
-                  <ActionButton
-                    onClick={() => {
-                      getSuggestionMutation.mutate({
-                        artist,
-                        title,
-                      })
-                    }}
-                    icon="sparkles"
-                  ></ActionButton>
-                </HoverCardTrigger>
-                <HoverCardContent>
-                  <p className="text-sm">
-                    Get automatic suggestion <br />
-                    <span className="text-muted-foreground text-xs">
-                      (based on artist and title)
-                    </span>
-                  </p>
-                </HoverCardContent>
-              </HoverCard>
+                <HoverCard closeDelay={10} openDelay={50}>
+                  <HoverCardTrigger>
+                    <ActionButton
+                      onClick={() => {
+                        getSuggestionMutation.mutate({
+                          artist,
+                          title,
+                        })
+                      }}
+                      icon="sparkles"
+                    ></ActionButton>
+                  </HoverCardTrigger>
+                  <HoverCardContent>
+                    <p className="text-sm">
+                      Get automatic suggestion <br />
+                      <span className="text-muted-foreground text-xs">
+                        (based on artist and title)
+                      </span>
+                    </p>
+                  </HoverCardContent>
+                </HoverCard>
+              </div>
             </div>
-          </div>
-          <div className="col-span-12 md:col-span-8 row-span-2 md:col-start-5 z-10 bg-background/80">
-            <form className="px-2 md:px-4 gap-4 py-2" action={formAction}>
-              <FieldGroup>
-                <FieldSet>
-                  <FieldLegend>Song Details</FieldLegend>
-                  <FieldDescription>
-                    Enter the details of the song you want to add.
-                  </FieldDescription>
-                  <FieldGroup>
+            <div className="row-span-2 md:col-start-5 z-10 ">
+              <form className="px-2 md:px-4 gap-4 py-2" action={formAction}>
+                <FieldGroup>
+                  <FieldSet>
+                    <FieldLegend>Song Details</FieldLegend>
+                    <FieldDescription>
+                      Enter the details of the song you want to add.
+                    </FieldDescription>
+                    <FieldGroup>
+                      <Field>
+                        <FieldLabel htmlFor="title">Title</FieldLabel>
+                        <FieldDescriptionWithErrors
+                          errors={state.errors?.title ?? []}
+                          id="title-description"
+                        >
+                          Enter the song title.
+                        </FieldDescriptionWithErrors>
+                        <Input
+                          placeholder="Song title"
+                          required
+                          className={cn(
+                            "max-w-lg",
+                            !!state.errors?.title && "border-destructive",
+                          )}
+                          id="title"
+                          onChange={(event) => {
+                            const target = event.target as HTMLInputElement
+                            setTitle(target.value)
+                          }}
+                          value={title}
+                          aria-describedby="title-description"
+                          name="title"
+                        />
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="artist">
+                          Artist
+                          <span className="text-muted-foreground">
+                            (optional, required for cover suggestion)
+                          </span>
+                        </FieldLabel>
+                        <FieldDescriptionWithErrors
+                          errors={state.errors?.artist ?? []}
+                          id="artist-description"
+                        >
+                          Enter the artist name.
+                        </FieldDescriptionWithErrors>
+                        <Input
+                          placeholder="Artist"
+                          className={cn(
+                            "max-w-md",
+                            !!state.errors?.artist && "border-destructive",
+                          )}
+                          id="artist"
+                          onChange={(event) => {
+                            const target = event.target as HTMLInputElement
+                            setArtist(target.value)
+                          }}
+                          value={artist}
+                          aria-describedby="artist-description"
+                          name="artist"
+                        />
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="album">
+                          Album
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FieldLabel>
+                        <FieldDescriptionWithErrors
+                          errors={state.errors?.album ?? []}
+                          id="album-description"
+                        >
+                          Enter the album name.
+                        </FieldDescriptionWithErrors>
+                        <Input
+                          placeholder="Album"
+                          className={cn(
+                            "max-w-md",
+                            !!state.errors?.album && "border-destructive",
+                          )}
+                          id="album"
+                          onChange={(event) => {
+                            const target = event.target as HTMLInputElement
+                            setAlbum(target.value)
+                          }}
+                          value={album}
+                          aria-describedby="album-description"
+                          name="album"
+                        />
+                      </Field>
+                    </FieldGroup>
+                  </FieldSet>
+
+                  <FieldGroup className="mt-4">
                     <Field>
-                      <FieldLabel htmlFor="title">Title</FieldLabel>
+                      <FieldLabel htmlFor="original_lyrics">
+                        Original Lyrics
+                        <Button
+                          variant="ghost"
+                          onClick={pasteOriginalLyrics}
+                          type="button"
+                        >
+                          {isPasted ? (
+                            <ClipboardCheckIcon />
+                          ) : (
+                            <ClipboardIcon />
+                          )}
+                        </Button>
+                      </FieldLabel>
                       <FieldDescriptionWithErrors
-                        errors={state.errors?.title ?? []}
-                        id="title-description"
+                        errors={state.errors?.originalLyrics ?? []}
+                        id="original-lyrics-description"
                       >
-                        Enter the song title.
+                        Paste the original lyrics here.
                       </FieldDescriptionWithErrors>
-                      <Input
-                        placeholder="Song title"
+                      <Textarea
+                        id="original_lyrics"
+                        placeholder="Original lyrics"
                         required
                         className={cn(
-                          "max-w-lg",
-                          !!state.errors?.title && "border-destructive",
+                          "resize-none",
+                          state.errors?.originalLyrics && "border-destructive",
                         )}
-                        id="title"
                         onChange={(event) => {
-                          const target = event.target as HTMLInputElement
-                          setTitle(target.value)
+                          const target = event.target as HTMLTextAreaElement
+                          setOriginalLyrics(target.value)
                         }}
-                        value={title}
-                        aria-describedby="title-description"
-                        name="title"
+                        value={originalLyrics}
+                        aria-describedby="original-lyrics-description"
+                        name="original_lyrics"
                       />
-                    </Field>
-                    <Field>
-                      <FieldLabel htmlFor="artist">
-                        Artist
-                        <span className="text-muted-foreground">
-                          (optional, required for cover suggestion)
-                        </span>
-                      </FieldLabel>
-                      <FieldDescriptionWithErrors
-                        errors={state.errors?.artist ?? []}
-                        id="artist-description"
-                      >
-                        Enter the artist name.
-                      </FieldDescriptionWithErrors>
-                      <Input
-                        placeholder="Artist"
-                        className={cn(
-                          "max-w-md",
-                          !!state.errors?.artist && "border-destructive",
-                        )}
-                        id="artist"
-                        onChange={(event) => {
-                          const target = event.target as HTMLInputElement
-                          setArtist(target.value)
-                        }}
-                        value={artist}
-                        aria-describedby="artist-description"
-                        name="artist"
-                      />
-                    </Field>
-                    <Field>
-                      <FieldLabel htmlFor="album">
-                        Album
-                        <span className="text-muted-foreground">
-                          (optional)
-                        </span>
-                      </FieldLabel>
-                      <FieldDescriptionWithErrors
-                        errors={state.errors?.album ?? []}
-                        id="album-description"
-                      >
-                        Enter the album name.
-                      </FieldDescriptionWithErrors>
-                      <Input
-                        placeholder="Album"
-                        className={cn(
-                          "max-w-md",
-                          !!state.errors?.album && "border-destructive",
-                        )}
-                        id="album"
-                        onChange={(event) => {
-                          const target = event.target as HTMLInputElement
-                          setAlbum(target.value)
-                        }}
-                        value={album}
-                        aria-describedby="album-description"
-                        name="album"
-                      />
-                    </Field>
-                  </FieldGroup>
-                </FieldSet>
 
-                <FieldGroup className="mt-4">
-                  <Field>
-                    <FieldLabel htmlFor="original_lyrics">
-                      Original Lyrics
+                      <input
+                        type="hidden"
+                        name="translated_lyrics"
+                        value={translatedLyrics}
+                      />
+                    </Field>
+
+                    <FieldDescriptionWithErrors
+                      errors={[
+                        ...(errors.targetLanguage ?? []),
+                        ...(errors.translatedLyrics ?? []),
+                      ]}
+                      id="translation-description"
+                    >
+                      <FieldLegend className="text-xl text-foreground">
+                        Translation
+                      </FieldLegend>
+                      Select the target language for translation. You can also
+                      edit translations line-by-line.
+                      <br />
+                      <span className="text-muted-foreground text-xs">
+                        (Powered by{" "}
+                        <a
+                          href="https://www.deepl.com/en/translator"
+                          target="_blank"
+                          className="underline underline-offset-2"
+                        >
+                          DeepL
+                        </a>
+                        )
+                      </span>
+                    </FieldDescriptionWithErrors>
+                    <Suspense
+                      fallback={
+                        <div className="grid place-items-center px-4 py-2">
+                          <LoadingSpinner />
+                        </div>
+                      }
+                    >
+                      {children}
+                    </Suspense>
+                    <Field>
                       <Button
-                        variant="ghost"
-                        onClick={pasteOriginalLyrics}
+                        className="w-full"
+                        disabled={translateMutation.isLoading}
+                        onClick={handleTranslate}
                         type="button"
                       >
-                        {isPasted ? <ClipboardCheckIcon /> : <ClipboardIcon />}
+                        {translateMutation.isLoading && <LoadingSpinner />}
+                        Translate
                       </Button>
-                    </FieldLabel>
-                    <FieldDescriptionWithErrors
-                      errors={state.errors?.originalLyrics ?? []}
-                      id="original-lyrics-description"
-                    >
-                      Paste the original lyrics here.
-                    </FieldDescriptionWithErrors>
-                    <Textarea
-                      id="original_lyrics"
-                      placeholder="Original lyrics"
-                      required
-                      className={cn(
-                        "resize-none",
-                        state.errors?.originalLyrics && "border-destructive",
-                      )}
-                      onChange={(event) => {
-                        const target = event.target as HTMLTextAreaElement
-                        setOriginalLyrics(target.value)
-                      }}
-                      value={originalLyrics}
-                      aria-describedby="original-lyrics-description"
-                      name="original_lyrics"
-                    />
-
-                    <input
-                      type="hidden"
-                      name="translated_lyrics"
-                      value={translatedLyrics}
-                    />
-                  </Field>
-
-                  <FieldDescriptionWithErrors
-                    errors={[
-                      ...(errors.targetLanguage ?? []),
-                      ...(errors.translatedLyrics ?? []),
-                    ]}
-                    id="translation-description"
-                  >
-                    <FieldLegend className="text-xl text-foreground">
-                      Translation
-                    </FieldLegend>
-                    Select the target language for translation. You can also
-                    edit translations line-by-line.
-                    <br />
-                    <span className="text-muted-foreground text-xs">
-                      (Powered by{" "}
-                      <a
-                        href="https://www.deepl.com/en/translator"
-                        target="_blank"
-                        className="underline underline-offset-2"
-                      >
-                        DeepL
-                      </a>
-                      )
-                    </span>
-                  </FieldDescriptionWithErrors>
-                  <Suspense
-                    fallback={
-                      <div className="grid place-items-center px-4 py-2">
-                        <LoadingSpinner />
-                      </div>
-                    }
-                  >
-                    {children}
-                  </Suspense>
-                  <Field>
-                    <Button
-                      className="w-full"
-                      disabled={translateMutation.isLoading}
-                      onClick={handleTranslate}
-                      type="button"
-                    >
-                      {translateMutation.isLoading && <LoadingSpinner />}
-                      Translate
-                    </Button>
-                  </Field>
+                    </Field>
+                  </FieldGroup>
+                  <LyricsView
+                    translatedLyrics={translatedLyrics.split("\n")}
+                    originalLyrics={originalLyrics.split("\n")}
+                    handleLyricsChange={handleLyricsChange}
+                    isReadyTranslation={!translateMutation.isLoading}
+                    isEditable={isEditableLyrics}
+                    setIsEditable={setIsEditableLyrics}
+                    aria-describedby="translation-description"
+                  />
                 </FieldGroup>
-                <LyricsView
-                  translatedLyrics={translatedLyrics.split("\n")}
-                  originalLyrics={originalLyrics.split("\n")}
-                  handleLyricsChange={handleLyricsChange}
-                  isReadyTranslation={!translateMutation.isLoading}
-                  isEditable={isEditableLyrics}
-                  setIsEditable={setIsEditableLyrics}
-                  aria-describedby="translation-description"
+                <input type="file" name="cover" hidden ref={coverFileRef} />
+                <input
+                  type="hidden"
+                  name="default-cover"
+                  value={isCoverDefault ? "default" : ""}
                 />
-              </FieldGroup>
-              <input type="file" name="cover" hidden ref={coverFileRef} />
-              <input
-                type="hidden"
-                name="default-cover"
-                value={isCoverDefault ? "default" : ""}
-              />
-              <Button className="my-3 w-full" disabled={isPending}>
-                {isPending && <LoadingSpinner />} Add Song
-              </Button>
-              {state.message && (
-                <p
-                  className="text-destructive"
-                  id="add-song-error"
-                  aria-live="polite"
-                >
-                  {state.message}
-                </p>
-              )}
-            </form>
+                <Button className="my-3 w-full" disabled={isPending} size="lg">
+                  {isPending && <LoadingSpinner />} Add Song
+                </Button>
+                {state.message && (
+                  <p
+                    className="text-destructive"
+                    id="add-song-error"
+                    aria-live="polite"
+                  >
+                    {state.message}
+                  </p>
+                )}
+              </form>
+            </div>
           </div>
           {/* </ViewTransition> */}
         </div>

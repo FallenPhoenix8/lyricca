@@ -6,7 +6,7 @@ import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
 import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
 import { SongUpateSchema } from "@/lib/model/Song"
 import { redirect, useParams } from "next/navigation"
-import { useState } from "react"
+import { useLayoutEffect, useState } from "react"
 
 export default function SongLyricsPage() {
   const { songId } = useParams<{ songId: string }>()
@@ -56,13 +56,15 @@ export default function SongLyricsPage() {
       <img
         src={song?.cover?.url || "/cover-default.svg"}
         alt={song?.title}
-        className="absolute w-full aspect-square opacity-0 -z-100"
+        className="fixed h-full -z-100"
         onLoad={(e) => {
           const target = e.target as HTMLImageElement
           applyThemeFromImage(target)
         }}
+        loading="eager"
         crossOrigin="anonymous"
       />
+      {/* <div className="absolute inset-0 -z-90 bg-background"></div> */}
       <BlurOverlay className="z-89" />
       <div
         className="fixed inset-0 bg-cover bg-no-repeat"

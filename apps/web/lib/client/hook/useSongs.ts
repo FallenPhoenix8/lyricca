@@ -47,6 +47,7 @@ async function update(
   id: string,
   input: SongUpdateDTO,
 ): Promise<Result<SongDTO, ErrorResponseDTO>> {
+  console.log(`Updating song ${id}`, input)
   // * MARK: - Update song in the API
   const endpoint = `songs/${id}`
   const result = await APIClient.shared.patch<SongDTO>(endpoint, input)

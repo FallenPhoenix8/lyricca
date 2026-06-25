@@ -233,7 +233,7 @@ export function NavigationLinkGroup({
 function NavigationLink(props: { button: LinkItem; isActive: boolean }) {
   return (
     <Button
-      size="sm"
+      size={props.isActive ? "default" : "icon"}
       className={cn(
         "flex justify-center items-center rounded-xl px-0",
         props.isActive ? "rounded-full" : " rounded-xl",
@@ -243,7 +243,10 @@ function NavigationLink(props: { button: LinkItem; isActive: boolean }) {
     >
       <Link
         href={props.button.href}
-        className="flex h-full w-full justify-center items-center px-3"
+        className={cn(
+          "flex gap-0.5 h-full w-full justify-center items-center",
+          props.isActive && "px-3",
+        )}
       >
         <div>{props.button.icon}</div>
         <div className={cn("overflow-clip", !props.isActive && "max-w-0")}>

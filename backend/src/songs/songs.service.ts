@@ -7,7 +7,7 @@ import {
   SongImpl,
   SongUpdateDTOImpl,
 } from "./dto/song-dto"
-import { SongCreateDTO } from "@shared/ts-types"
+import { SongCreateDTO, SongUpdateDTO } from "@shared/ts-types"
 import { CoverDTOImpl } from "../covers/dto/cover-dto"
 
 @Injectable()
@@ -45,15 +45,19 @@ export class SongsService {
     id: string,
     updateSongDto: SongUpdateDTOImpl & { cover_id?: string },
   ): Promise<SongImpl> {
+    const updateData: SongUpdateDTO & { cover_id?: string } = {
+      ...updateSongDto,
+    }
+    if (updateSongDto.artist !== undefined && !updateSongDto.artist?.trim()) {
+      updateData.artist = null
+    }
+    if (updateSongDto.album !== undefined && !updateSongDto.album?.trim()) {
+      updateData.album = null
+    }
     const song = await this.databaseService.song.update({
       where: { id },
       data: {
-        title: updateSongDto.title,
-        artist: updateSongDto.artist,
-        album: updateSongDto.album,
-        original_lyrics: updateSongDto.original_lyrics,
-        translated_lyrics: updateSongDto.translated_lyrics,
-        cover_id: updateSongDto.cover_id,
+        ...updateData,
       },
       include: { user: true, cover: true },
     })

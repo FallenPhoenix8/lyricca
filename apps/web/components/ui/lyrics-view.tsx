@@ -242,7 +242,7 @@ export function LyricsView({
   useEffect(() => {
     if (isFirstRender) {
       setIsFirstRender(false)
-    } else {
+    } else if (!isEditable) {
       handleSubmitNewLyrics()
     }
   }, [isEditable])
@@ -253,7 +253,6 @@ export function LyricsView({
       lyricsContainerRef.current,
       () => {
         setIsEditable(false)
-        handleSubmitNewLyrics()
       },
       [],
     )
@@ -292,7 +291,6 @@ export function LyricsView({
             handleClick={(e) => {
               e.preventDefault()
               setIsEditable(false)
-              handleSubmitNewLyrics()
             }}
             isVisible={isEditable}
           />

@@ -32,8 +32,8 @@ const SongUpateSchema = type({
   title: "string > 0",
   original_lyrics: "string > 0",
   translated_lyrics: "string > 0",
-  artist: "string > 0",
-  album: "string > 0",
+  artist: "string",
+  album: "string",
 }).partial()
 
 // export type { TypeSongDTO, TypeSongCreate }

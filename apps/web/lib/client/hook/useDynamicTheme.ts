@@ -17,7 +17,7 @@ export function useDynamicTheme() {
   const dynamicThemePathPrefixes = ["/app/library/[songId]", "/app/add"]
 
   useEffect(() => {
-    if (!window) return
+    if (document === undefined) return
     for (const prefix of dynamicThemePathPrefixes) {
       if (!pathname.startsWith(prefix)) {
         clearShadcnTheme()
@@ -28,6 +28,7 @@ export function useDynamicTheme() {
   const applyThemeFromImage = useCallback(
     async (imageElement: HTMLImageElement | null) => {
       if (!imageElement) return
+      if (document === undefined) return
       if (!window) return
 
       setIsProcessing(true)
@@ -42,6 +43,7 @@ export function useDynamicTheme() {
 
         // 3. Transform to shadcn compatible object
         const shadcnTheme = transformM3ToShadcn(m3Theme)
+        console.log("Current Shadcn Theme", shadcnTheme)
 
         // 4. Animate the transition via GSAP
         animateThemeTransitions(shadcnTheme)
@@ -60,6 +62,7 @@ export function useDynamicTheme() {
   )
 
   const setDefaultTheme = useCallback(() => {
+    if (document === undefined) return
     clearShadcnTheme()
   }, [])
 
