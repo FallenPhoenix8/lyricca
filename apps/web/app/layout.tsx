@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 import { Noto_Sans } from "next/font/google"
 import "./globals.css"
-import { ThemeProvider } from "@/components/providers/theme-provider"
 import { ViewTransition } from "react"
+import { ThemeProvider } from "next-themes"
 
 const notoSans = Noto_Sans({
   subsets: ["latin"],
@@ -30,7 +30,9 @@ export default function RootLayout({
           fontFamily,
         }}
       >
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )

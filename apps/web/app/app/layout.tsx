@@ -4,10 +4,12 @@ import { SongsProvider } from "@/components/ui/SongsContext"
 import { ViewTransition } from "react"
 import { QueryClient, QueryClientProvider } from "react-query"
 import { NuqsAdapter } from "nuqs/adapters/next"
+import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
 
 const queryClient = new QueryClient()
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  useDynamicTheme()
   return (
     <ViewTransition default="auto">
       <NuqsAdapter>

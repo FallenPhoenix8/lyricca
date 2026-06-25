@@ -36,12 +36,15 @@ import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
 import { SongUpdateDTO } from "@shared/ts-types"
 import { useReferralSongContext } from "@/components/ui/ReferralSongContext"
 import { useM3Motion } from "@/lib/client/hook/useM3Motion"
+import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
 
 export default function SongDetailsPage() {
   useM3Motion()
   const { songId } = useParams<{ songId: string }>()
   const maximizedURL = `/app/library/${songId}/lyrics`
   const minimizedURL = `/app/library/${songId}`
+
+  const { applyThemeFromImage } = useDynamicTheme()
 
   const unknownArtist = "Unknown Artist"
   const unknownAlbum = "Unknown Album"
@@ -223,7 +226,7 @@ export default function SongDetailsPage() {
           backgroundImage: `url("${song?.cover?.url || "/cover-default.svg"}")`,
         }}
       >
-        <div className="col-span-12 md:col-span-4 row-span-1 md:h-screen flex justify-center items-center">
+        <div className="col-span-12 md:col-span-4 row-span-1 md:h-1/2 flex justify-center items-center">
           <ViewTransition
             name={`${songId}-cover`}
             share="song-cover-details"
@@ -232,11 +235,14 @@ export default function SongDetailsPage() {
             <Image
               src={song?.cover?.url || "/cover-default.svg"}
               alt={song?.title || ""}
-              className="w-full aspect-square object-cover md:rounded-xl md:border-2 bg-accent animate-pulse absolute top-0"
+              className="w-full md:w-1/2 aspect-square object-cover md:rounded-xl md:border-2 bg-accent animate-pulse absolute top-0"
               onLoad={(event) => {
                 const target = event.target as HTMLImageElement
                 target.classList.remove("animate-pulse")
+                if (!window) return
+                applyThemeFromImage(target)
               }}
+              loading="eager"
               width={330}
               height={180}
             />

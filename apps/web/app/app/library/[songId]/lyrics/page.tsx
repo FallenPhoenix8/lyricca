@@ -2,6 +2,7 @@
 import { BlurOverlay } from "@/components/ui/blur-overlay"
 import { LyricsView } from "@/components/ui/lyrics-view"
 import { useSongsContext } from "@/components/ui/SongsContext"
+import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
 import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
 import { SongUpateSchema } from "@/lib/model/Song"
 import { redirect, useParams } from "next/navigation"
@@ -9,6 +10,7 @@ import { useState } from "react"
 
 export default function SongLyricsPage() {
   const { songId } = useParams<{ songId: string }>()
+  const { applyThemeFromImage } = useDynamicTheme()
 
   const maximizedURL = `/app/library/${songId}/lyrics`
   const minimizedURL = `/app/library/${songId}`
@@ -51,7 +53,17 @@ export default function SongLyricsPage() {
 
   return (
     <>
-      <BlurOverlay className="z-89 backdrop-blur-md" />
+      <img
+        src={song?.cover?.url || "/cover-default.svg"}
+        alt={song?.title}
+        className="absolute w-full aspect-square opacity-0 -z-100"
+        onLoad={(e) => {
+          const target = e.target as HTMLImageElement
+          applyThemeFromImage(target)
+        }}
+        crossOrigin="anonymous"
+      />
+      <BlurOverlay className="z-89" />
       <div
         className="fixed inset-0 bg-cover bg-no-repeat"
         style={{

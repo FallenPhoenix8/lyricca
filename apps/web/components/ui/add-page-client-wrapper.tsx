@@ -5,6 +5,7 @@ import {
   startTransition,
   Suspense,
   useActionState,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -50,6 +51,7 @@ import { FieldDescriptionWithErrors } from "./field-description-with-errors"
 import { ClipboardCheckIcon, ClipboardIcon, View } from "lucide-react"
 import { ActionButton } from "./action-button"
 import { BlurOverlay } from "./blur-overlay"
+import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
 
 async function translateAction({
   text,
@@ -116,6 +118,9 @@ export function AddPageClientWrapper({
   // const [isImageActionsVisible, setIsImageActionsVisible] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
 
+  const { applyThemeFromImage } = useDynamicTheme()
+  const coverImageRef = useRef<HTMLImageElement>(null)
+
   function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const target = event.target as HTMLInputElement
     const file = target.files?.[0]
@@ -172,7 +177,7 @@ export function AddPageClientWrapper({
 
   const [coverURL, setCoverURL] = useState<string>("default")
   const isCoverDefault = coverURL === "default" || isLoading
-  const displayCoverURL = useMemo(() => {
+  const displayCoverURL = useMemo((): string => {
     if (coverURL === "default") {
       return "/cover-default.svg"
     } else if (coverURL === "empty") {
@@ -181,6 +186,7 @@ export function AddPageClientWrapper({
       return coverURL
     }
   }, [coverURL])
+
   const getSuggestionMutation = useMutation(getCoverSuggestionAction, {
     onMutate: () => {
       updateLoadingState(true)
@@ -327,9 +333,14 @@ export function AddPageClientWrapper({
     console.log("translatedLyrics changed:", translatedLyrics)
   }, [translatedLyrics])
 
-  useEffect(() => {
-    console.log(state)
-  }, [state])
+  useLayoutEffect(() => {
+    if (!coverImageRef.current) return
+    if (displayCoverURL === "/empty.png") return
+    if (isLoading) return
+    console.log(coverImageRef.current)
+    applyThemeFromImage(coverImageRef.current)
+  }, [displayCoverURL, coverImageRef, isLoading])
+
   return (
     <ViewTransition enter="replace" exit="replace">
       {/* <Breadcrumb className="my-2">
@@ -382,6 +393,7 @@ export function AddPageClientWrapper({
                   onLoad={() => {
                     updateLoadingState(false)
                   }}
+                  ref={coverImageRef}
                 />
 
                 <div
@@ -448,7 +460,6 @@ export function AddPageClientWrapper({
                       })
                     }}
                     icon="sparkles"
-                    activeShape="Pill"
                   ></ActionButton>
                 </HoverCardTrigger>
                 <HoverCardContent>

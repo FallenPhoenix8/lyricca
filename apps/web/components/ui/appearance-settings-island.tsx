@@ -7,38 +7,12 @@ import { useTheme } from "next-themes"
 import { useMemo } from "react"
 
 export function AppearanceSettingsIsland() {
-  const { resolvedTheme, setTheme } = useTheme()
-  const vibe = useMemo(() => {
-    return resolvedTheme?.split("-")[0]!
-  }, [resolvedTheme])
-  const mode = useMemo(() => {
-    return resolvedTheme?.split("-")[1]!
-  }, [resolvedTheme])
-
-  function handleVibeChange(event: React.ChangeEvent<HTMLSelectElement>) {
-    const newVibe = event.target.value
-    const theme = `${newVibe}-${mode}`
-
-    if (!theme) {
-      console.error("Failed to set new theme", theme)
-      return
-    }
-    console.log("Setting theme to", theme)
-    setTheme(theme)
-  }
-
+  const { setTheme, resolvedTheme } = useTheme()
   function handleModeChange(event: React.ChangeEvent<HTMLSelectElement>) {
     const newMode = event.target.value
-    const theme = `${vibe}-${newMode}`
-
-    if (!theme) {
-      console.error("Failed to set new theme", theme)
-      return
-    }
-    console.log("Setting theme to", theme)
-    setTheme(theme)
+    setTheme(newMode)
   }
-  console.log("MODE: ", mode)
+
   return (
     <SettingsIsland title="Appearance">
       {/* Row 1: Theme Selection */}
@@ -46,7 +20,7 @@ export function AppearanceSettingsIsland() {
         label="Theme"
         description="Select your preferred interface style."
       >
-        <NativeSelect value={mode} onChange={handleModeChange}>
+        <NativeSelect value={resolvedTheme} onChange={handleModeChange}>
           <NativeSelectOption value="light">Light</NativeSelectOption>
           <NativeSelectOption value="dark">Dark</NativeSelectOption>
         </NativeSelect>
@@ -55,7 +29,7 @@ export function AppearanceSettingsIsland() {
       <Separator />
 
       {/* Row 2: Animations Toggle */}
-      <SettingsItem
+      {/* <SettingsItem
         label="Accent Color"
         description="Choose your preferred accent color."
       >
@@ -66,7 +40,7 @@ export function AppearanceSettingsIsland() {
           <NativeSelectOption value="caffeine">Caffeine</NativeSelectOption>
           <NativeSelectOption value="catppuccin">Catppuccin</NativeSelectOption>
         </NativeSelect>
-      </SettingsItem>
+      </SettingsItem> */}
     </SettingsIsland>
   )
 }

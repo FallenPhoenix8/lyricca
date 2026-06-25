@@ -273,7 +273,7 @@ export function LyricsView({
             "absolute bg-secondary/90 rounded-xl inset-0 -z-20 transition-[border-radius]",
             m3ExpressiveDuration.effect.fast.className,
             m3ExpressiveSpring.effect.fast.className,
-            isMaximized && "rounded-none",
+            isMaximized && "rounded-none bg-transparent",
           )}
         ></div>
         <HStack className="gap-2 w-full" alignItems="center">
