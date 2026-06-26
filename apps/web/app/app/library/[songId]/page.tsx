@@ -7,7 +7,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { HStack, VStack } from "@/components/ui/layout"
+import { HStack, VStack, ZStackGrid } from "@/components/ui/layout"
 import Link from "next/link"
 import {
   startTransition,
@@ -38,6 +38,10 @@ import { useReferralSongContext } from "@/components/ui/ReferralSongContext"
 import { useM3Motion } from "@/lib/client/hook/useM3Motion"
 import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
 import { BlurOverlay, overlayBlurClassName } from "@/components/ui/blur-overlay"
+import { Tile } from "@/components/ui/tile"
+import { TileGroup } from "@/components/ui/tile-group"
+import { Shape } from "@/components/ui/svg/shapes/Shape"
+import { ExpandablePanel } from "@/components/ui/expandable-panel"
 
 export default function SongDetailsPage() {
   useM3Motion()
@@ -65,6 +69,7 @@ export default function SongDetailsPage() {
   const [isEditable, setIsEditable] = useState(false)
   const { setReferralSongId } = useReferralSongContext()
 
+  const [_, setTitle] = useQueryState("title", { defaultValue: "" })
   const [artist, setArtist] = useState<string | null>(song?.artist || null)
   const [album, setAlbum] = useState<string | null>(song?.album || null)
   const [originalLyrics, setOriginalLyrics] = useState<string[]>([])
@@ -163,6 +168,14 @@ export default function SongDetailsPage() {
     },
     [isEditable],
   )
+
+  useEffect(() => {
+    if (titleElementRef.current && song && !isEditable) {
+      setTitle(titleElementRef.current.textContent)
+    }
+  }, [titleElementRef.current?.textContent, song, isEditable])
+
+  const [isUploadingCover, setIsUploadingCover] = useState(false)
   return (
     <>
       {/* <ViewTransition default="auto"> */}
@@ -205,37 +218,17 @@ export default function SongDetailsPage() {
           >
             <VStack className="px-2 md:px-4 gap-4">
               <VStack className="gap-1">
-                <Breadcrumb className="my-2">
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink asChild>
-                        <Link
-                          href={`/app/library?q=${encodeURIComponent(searchParams)}`}
-                          onNavigate={() => {
-                            setReferralSongId(songId)
-                          }}
-                        >
-                          Library
-                        </Link>
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage>Lyrics</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </Breadcrumb>
                 <ViewTransition
                   name={`${songId}-title`}
                   share="song-card-title"
                 >
                   <div
                     className={cn(
-                      "app-title-heading mt-3 min-w-1 px-2 bg-transparent border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0",
+                      "app-title-heading mt-3 min-w-1 bg-transparent border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0 bg-secondary rounded-md px-3 py-1.5 w-full drop-shadow-sm drop-shadow-black/50",
                       m3ExpressiveDuration.effect.fast.className,
                       m3ExpressiveSpring.effect.fast.className,
                       isEditable &&
-                        "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
+                        "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2 px-2 py-1",
                     )}
                     contentEditable={isEditable}
                     tabIndex={isEditable ? 0 : -1}
@@ -295,6 +288,38 @@ export default function SongDetailsPage() {
                   )}
                 </HStack>
               </VStack>
+              <ExpandablePanel
+                className="w-full"
+                showText="Show Edit Options"
+                hideText="Hide Edit Options"
+              >
+                <TileGroup
+                  tiles={[
+                    {
+                      icon: "eye",
+                      activeIcon: "pencil",
+                      isActive: isEditable,
+                      setIsActive: setIsEditable,
+                      onClick: () => {
+                        console.log("clicked", isEditable)
+                      },
+                      isCompact: false,
+                      children: isEditable ? "Edit" : "View",
+                    },
+                    {
+                      icon: "upload",
+                      isActive: isUploadingCover,
+                      setIsActive: setIsUploadingCover,
+                      onClick: () => {
+                        // TODO: Implement updating song cover
+                        console.log("NOT IMPLEMENTED")
+                      },
+                      isCompact: false,
+                      children: isUploadingCover ? "Uploading..." : "Upload",
+                    },
+                  ]}
+                />
+              </ExpandablePanel>
               <LyricsView
                 translatedLyrics={translatedLyrics}
                 originalLyrics={originalLyrics}

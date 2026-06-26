@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils"
 
-export const overlayBlurClassName = "bg-background/80 backdrop-blur-2xl"
+export const overlayBlurClassName = "backdrop-blur-2xl"
 export function BlurOverlay(props: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div

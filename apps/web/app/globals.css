@@ -404,4 +404,8 @@ html.dark {
   .app-title-heading {
     @apply text-2xl font-semibold lg:text-3xl xl:text-4xl;
   }
+
+  button {
+    @apply cursor-pointer;
+  }
 }

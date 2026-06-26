@@ -39,7 +39,11 @@ function Badge({
     <Comp
       data-slot="badge"
       data-variant={variant}
-      className={cn(badgeVariants({ variant }), className)}
+      className={cn(
+        badgeVariants({ variant }),
+        "drop-shadow-sm drop-shadow-black/50",
+        className,
+      )}
       {...props}
     />
   )

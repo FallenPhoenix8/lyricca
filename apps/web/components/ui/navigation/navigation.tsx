@@ -13,6 +13,7 @@ import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { CaretLeftIcon } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
+import { useQueryState } from "nuqs"
 
 export default function Navigation({ origin }: { origin: "app" | "guest" }) {
   const pathname = usePathname()
@@ -22,13 +23,14 @@ export default function Navigation({ origin }: { origin: "app" | "guest" }) {
     splittedPathname[1],
     splittedPathname[2],
   ].join("/")
-  const isShowBackButton = useMemo(() => {
+  const isChildPath = useMemo(() => {
     return splittedPathname.length >= 4 && origin === "app"
   }, [pathname, origin])
   const isHidden = useMemo(() => {
     const isPathSongLyricsPage = pathname.endsWith("/lyrics")
     return isPathSongLyricsPage
   }, [pathname])
+  const [pageTitle] = useQueryState("title", { defaultValue: "" })
 
   return (
     <ViewTransition name="navigation">
@@ -38,8 +40,8 @@ export default function Navigation({ origin }: { origin: "app" | "guest" }) {
           isHidden && "-translate-y-full",
         )}
       >
-        <div>
-          {isShowBackButton && (
+        <div className="flex gap-2">
+          {isChildPath && (
             <ViewTransition name="navigation-back-button">
               <Button
                 variant="secondary"
@@ -53,6 +55,20 @@ export default function Navigation({ origin }: { origin: "app" | "guest" }) {
                   <CaretLeftIcon className="w-5 h-5" weight="bold" />
                 </Link>
               </Button>
+            </ViewTransition>
+          )}
+          {isChildPath && (
+            <ViewTransition
+              enter="replace-controls-new"
+              exit="replace-controls-new"
+            >
+              <div
+                className={cn(
+                  "align-center font-bold border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0 bg-secondary rounded-md w-full drop-shadow-sm drop-shadow-black/50 px-2 overflow-hidden max-w-34 text-ellipsis text-nowrap leading-9",
+                )}
+              >
+                {pageTitle}
+              </div>
             </ViewTransition>
           )}
         </div>
