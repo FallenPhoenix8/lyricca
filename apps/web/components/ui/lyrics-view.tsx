@@ -28,6 +28,7 @@ import { useM3Motion } from "@/lib/client/hook/useM3Motion"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
 import { AnimatedButtonGroup, ButtonGroupItem } from "./animated-button-group"
+import { Switch } from "./switch"
 
 gsap.registerPlugin(useGSAP)
 
@@ -278,13 +279,25 @@ export function LyricsView({
         <HStack className="gap-2 w-full" alignItems="center">
           <h3 className="text-xl font-extrabold">Lyrics</h3>
           <Spacer />
-          <AnimatedButtonGroup
+          {/* <AnimatedButtonGroup
             buttons={buttons()}
             className={cn(
               isEditable ? "mr-0" : "-mr-12",
               m3ExpressiveDuration.spatial.fast.className,
               m3ExpressiveSpring.spatial.fast.className,
             )}
+          /> */}
+          <Switch
+            size="lg"
+            isChecked={isEditable}
+            onCheckedChange={setIsEditable}
+            className={cn(
+              isEditable ? "mr-0" : "-mr-12",
+              m3ExpressiveDuration.spatial.fast.className,
+              m3ExpressiveSpring.spatial.fast.className,
+            )}
+            icon="eye"
+            activeIcon="pencil"
           />
 
           <SubmitButton

@@ -201,7 +201,7 @@ export function AddPageClientWrapper({
     onSuccess: (response) => {
       if (!response.ok) {
         console.error("Failed to get cover suggestion: ", response.error)
-
+        updateLoadingState(false)
         setIsCoverSuggesting(false)
         return
       }
@@ -217,6 +217,7 @@ export function AddPageClientWrapper({
     },
     onError: (error) => {
       setIsCoverSuggesting(false)
+      updateLoadingState(false)
       console.error("Failed to get cover suggestion:", error)
     },
   })
@@ -303,8 +304,6 @@ export function AddPageClientWrapper({
     translatedLyrics: string
     originalLyrics: string
   }) {
-    console.log("TESTING", translatedLyrics, originalLyrics)
-    console.log("TEST", translatedLyrics)
     setTranslatedLyrics(translatedLyrics)
     setOriginalLyrics(originalLyrics)
   }

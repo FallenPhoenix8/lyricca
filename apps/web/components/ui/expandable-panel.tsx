@@ -24,7 +24,7 @@ export function ExpandablePanel({
     >
       <button
         className={cn(
-          "font-bold text-lg flex w-full px-3 py-4 justify-between items-center bg-popover  text-popover-foreground transition-[outline] drop-shadow-sm drop-shadow-black/50 rounded-full hover:outline-4 outline-offset-2 outline-popover",
+          "font-bold text-lg flex w-full px-3 py-4 justify-between items-center bg-popover  text-popover-foreground transition-[outline] drop-shadow-sm drop-shadow-black/50 rounded-full",
           m3ExpressiveDuration.effect.fast.className,
           m3ExpressiveDuration.effect.default.className,
           isOpen && "rounded-t-xl rounded-b-sm",
@@ -35,8 +35,7 @@ export function ExpandablePanel({
         <span>{isOpen ? hideText : showText}</span>
         {isOpen ? <ChevronUp /> : <ChevronDown />}
       </button>
-
-      {isOpen && props.children}
+      <div className="px-1">{isOpen && props.children}</div>
     </div>
   )
 }
