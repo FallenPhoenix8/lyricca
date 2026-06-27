@@ -72,11 +72,14 @@ function LyricsPair({
       translatedElementRef.current?.blur()
     }
   }, [isEditable])
+  const sharedClassName =
+    "font-bold leading-2 px-2 bg-transparent py-1 border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0 text-lg md:text-xl md:font-extrabold"
   return (
-    <VStack className="gap-1">
+    <VStack>
       <div
         className={cn(
-          "text-foreground font-bold leading-4 px-2 bg-transparent py-1 border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0 mx-0.5",
+          "text-foreground",
+          sharedClassName,
           m3ExpressiveDuration.effect.fast.className,
           m3ExpressiveSpring.effect.fast.className,
           isEditable &&
@@ -96,11 +99,12 @@ function LyricsPair({
       {(isReadyTranslation || isEditable) && (
         <div
           className={cn(
-            "text-muted-foreground font-bold leading-4 px-2 bg-transparent py-1 border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0 mx-0.5",
+            "text-muted-foreground",
+            sharedClassName,
             m3ExpressiveDuration.effect.fast.className,
             m3ExpressiveSpring.effect.fast.className,
             isEditable &&
-              "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
+              "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2 mt-1",
           )}
           contentEditable={isEditable}
           tabIndex={isEditable ? 0 : -1}
@@ -323,7 +327,7 @@ export function LyricsView({
         <hr className="border-white" />
         <VStack
           className={cn(
-            "gap-5 py-4 h-162.5 overflow-y-auto w-full",
+            "gap-4 py-4 h-162.5 overflow-y-auto w-full",
             m3ExpressiveDuration.effect.fast.className,
             m3ExpressiveSpring.effect.fast.className,
             isMaximized && "h-full",

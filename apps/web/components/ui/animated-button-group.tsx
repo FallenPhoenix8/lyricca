@@ -46,7 +46,7 @@ export type ButtonGroupItem = (
 export type LinkItem = {
   href: string
   label: string
-  icon: React.ReactNode
+  icon: IconName
   isInitialActive: boolean
   className?: string
 }
@@ -218,7 +218,7 @@ export function NavigationLinkGroup({
   backgroundOffset?: number
 } & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("flex gap-1", className)} {...props}>
+    <div className={cn("flex gap-2", className)} {...props}>
       {buttons.map((button, index) => {
         return (
           <NavigationLink
@@ -246,11 +246,15 @@ function NavigationLink(props: { button: LinkItem; isActive: boolean }) {
       <Link
         href={props.button.href}
         className={cn(
-          "flex gap-0.5 h-full w-full justify-center items-center",
-          props.isActive && "px-3",
+          "flex h-full w-full justify-center items-center",
+          props.isActive && "px-3 gap-0.5",
         )}
       >
-        <div>{props.button.icon}</div>
+        <DynamicIcon
+          name={props.button.icon}
+          className="w-5 h-5"
+          strokeWidth={"2px"}
+        />
         <div className={cn("overflow-clip", !props.isActive && "max-w-0")}>
           {props.button.label}
         </div>

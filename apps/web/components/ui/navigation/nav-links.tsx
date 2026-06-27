@@ -23,19 +23,19 @@ export default function NavLinks({ origin }: { origin: "app" | "guest" }) {
     return [
       {
         label: "Settings",
-        icon: <GearSixIcon className="w-5 h-5" />,
+        icon: "settings",
         href: "/app/preferences",
         isInitialActive: pathname === "/app/preferences",
       },
       {
         label: "Library",
-        icon: <BooksIcon className="w-5 h-5" />,
+        icon: "library-big",
         href: "/app/library",
         isInitialActive: pathname === "/app/library",
       },
       {
         label: "Add",
-        icon: <PlusIcon className="w-5 h-5" weight="bold" />,
+        icon: "plus",
         href: "/app/add",
         isInitialActive: pathname === "/app/add",
       },
@@ -82,13 +82,14 @@ export default function NavLinks({ origin }: { origin: "app" | "guest" }) {
               >
                 <div
                   className={cn(
-                    "align-center font-bold border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0 bg-secondary rounded-md w-full drop-shadow-sm drop-shadow-black/50 px-2 overflow-hidden text-ellipsis text-nowrap leading-9",
+                    "align-center font-bold border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0 bg-secondary rounded-md w-full drop-shadow-sm drop-shadow-black/50 px-2 overflow-hidden text-ellipsis text-nowrap leading-9 max-w-fit",
                   )}
                 >
                   {pageTitle}
                 </div>
               </ViewTransition>
             )}
+            {isChildPath && <Spacer />}
             <NavigationLinkGroup
               buttons={getAppLinks()}
               className="justify-self-end"

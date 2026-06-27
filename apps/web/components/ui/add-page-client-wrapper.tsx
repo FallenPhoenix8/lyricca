@@ -53,6 +53,7 @@ import { ActionButton } from "./action-button"
 import { BlurOverlay } from "./blur-overlay"
 import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
 import { TileGroup } from "./tile-group"
+import { useMediaQuery } from "@/lib/client/hook/useMediaQuery"
 
 async function translateAction({
   text,
@@ -370,6 +371,8 @@ export function AddPageClientWrapper({
     applyThemeFromImage(coverImageRef.current)
   }, [displayCoverURL, coverImageRef, isLoading])
 
+  const isCompact = useMediaQuery("(max-width: 520px)")
+
   return (
     <ViewTransition enter="replace" exit="replace">
       {/* <Breadcrumb className="my-2">
@@ -447,7 +450,7 @@ export function AddPageClientWrapper({
                       setIsCoverUploading(true)
                       buttonFileInputRef.current?.click()
                     },
-                    isCompact: false,
+                    isCompact,
                     children: "Upload Cover",
                     attributes: {
                       disabled: isCoverUploading,

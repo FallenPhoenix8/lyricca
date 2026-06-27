@@ -339,8 +339,8 @@ export default function SongDetailsPage() {
               </VStack>
               <ExpandablePanel
                 className="w-full"
-                showText="Show Edit Options"
-                hideText="Hide Edit Options"
+                showText="Customize"
+                hideText="Customize"
               >
                 <TileGroup
                   tiles={[

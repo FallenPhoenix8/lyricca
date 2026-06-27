@@ -24,7 +24,7 @@ export function ExpandablePanel({
     >
       <button
         className={cn(
-          "font-bold text-lg flex w-full px-3 py-4 justify-between items-center bg-popover  text-popover-foreground transition-[outline] drop-shadow-sm drop-shadow-black/50 rounded-full",
+          "font-bold text-lg flex w-full px-3 py-4 md:py-2 md:text-base justify-between items-center bg-popover  text-popover-foreground transition-[outline] drop-shadow-sm drop-shadow-black/50 rounded-full",
           m3ExpressiveDuration.effect.fast.className,
           m3ExpressiveDuration.effect.default.className,
           isOpen && "rounded-t-xl rounded-b-sm",

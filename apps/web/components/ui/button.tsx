@@ -73,8 +73,10 @@ function Button({
       | React.MouseEvent<HTMLButtonElement, MouseEvent>
       | React.TouchEvent<HTMLButtonElement>,
   ) {
-    targetRef.current = event.target as HTMLButtonElement
-    setIsPressed(false)
+    setTimeout(() => {
+      targetRef.current = event.target as HTMLButtonElement
+      setIsPressed(false)
+    }, 100)
   }
   const Comp = asChild ? Slot.Root : "button"
   const { trigger } = useWebHaptics({ debug: true })

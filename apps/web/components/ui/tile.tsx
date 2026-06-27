@@ -125,7 +125,16 @@ export function Tile({
           <div className="flex flex-col gap-0.5 text-lg font-semibold flex-1 text-start">
             <span>{children}</span>
             {subtitle && (
-              <span className="text-muted-foreground text-sm">{subtitle}</span>
+              <span
+                className={cn(
+                  "text-muted-foreground text-sm transition-[color]",
+                  m3ExpressiveDuration.effect.default.className,
+                  m3ExpressiveSpring.effect.default.className,
+                  isActive && "text-primary-foreground/70",
+                )}
+              >
+                {subtitle}
+              </span>
             )}
           </div>
         )}
