@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils"
 import { FieldDescription } from "./field"
 
 export function FieldDescriptionWithErrors({
@@ -9,7 +10,10 @@ export function FieldDescriptionWithErrors({
   errors: string[]
 } & React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <FieldDescription {...props}>
+    <FieldDescription
+      {...props}
+      className={cn(props.className, "font-semibold")}
+    >
       {children}
       {errors.length > 0 &&
         errors.map((error, index) => (
