@@ -211,12 +211,14 @@ export function AnimatedButtonGroup({
 export function NavigationLinkGroup({
   buttons,
   backgroundOffset = 4,
+  className,
+  ...props
 }: {
   buttons: LinkItem[]
   backgroundOffset?: number
-}) {
+} & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className="flex gap-1">
+    <div className={cn("flex gap-1", className)} {...props}>
       {buttons.map((button, index) => {
         return (
           <NavigationLink

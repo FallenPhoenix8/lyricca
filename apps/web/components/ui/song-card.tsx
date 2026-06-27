@@ -48,26 +48,9 @@ import {
   DrawerTrigger,
 } from "./drawer"
 import { useM3Motion } from "@/lib/client/hook/useM3Motion"
+import { useMediaQuery } from "@/lib/client/hook/useMediaQuery"
 
 gsap.registerPlugin(useGSAP)
-/**
- * This hook uses the `matchMedia` API to check if the current window size matches the given query.
- * @param query The media query to check.
- * @returns Whether the current window size matches the given query.
- */
-function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
-
-  useEffect(() => {
-    const media = window.matchMedia(query)
-    const onChange = () => setMatches(media.matches)
-
-    media.addEventListener("change", onChange)
-    return () => media.removeEventListener("change", onChange)
-  }, [query])
-
-  return matches
-}
 
 /**
  * A song card with a cover image, title, artist, and album to be displayed in a card layout on regular screens.

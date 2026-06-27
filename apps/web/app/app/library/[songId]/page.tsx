@@ -42,6 +42,7 @@ import { TileGroup } from "@/components/ui/tile-group"
 import { Shape } from "@/components/ui/svg/shapes/Shape"
 import { ExpandablePanel } from "@/components/ui/expandable-panel"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { useMediaQuery } from "@/lib/client/hook/useMediaQuery"
 
 export default function SongDetailsPage() {
   useM3Motion()
@@ -75,6 +76,8 @@ export default function SongDetailsPage() {
   const [album, setAlbum] = useState<string | null>(song?.album || null)
   const [originalLyrics, setOriginalLyrics] = useState<string[]>([])
   const [translatedLyrics, setTranslatedLyrics] = useState<string[]>([])
+
+  const isMobile = useMediaQuery("(max-width: 460px)")
 
   useEffect(() => {
     if (!song) return
@@ -356,7 +359,7 @@ export default function SongDetailsPage() {
                       onClick: () => {
                         fileInputRef.current?.click()
                       },
-                      isCompact: false,
+                      isCompact: isMobile,
                       children: isCoverLoading ? "Changing..." : "Change Cover",
                       attributes: {
                         disabled: isCoverLoading,
