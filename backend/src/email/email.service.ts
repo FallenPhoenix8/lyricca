@@ -38,10 +38,13 @@ export class EmailService {
   readonly transporter = nodemailer.createTransport({
     host: smtpHost,
     port: smtpPort,
-    secure: false,
+    secure: true,
     auth: {
       user: smtpUser,
       pass: smtpPass,
+    },
+    tls: {
+      rejectUnauthorized: true,
     },
   } as SMTPTransport.Options)
 
