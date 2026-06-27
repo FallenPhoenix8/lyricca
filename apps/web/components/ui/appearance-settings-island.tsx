@@ -23,6 +23,7 @@ export function AppearanceSettingsIsland() {
         <NativeSelect value={resolvedTheme} onChange={handleModeChange}>
           <NativeSelectOption value="light">Light</NativeSelectOption>
           <NativeSelectOption value="dark">Dark</NativeSelectOption>
+          <NativeSelectOption value="system">System</NativeSelectOption>
         </NativeSelect>
       </SettingsItem>
 
