@@ -7,4 +7,14 @@ type LoginDTO = {
   password: string
   email: string
 }
-export type { AuthPayload, LoginDTO }
+
+type ForgotPasswordDTO = {
+  email: string
+}
+
+type ResetPasswordDTO = {
+  token: string
+  password: string
+}
+
+export type { AuthPayload, LoginDTO, ForgotPasswordDTO, ResetPasswordDTO }

@@ -13,7 +13,13 @@ import { EmailModule } from "../email/email.module"
 import { EmailService } from "../email/email.service"
 
 @Module({
-  providers: [AuthService, UserService, ImageService, SupabaseService, EmailService],
+  providers: [
+    AuthService,
+    UserService,
+    ImageService,
+    SupabaseService,
+    EmailService,
+  ],
   imports: [
     UserModule,
     JwtModule.register({
@@ -23,7 +29,7 @@ import { EmailService } from "../email/email.service"
     }),
     ImageModule,
     SupabaseModule,
-    EmailModule
+    EmailModule,
   ],
   controllers: [AuthController],
 })

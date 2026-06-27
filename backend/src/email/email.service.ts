@@ -44,13 +44,13 @@ export class EmailService {
       pass: smtpPass,
     },
     tls: {
-      rejectUnauthorized: true,
+      rejectUnauthorized: false,
     },
   } as SMTPTransport.Options)
 
-  fillOTPEmailTemplate(title: string, otp: string) {
+  private fillEmailTemplate(title: string, content: string) {
     return `
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -155,6 +155,19 @@ export class EmailService {
       text-underline-offset: 4px;
     }
 
+    .link-button {
+      display: inline-block;
+      background-color: #0a0a0a;
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+      padding: 10px 16px;
+      border-radius: 100px;
+      border: 1px solid #0a0a0a;
+    }
+
     img {
       display: block;
     }
@@ -175,6 +188,23 @@ export class EmailService {
       </div>
 
       <h1 class="title">${title}</h1>
+      
+      ${content}
+
+      <div class="footer">
+        Sent by <strong>Lyricca</strong><br />
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+    `
+  }
+
+  fillOTPEmailTemplate(title: string, otp: string) {
+    return this.fillEmailTemplate(
+      title,
+      `
       <p class="description">
         Enter the following code in your browser to confirm your identity.
       </p>
@@ -186,15 +216,52 @@ export class EmailService {
       <p class="description">
         If you didn't request this code, you can safely ignore this email.
       </p>
+      `,
+    )
+  }
 
-      <div class="footer">
-        Sent by <strong>Lyricca</strong><br />
-      </div>
+  fillResetPasswordEmailTemplate(resetUrl: string) {
+    return this.fillEmailTemplate(
+      "Reset your password",
+      `
+    <p class="description">
+      We received a request to reset the password for your Lyricca account.
+      Click the button below to choose a new password.
+    </p>
+
+    <div style="margin-bottom: 32px;">
+      <a
+        href="${resetUrl}"
+        target="_blank"
+        class="link-button"
+      >
+        Reset password
+      </a>
     </div>
-  </div>
-</body>
-</html>
-        `
+
+    <p class="description">
+      This link will expire in 15 minutes. If you didn't request a password reset,
+      you can safely ignore this email.
+    </p>
+
+    <p class="description" style="margin-bottom: 32px;">
+      If the button doesn't work, copy and paste this link into your browser:
+      <br />
+      <a href="${resetUrl}" class="link" target="_blank">
+        ${resetUrl}
+      </a>
+    </p>
+    `,
+    )
+  }
+
+  private generateOTP(): string {
+    // * MARK: - Generate random 6-digit OTP
+    let otp: string = ""
+    for (let i = 0; i < 6; i++) {
+      otp += Math.floor(Math.random() * 10).toString()
+    }
+    return otp
   }
 
   async sendEmail(email: string, subject: string, body: string) {
@@ -224,11 +291,7 @@ export class EmailService {
       throw new ConflictException("Email address is already in use.")
     }
 
-    // * MARK: - Generate random 6-digit OTP
-    let otp: string = ""
-    for (let i = 0; i < 6; i++) {
-      otp += Math.floor(Math.random() * 10).toString()
-    }
+    const otp = this.generateOTP()
     // * MARK: - Send verification email
     await this.sendEmail(
       email,
@@ -239,5 +302,13 @@ export class EmailService {
       email,
       otp,
     }
+  }
+
+  async sendPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
+    this.sendEmail(
+      email,
+      "Reset your password",
+      this.fillResetPasswordEmailTemplate(resetUrl),
+    )
   }
 }

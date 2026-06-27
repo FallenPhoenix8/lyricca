@@ -8,6 +8,9 @@ type User = {
   updated_at: Date
   songs: SongDTO[]
   profile_url: string | null
+
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | null
 }
 
 type UserCreate = Omit<

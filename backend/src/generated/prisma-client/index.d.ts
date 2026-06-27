@@ -147,7 +147,7 @@ export class PrismaClient<
    * 
    * Read more in our [docs](https://www.prisma.io/docs/orm/prisma-client/queries/transactions).
    */
-  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
+  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
 
   $transaction<R>(fn: (prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) => $Utils.JsPromise<R>, options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<R>
 
@@ -244,8 +244,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 7.5.0
-   * Query Engine version: 280c870be64f457428992c43c1f6d557fab6e29e
+   * Prisma Client JS version: 7.8.0
+   * Query Engine version: 3c6e192761c0362d496ed980de936e2f3cebcd3a
    */
   export type PrismaVersion = {
     client: string
@@ -1182,31 +1182,37 @@ export namespace Prisma {
   export type UserMinAggregateOutputType = {
     id: string | null
     username: string | null
-    email: string | null
     password: string | null
     created_at: Date | null
     updated_at: Date | null
     profile_url: string | null
+    email: string | null
+    reset_password_token: string | null
+    reset_password_expires_at: Date | null
   }
 
   export type UserMaxAggregateOutputType = {
     id: string | null
     username: string | null
-    email: string | null
     password: string | null
     created_at: Date | null
     updated_at: Date | null
     profile_url: string | null
+    email: string | null
+    reset_password_token: string | null
+    reset_password_expires_at: Date | null
   }
 
   export type UserCountAggregateOutputType = {
     id: number
     username: number
-    email: number
     password: number
     created_at: number
     updated_at: number
     profile_url: number
+    email: number
+    reset_password_token: number
+    reset_password_expires_at: number
     _all: number
   }
 
@@ -1214,31 +1220,37 @@ export namespace Prisma {
   export type UserMinAggregateInputType = {
     id?: true
     username?: true
-    email?: true
     password?: true
     created_at?: true
     updated_at?: true
     profile_url?: true
+    email?: true
+    reset_password_token?: true
+    reset_password_expires_at?: true
   }
 
   export type UserMaxAggregateInputType = {
     id?: true
     username?: true
-    email?: true
     password?: true
     created_at?: true
     updated_at?: true
     profile_url?: true
+    email?: true
+    reset_password_token?: true
+    reset_password_expires_at?: true
   }
 
   export type UserCountAggregateInputType = {
     id?: true
     username?: true
-    email?: true
     password?: true
     created_at?: true
     updated_at?: true
     profile_url?: true
+    email?: true
+    reset_password_token?: true
+    reset_password_expires_at?: true
     _all?: true
   }
 
@@ -1317,11 +1329,13 @@ export namespace Prisma {
   export type UserGroupByOutputType = {
     id: string
     username: string
-    email: string
     password: string
     created_at: Date
     updated_at: Date
     profile_url: string | null
+    email: string
+    reset_password_token: string | null
+    reset_password_expires_at: Date | null
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
@@ -1344,11 +1358,13 @@ export namespace Prisma {
   export type UserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     username?: boolean
-    email?: boolean
     password?: boolean
     created_at?: boolean
     updated_at?: boolean
     profile_url?: boolean
+    email?: boolean
+    reset_password_token?: boolean
+    reset_password_expires_at?: boolean
     songs?: boolean | User$songsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
@@ -1356,34 +1372,40 @@ export namespace Prisma {
   export type UserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     username?: boolean
-    email?: boolean
     password?: boolean
     created_at?: boolean
     updated_at?: boolean
     profile_url?: boolean
+    email?: boolean
+    reset_password_token?: boolean
+    reset_password_expires_at?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     username?: boolean
-    email?: boolean
     password?: boolean
     created_at?: boolean
     updated_at?: boolean
     profile_url?: boolean
+    email?: boolean
+    reset_password_token?: boolean
+    reset_password_expires_at?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
     id?: boolean
     username?: boolean
-    email?: boolean
     password?: boolean
     created_at?: boolean
     updated_at?: boolean
     profile_url?: boolean
+    email?: boolean
+    reset_password_token?: boolean
+    reset_password_expires_at?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "email" | "password" | "created_at" | "updated_at" | "profile_url", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "password" | "created_at" | "updated_at" | "profile_url" | "email" | "reset_password_token" | "reset_password_expires_at", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     songs?: boolean | User$songsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1399,11 +1421,13 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       username: string
-      email: string
       password: string
       created_at: Date
       updated_at: Date
       profile_url: string | null
+      email: string
+      reset_password_token: string | null
+      reset_password_expires_at: Date | null
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -1830,11 +1854,13 @@ export namespace Prisma {
   interface UserFieldRefs {
     readonly id: FieldRef<"User", 'String'>
     readonly username: FieldRef<"User", 'String'>
-    readonly email: FieldRef<"User", 'String'>
     readonly password: FieldRef<"User", 'String'>
     readonly created_at: FieldRef<"User", 'DateTime'>
     readonly updated_at: FieldRef<"User", 'DateTime'>
     readonly profile_url: FieldRef<"User", 'String'>
+    readonly email: FieldRef<"User", 'String'>
+    readonly reset_password_token: FieldRef<"User", 'String'>
+    readonly reset_password_expires_at: FieldRef<"User", 'DateTime'>
   }
     
 
@@ -3529,8 +3555,8 @@ export namespace Prisma {
     updated_at?: boolean
     user_id?: boolean
     cover_id?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
     cover?: boolean | Song$coverArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["song"]>
 
   export type SongSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -3544,8 +3570,8 @@ export namespace Prisma {
     updated_at?: boolean
     user_id?: boolean
     cover_id?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
     cover?: boolean | Song$coverArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["song"]>
 
   export type SongSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -3559,8 +3585,8 @@ export namespace Prisma {
     updated_at?: boolean
     user_id?: boolean
     cover_id?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
     cover?: boolean | Song$coverArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["song"]>
 
   export type SongSelectScalar = {
@@ -3578,23 +3604,23 @@ export namespace Prisma {
 
   export type SongOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "artist" | "album" | "original_lyrics" | "translated_lyrics" | "created_at" | "updated_at" | "user_id" | "cover_id", ExtArgs["result"]["song"]>
   export type SongInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
     cover?: boolean | Song$coverArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }
   export type SongIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
     cover?: boolean | Song$coverArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }
   export type SongIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
     cover?: boolean | Song$coverArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }
 
   export type $SongPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Song"
     objects: {
-      user: Prisma.$UserPayload<ExtArgs>
       cover: Prisma.$CoverPayload<ExtArgs> | null
+      user: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -4001,8 +4027,8 @@ export namespace Prisma {
    */
   export interface Prisma__SongClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     cover<T extends Song$coverArgs<ExtArgs> = {}>(args?: Subset<T, Song$coverArgs<ExtArgs>>): Prisma__CoverClient<$Result.GetResult<Prisma.$CoverPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5479,11 +5505,13 @@ export namespace Prisma {
   export const UserScalarFieldEnum: {
     id: 'id',
     username: 'username',
-    email: 'email',
     password: 'password',
     created_at: 'created_at',
     updated_at: 'updated_at',
-    profile_url: 'profile_url'
+    profile_url: 'profile_url',
+    email: 'email',
+    reset_password_token: 'reset_password_token',
+    reset_password_expires_at: 'reset_password_expires_at'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -5616,22 +5644,26 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     id?: UuidFilter<"User"> | string
     username?: StringFilter<"User"> | string
-    email?: StringFilter<"User"> | string
     password?: StringFilter<"User"> | string
     created_at?: DateTimeFilter<"User"> | Date | string
     updated_at?: DateTimeFilter<"User"> | Date | string
     profile_url?: StringNullableFilter<"User"> | string | null
+    email?: StringFilter<"User"> | string
+    reset_password_token?: StringNullableFilter<"User"> | string | null
+    reset_password_expires_at?: DateTimeNullableFilter<"User"> | Date | string | null
     songs?: SongListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
     id?: SortOrder
     username?: SortOrder
-    email?: SortOrder
     password?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     profile_url?: SortOrderInput | SortOrder
+    email?: SortOrder
+    reset_password_token?: SortOrderInput | SortOrder
+    reset_password_expires_at?: SortOrderInput | SortOrder
     songs?: SongOrderByRelationAggregateInput
   }
 
@@ -5646,17 +5678,21 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"User"> | Date | string
     updated_at?: DateTimeFilter<"User"> | Date | string
     profile_url?: StringNullableFilter<"User"> | string | null
+    reset_password_token?: StringNullableFilter<"User"> | string | null
+    reset_password_expires_at?: DateTimeNullableFilter<"User"> | Date | string | null
     songs?: SongListRelationFilter
   }, "id" | "username" | "email">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
     username?: SortOrder
-    email?: SortOrder
     password?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     profile_url?: SortOrderInput | SortOrder
+    email?: SortOrder
+    reset_password_token?: SortOrderInput | SortOrder
+    reset_password_expires_at?: SortOrderInput | SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
@@ -5668,11 +5704,13 @@ export namespace Prisma {
     NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"User"> | string
     username?: StringWithAggregatesFilter<"User"> | string
-    email?: StringWithAggregatesFilter<"User"> | string
     password?: StringWithAggregatesFilter<"User"> | string
     created_at?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"User"> | Date | string
     profile_url?: StringNullableWithAggregatesFilter<"User"> | string | null
+    email?: StringWithAggregatesFilter<"User"> | string
+    reset_password_token?: StringNullableWithAggregatesFilter<"User"> | string | null
+    reset_password_expires_at?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   }
 
   export type CoverWhereInput = {
@@ -5739,8 +5777,8 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"Song"> | Date | string
     user_id?: UuidFilter<"Song"> | string
     cover_id?: UuidNullableFilter<"Song"> | string | null
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
     cover?: XOR<CoverNullableScalarRelationFilter, CoverWhereInput> | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type SongOrderByWithRelationInput = {
@@ -5754,8 +5792,8 @@ export namespace Prisma {
     updated_at?: SortOrder
     user_id?: SortOrder
     cover_id?: SortOrderInput | SortOrder
-    user?: UserOrderByWithRelationInput
     cover?: CoverOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
   }
 
   export type SongWhereUniqueInput = Prisma.AtLeast<{
@@ -5772,8 +5810,8 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"Song"> | Date | string
     updated_at?: DateTimeFilter<"Song"> | Date | string
     user_id?: UuidFilter<"Song"> | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
     cover?: XOR<CoverNullableScalarRelationFilter, CoverWhereInput> | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id" | "cover_id">
 
   export type SongOrderByWithAggregationInput = {
@@ -5845,75 +5883,89 @@ export namespace Prisma {
   export type UserCreateInput = {
     id?: string
     username: string
-    email: string
     password: string
     created_at?: Date | string
     updated_at?: Date | string
     profile_url?: string | null
+    email: string
+    reset_password_token?: string | null
+    reset_password_expires_at?: Date | string | null
     songs?: SongCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
     id?: string
     username: string
-    email: string
     password: string
     created_at?: Date | string
     updated_at?: Date | string
     profile_url?: string | null
+    email: string
+    reset_password_token?: string | null
+    reset_password_expires_at?: Date | string | null
     songs?: SongUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     profile_url?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    reset_password_token?: NullableStringFieldUpdateOperationsInput | string | null
+    reset_password_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     songs?: SongUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     profile_url?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    reset_password_token?: NullableStringFieldUpdateOperationsInput | string | null
+    reset_password_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     songs?: SongUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
     id?: string
     username: string
-    email: string
     password: string
     created_at?: Date | string
     updated_at?: Date | string
     profile_url?: string | null
+    email: string
+    reset_password_token?: string | null
+    reset_password_expires_at?: Date | string | null
   }
 
   export type UserUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     profile_url?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    reset_password_token?: NullableStringFieldUpdateOperationsInput | string | null
+    reset_password_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type UserUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     profile_url?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    reset_password_token?: NullableStringFieldUpdateOperationsInput | string | null
+    reset_password_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type CoverCreateInput = {
@@ -5978,8 +6030,8 @@ export namespace Prisma {
     translated_lyrics: string
     created_at?: Date | string
     updated_at?: Date | string
-    user: UserCreateNestedOneWithoutSongsInput
     cover?: CoverCreateNestedOneWithoutSongInput
+    user: UserCreateNestedOneWithoutSongsInput
   }
 
   export type SongUncheckedCreateInput = {
@@ -6004,8 +6056,8 @@ export namespace Prisma {
     translated_lyrics?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutSongsNestedInput
     cover?: CoverUpdateOneWithoutSongNestedInput
+    user?: UserUpdateOneRequiredWithoutSongsNestedInput
   }
 
   export type SongUncheckedUpdateInput = {
@@ -6139,6 +6191,17 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type SongListRelationFilter = {
     every?: SongWhereInput
     some?: SongWhereInput
@@ -6157,31 +6220,37 @@ export namespace Prisma {
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     username?: SortOrder
-    email?: SortOrder
     password?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     profile_url?: SortOrder
+    email?: SortOrder
+    reset_password_token?: SortOrder
+    reset_password_expires_at?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
     id?: SortOrder
     username?: SortOrder
-    email?: SortOrder
     password?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     profile_url?: SortOrder
+    email?: SortOrder
+    reset_password_token?: SortOrder
+    reset_password_expires_at?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
     id?: SortOrder
     username?: SortOrder
-    email?: SortOrder
     password?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     profile_url?: SortOrder
+    email?: SortOrder
+    reset_password_token?: SortOrder
+    reset_password_expires_at?: SortOrder
   }
 
   export type UuidWithAggregatesFilter<$PrismaModel = never> = {
@@ -6249,6 +6318,20 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
   export type SongNullableScalarRelationFilter = {
     is?: SongWhereInput | null
     isNot?: SongWhereInput | null
@@ -6287,14 +6370,14 @@ export namespace Prisma {
     not?: NestedUuidNullableFilter<$PrismaModel> | string | null
   }
 
-  export type UserScalarRelationFilter = {
-    is?: UserWhereInput
-    isNot?: UserWhereInput
-  }
-
   export type CoverNullableScalarRelationFilter = {
     is?: CoverWhereInput | null
     isNot?: CoverWhereInput | null
+  }
+
+  export type UserScalarRelationFilter = {
+    is?: UserWhereInput
+    isNot?: UserWhereInput
   }
 
   export type SongCountOrderByAggregateInput = {
@@ -6424,6 +6507,10 @@ export namespace Prisma {
     set?: string | null
   }
 
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
   export type SongUpdateManyWithoutUserNestedInput = {
     create?: XOR<SongCreateWithoutUserInput, SongUncheckedCreateWithoutUserInput> | SongCreateWithoutUserInput[] | SongUncheckedCreateWithoutUserInput[]
     connectOrCreate?: SongCreateOrConnectWithoutUserInput | SongCreateOrConnectWithoutUserInput[]
@@ -6484,24 +6571,16 @@ export namespace Prisma {
     update?: XOR<XOR<SongUpdateToOneWithWhereWithoutCoverInput, SongUpdateWithoutCoverInput>, SongUncheckedUpdateWithoutCoverInput>
   }
 
-  export type UserCreateNestedOneWithoutSongsInput = {
-    create?: XOR<UserCreateWithoutSongsInput, UserUncheckedCreateWithoutSongsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutSongsInput
-    connect?: UserWhereUniqueInput
-  }
-
   export type CoverCreateNestedOneWithoutSongInput = {
     create?: XOR<CoverCreateWithoutSongInput, CoverUncheckedCreateWithoutSongInput>
     connectOrCreate?: CoverCreateOrConnectWithoutSongInput
     connect?: CoverWhereUniqueInput
   }
 
-  export type UserUpdateOneRequiredWithoutSongsNestedInput = {
+  export type UserCreateNestedOneWithoutSongsInput = {
     create?: XOR<UserCreateWithoutSongsInput, UserUncheckedCreateWithoutSongsInput>
     connectOrCreate?: UserCreateOrConnectWithoutSongsInput
-    upsert?: UserUpsertWithoutSongsInput
     connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSongsInput, UserUpdateWithoutSongsInput>, UserUncheckedUpdateWithoutSongsInput>
   }
 
   export type CoverUpdateOneWithoutSongNestedInput = {
@@ -6512,6 +6591,14 @@ export namespace Prisma {
     delete?: CoverWhereInput | boolean
     connect?: CoverWhereUniqueInput
     update?: XOR<XOR<CoverUpdateToOneWithWhereWithoutSongInput, CoverUpdateWithoutSongInput>, CoverUncheckedUpdateWithoutSongInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutSongsNestedInput = {
+    create?: XOR<UserCreateWithoutSongsInput, UserUncheckedCreateWithoutSongsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSongsInput
+    upsert?: UserUpsertWithoutSongsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSongsInput, UserUpdateWithoutSongsInput>, UserUncheckedUpdateWithoutSongsInput>
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -6570,6 +6657,17 @@ export namespace Prisma {
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
   export type NestedUuidWithAggregatesFilter<$PrismaModel = never> = {
@@ -6654,6 +6752,20 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type NestedUuidNullableFilter<$PrismaModel = never> = {
@@ -6838,31 +6950,6 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
   }
 
-  export type UserCreateWithoutSongsInput = {
-    id?: string
-    username: string
-    email: string
-    password: string
-    created_at?: Date | string
-    updated_at?: Date | string
-    profile_url?: string | null
-  }
-
-  export type UserUncheckedCreateWithoutSongsInput = {
-    id?: string
-    username: string
-    email: string
-    password: string
-    created_at?: Date | string
-    updated_at?: Date | string
-    profile_url?: string | null
-  }
-
-  export type UserCreateOrConnectWithoutSongsInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutSongsInput, UserUncheckedCreateWithoutSongsInput>
-  }
-
   export type CoverCreateWithoutSongInput = {
     id?: string
     url: string
@@ -6882,35 +6969,33 @@ export namespace Prisma {
     create: XOR<CoverCreateWithoutSongInput, CoverUncheckedCreateWithoutSongInput>
   }
 
-  export type UserUpsertWithoutSongsInput = {
-    update: XOR<UserUpdateWithoutSongsInput, UserUncheckedUpdateWithoutSongsInput>
+  export type UserCreateWithoutSongsInput = {
+    id?: string
+    username: string
+    password: string
+    created_at?: Date | string
+    updated_at?: Date | string
+    profile_url?: string | null
+    email: string
+    reset_password_token?: string | null
+    reset_password_expires_at?: Date | string | null
+  }
+
+  export type UserUncheckedCreateWithoutSongsInput = {
+    id?: string
+    username: string
+    password: string
+    created_at?: Date | string
+    updated_at?: Date | string
+    profile_url?: string | null
+    email: string
+    reset_password_token?: string | null
+    reset_password_expires_at?: Date | string | null
+  }
+
+  export type UserCreateOrConnectWithoutSongsInput = {
+    where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutSongsInput, UserUncheckedCreateWithoutSongsInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutSongsInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutSongsInput, UserUncheckedUpdateWithoutSongsInput>
-  }
-
-  export type UserUpdateWithoutSongsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    password?: StringFieldUpdateOperationsInput | string
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    profile_url?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
-  export type UserUncheckedUpdateWithoutSongsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    password?: StringFieldUpdateOperationsInput | string
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    profile_url?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type CoverUpsertWithoutSongInput = {
@@ -6936,6 +7021,41 @@ export namespace Prisma {
     url?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUpsertWithoutSongsInput = {
+    update: XOR<UserUpdateWithoutSongsInput, UserUncheckedUpdateWithoutSongsInput>
+    create: XOR<UserCreateWithoutSongsInput, UserUncheckedCreateWithoutSongsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutSongsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutSongsInput, UserUncheckedUpdateWithoutSongsInput>
+  }
+
+  export type UserUpdateWithoutSongsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile_url?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    reset_password_token?: NullableStringFieldUpdateOperationsInput | string | null
+    reset_password_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type UserUncheckedUpdateWithoutSongsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile_url?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    reset_password_token?: NullableStringFieldUpdateOperationsInput | string | null
+    reset_password_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type SongCreateManyUserInput = {

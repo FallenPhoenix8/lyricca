@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -10,6 +11,8 @@ import { JwtService } from "@nestjs/jwt"
 import { jwtConstants, saltOrRounds } from "./constants"
 import type { VerifiedTokenPayload } from "./auth.guard"
 import { UserDTOImpl, UserImpl } from "../user/dto/user-dto"
+import { EmailService } from "../email/email.service"
+import * as crypto from "crypto"
 
 @Injectable()
 export class AuthService {
@@ -17,13 +20,20 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
   ) {}
 
   async hashPassword(password: string): Promise<string> {
     return await hash(password, this.saltOrRounds)
   }
 
-  async signIn({name, password}: {name: string, password: string}): Promise<AuthPayload> {
+  async signIn({
+    name,
+    password,
+  }: {
+    name: string
+    password: string
+  }): Promise<AuthPayload> {
     const invalidCredentialsException = new UnauthorizedException(
       "Invalid username or password.",
     )
@@ -43,7 +53,15 @@ export class AuthService {
     return { token: this.generateToken(user.id, user.username) }
   }
 
-  async signUp({username, email, password}:{username: string, password: string, email: string}): Promise<AuthPayload> {
+  async signUp({
+    username,
+    email,
+    password,
+  }: {
+    username: string
+    password: string
+    email: string
+  }): Promise<AuthPayload> {
     const usernameExistsException = new ConflictException(
       "Username already exists.",
     )
@@ -78,5 +96,73 @@ export class AuthService {
 
   generateToken(userId: string, username: string): string {
     return this.jwtService.sign({ sub: userId, username })
+  }
+
+  private hashResetToken(token: string): string {
+    return crypto.createHash("sha256").update(token).digest("hex")
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    const normalizedEmail = email.toLowerCase().trim()
+
+    const user = await this.userService.findOne({ email: normalizedEmail })
+
+    // Do not reveal whether this email exists
+    if (!user) {
+      return
+    }
+
+    const rawToken = crypto.randomBytes(32).toString("hex")
+    const tokenHash = this.hashResetToken(rawToken)
+
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 min
+
+    await this.userService.setPasswordResetToken({
+      userId: user.id,
+      tokenHash,
+      expiresAt,
+    })
+
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}`
+
+    await this.emailService.sendPasswordResetEmail(user.email, resetUrl)
+  }
+
+  async resetPassword({
+    token,
+    password,
+  }: {
+    token: string
+    password: string
+  }): Promise<void> {
+    if (!token || !password) {
+      throw new BadRequestException("Invalid reset request.")
+    }
+
+    if (password.length < 8) {
+      throw new BadRequestException("Password must be at least 8 characters.")
+    }
+
+    const tokenHash = this.hashResetToken(token)
+
+    const user = await this.userService.findByResetPasswordTokenHash(tokenHash)
+
+    if (!user) {
+      throw new BadRequestException("Invalid or expired reset link.")
+    }
+
+    if (
+      !user.reset_password_expires_at ||
+      user.reset_password_expires_at < new Date()
+    ) {
+      throw new BadRequestException("Invalid or expired reset link.")
+    }
+
+    const hashedPassword = await this.hashPassword(password)
+
+    await this.userService.updatePasswordAndClearResetToken({
+      userId: user.id,
+      hashedPassword,
+    })
   }
 }

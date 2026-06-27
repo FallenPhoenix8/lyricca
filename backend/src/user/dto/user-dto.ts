@@ -82,6 +82,8 @@ class UserImpl implements User {
     this.songs = user.songs.map((song) => new SongDTOImpl(song))
     this.profile_url = user.profile_url
     this.email = user.email
+    this.reset_password_token = user.reset_password_token
+    this.reset_password_expires_at = user.reset_password_expires_at
   }
   id: string
   username: string
@@ -91,6 +93,9 @@ class UserImpl implements User {
   songs: SongDTOImpl[]
   profile_url: string | null
   email: string
+
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | null
 }
 
 class AvailabilityCheckDTOImpl implements AvailabilityCheckDTO {

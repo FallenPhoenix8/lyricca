@@ -10,6 +10,8 @@ import { CoversService } from "../covers/covers.service"
 import { SupabaseService } from "../supabase/supabase.service"
 import { ImageService } from "../image/image.service"
 import { ImageModule } from "../image/image.module"
+import { EmailService } from "../email/email.service"
+import { EmailModule } from "../email/email.module"
 
 @Module({
   providers: [
@@ -19,8 +21,9 @@ import { ImageModule } from "../image/image.module"
     CoversService,
     SupabaseService,
     ImageService,
+    EmailService,
   ],
   controllers: [SongsController],
-  imports: [AuthModule, UserModule, CoversModule, ImageModule],
+  imports: [AuthModule, UserModule, CoversModule, ImageModule, EmailModule],
 })
 export class SongsModule {}

@@ -79,48 +79,54 @@ export class UserService {
     let user: UserImpl | null = null
     if (properties.id) {
       user = await this.databaseService.user.findUnique({
-          where: { id: properties.id },
-          include: {
-            songs: {
-              include: {
-                cover: true,
-              },
+        where: { id: properties.id },
+        include: {
+          songs: {
+            include: {
+              cover: true,
             },
           },
-        })
+        },
+      })
     }
     if (properties.username) {
-    user = await this.databaseService.user.findUnique({
-          where: { username: properties.username },
-          include: {
-            songs: {
-              include: {
-                cover: true,
-              },
+      user = await this.databaseService.user.findUnique({
+        where: { username: properties.username },
+        include: {
+          songs: {
+            include: {
+              cover: true,
             },
           },
-        })
+        },
+      })
     }
 
     if (properties.email) {
       user = await this.databaseService.user.findUnique({
-          where: { email: properties.email },
-          include: {
-            songs: {
-              include: {
-                cover: true,
-              },
+        where: { email: properties.email },
+        include: {
+          songs: {
+            include: {
+              cover: true,
             },
           },
-        })
-      }
+        },
+      })
+    }
     if (!user) {
       return null
     }
     return new UserImpl(user)
   }
 
-  async update(id: string, updateUserDto: UserUpdateImpl): Promise<UserImpl> {
+  async update(
+    id: string,
+    updateUserDto: UserUpdateImpl & {
+      reset_password_token?: string | null
+      reset_password_expires_at?: Date | null
+    },
+  ): Promise<UserImpl> {
     let hashedPassword: string | undefined = undefined
     if (updateUserDto.password) {
       hashedPassword = await hash(updateUserDto.password, this.saltOrRounds)
@@ -157,9 +163,15 @@ export class UserService {
     return new UserImpl(user)
   }
 
-  async checkAvailability({username, email}: {username?: string, email?: string}): Promise<boolean> {
+  async checkAvailability({
+    username,
+    email,
+  }: {
+    username?: string
+    email?: string
+  }): Promise<boolean> {
     let user: UserDTOImpl | null = null
-    if (username ) {
+    if (username) {
       user = await this.databaseService.user.findUnique({
         where: { username },
       })
@@ -169,7 +181,7 @@ export class UserService {
         where: { email },
       })
     }
-  
+
     return user === null
   }
 
@@ -201,5 +213,63 @@ export class UserService {
     })
 
     return new UserDTOImpl(user)
+  }
+
+  async setPasswordResetToken({
+    userId,
+    tokenHash,
+    expiresAt,
+  }: {
+    userId: string
+    tokenHash: string
+    expiresAt: Date
+  }): Promise<void> {
+    await this.databaseService.user.update({
+      where: { id: userId },
+      data: {
+        reset_password_token: tokenHash,
+        reset_password_expires_at: expiresAt,
+      },
+    })
+  }
+
+  async findByResetPasswordTokenHash(
+    tokenHash: string,
+  ): Promise<UserImpl | null> {
+    const user = await this.databaseService.user.findFirst({
+      where: {
+        reset_password_token: tokenHash,
+      },
+      include: {
+        songs: {
+          include: {
+            cover: true,
+          },
+        },
+      },
+    })
+
+    if (!user) {
+      return null
+    }
+
+    return new UserImpl(user)
+  }
+
+  async updatePasswordAndClearResetToken({
+    userId,
+    hashedPassword,
+  }: {
+    userId: string
+    hashedPassword: string
+  }): Promise<void> {
+    await this.databaseService.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+        reset_password_token: null,
+        reset_password_expires_at: null,
+      },
+    })
   }
 }

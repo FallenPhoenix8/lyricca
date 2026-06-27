@@ -1,5 +1,15 @@
-import type { LoginDTO } from "@shared/ts-types"
-import { IsEmail, IsNotEmpty, IsString } from "class-validator"
+import type {
+  ForgotPasswordDTO,
+  LoginDTO,
+  ResetPasswordDTO,
+} from "@shared/ts-types"
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  IsStrongPassword,
+  MinLength,
+} from "class-validator"
 
 class LoginDTOImpl implements LoginDTO {
   @IsNotEmpty()
@@ -21,4 +31,20 @@ class LoginDTOImpl implements LoginDTO {
   }
 }
 
-export { LoginDTOImpl }
+class ForgotPasswordDTOImpl implements ForgotPasswordDTO {
+  @IsNotEmpty()
+  @IsEmail()
+  email: string
+}
+
+class ResetPasswordDTOImpl implements ResetPasswordDTO {
+  @IsNotEmpty()
+  @IsString()
+  token: string
+
+  @IsNotEmpty()
+  @IsStrongPassword()
+  password: string
+}
+
+export { LoginDTOImpl, ForgotPasswordDTOImpl, ResetPasswordDTOImpl }
