@@ -64,6 +64,29 @@ async function update(
   return Ok(song)
 }
 
+async function updateCover(data: {
+  id: string
+  file: File
+}): Promise<Result<SongDTO, ErrorResponseDTO>> {
+  console.log(`Updating cover for song ${data.id}`, data.file)
+  // * MARK: - Update song in the API
+  const endpoint = `songs/${data.id}`
+
+  const result = await APIClient.shared.patch<SongDTO>(endpoint, {
+    cover: data.file,
+  })
+  if (!result.ok) {
+    console.error("Failed to update song:", result.error)
+    return Err(result.error)
+  }
+  // * MARK: - Update song in the local database
+  const song = result.value
+  await db.transaction("rw", db.songs, async () => {
+    await db.songs.put(song)
+  })
+  return Ok(song)
+}
+
 async function remove(id: string): Promise<Result<SongDTO, ErrorResponseDTO>> {
   // * MARK: - Optimistically update local database before API call to make the app feel more responsive. If the API call fails, we can revert the change in the local database.
   const existingSong: SongDTO | undefined = { ...(await db.songs.get(id)) } as
@@ -352,6 +375,22 @@ export function useSongs(
       },
     },
   )
+
+  const updateCoverMutation = useMutation(
+    ({ id, file }: { id: string; file: File }) => updateCover({ id, file }),
+    {
+      onSuccess: (res) => {
+        if (!res.ok) return
+      },
+      onMutate: () => {
+        isPendingMutation.current = true
+      },
+      onSettled: () => {
+        isPendingMutation.current = false
+      },
+    },
+  )
+
   const removeMutation = useMutation(({ id }: { id: string }) => remove(id), {
     onSuccess: (res) => {
       if (!res.ok) return
@@ -387,6 +426,9 @@ export function useSongs(
      * @returns Query for updated song
      */
     update: updateMutation,
+
+    /** This function updates the cover of a song by sending a request to the API and then updates the local database with the updated song. It returns a query that can be used to track the status of the update process and handle any errors that may occur. */
+    updateCover: updateCoverMutation,
 
     /**
      * This function removes a song by sending a request to the API and then updates the local database with the deleted song. It returns a query that can be used to track the status of the removal process and handle any errors that may occur.

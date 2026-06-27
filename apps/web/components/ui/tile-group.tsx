@@ -1,4 +1,4 @@
-import { createRef, useState } from "react"
+import { ButtonHTMLAttributes, createRef, useState } from "react"
 import { Tile } from "./tile"
 import { IconName } from "lucide-react/dynamic"
 import { cn } from "@/lib/utils"
@@ -15,6 +15,8 @@ export type TileGroupItem = {
   onClick?: React.MouseEventHandler<HTMLButtonElement>
   isCompact?: boolean
   children: React.ReactNode
+  attributes?: React.HTMLAttributes<HTMLButtonElement> &
+    ButtonHTMLAttributes<HTMLButtonElement>
 }
 
 gsap.registerPlugin(useGSAP)
@@ -151,6 +153,7 @@ export function TileGroup({
     >
       {tiles.map((tile, index) => (
         <Tile
+          {...tile.attributes}
           key={index}
           ref={references[index]}
           icon={tile.icon}

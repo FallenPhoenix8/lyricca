@@ -60,7 +60,7 @@ export function Tile({
       {...props}
       onClick={handleClick}
       className={cn(
-        "overflow-hidden cursor-pointer min-w-fit max-w-2xs",
+        "overflow-hidden cursor-pointer min-w-fit",
         m3ExpressiveDuration.spatial.slow.className,
         m3ExpressiveSpring.spatial.slow.className,
         "transition-[border-radius]",

@@ -10,7 +10,6 @@ import {
 import { HStack, VStack, ZStackGrid } from "@/components/ui/layout"
 import Link from "next/link"
 import {
-  startTransition,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -42,6 +41,7 @@ import { Tile } from "@/components/ui/tile"
 import { TileGroup } from "@/components/ui/tile-group"
 import { Shape } from "@/components/ui/svg/shapes/Shape"
 import { ExpandablePanel } from "@/components/ui/expandable-panel"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 export default function SongDetailsPage() {
   useM3Motion()
@@ -60,7 +60,8 @@ export default function SongDetailsPage() {
 
   const [searchParams] = useQueryState("q", { defaultValue: "" })
 
-  const { findOneLocally, update, isLoading, songs } = useSongsContext()
+  const { findOneLocally, update, updateCover, isLoading, songs } =
+    useSongsContext()
   const song = findOneLocally(songId)
 
   if (song === null && !isLoading && songs.length !== 0) {
@@ -175,7 +176,37 @@ export default function SongDetailsPage() {
     }
   }, [titleElementRef.current?.textContent, song, isEditable])
 
-  const [isUploadingCover, setIsUploadingCover] = useState(false)
+  const [isCoverLoading, setIsCoverLoading] = useState(true)
+  const [coverURL, setCoverURL] = useState<string>(
+    song?.cover?.url || "/cover-default.svg",
+  )
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  function handleCoverChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+    if (!file) {
+      setIsCoverLoading(false)
+      return
+    }
+    const temporaryFileURL = URL.createObjectURL(file)
+    setCoverURL(temporaryFileURL)
+    setIsCoverLoading(false)
+    updateCover.mutate({
+      id: songId,
+      file,
+    })
+  }
+
+  useEffect(() => {
+    setCoverURL(song?.cover?.url || "/cover-default.svg")
+    setTitle(song?.title || "")
+    setArtist(song?.artist || "")
+    setAlbum(song?.album || "")
+    setOriginalLyrics(song?.original_lyrics.split("\n") || [])
+    setTranslatedLyrics(song?.translated_lyrics.split("\n") || [])
+  }, [song])
+
   return (
     <>
       {/* <ViewTransition default="auto"> */}
@@ -188,26 +219,41 @@ export default function SongDetailsPage() {
         }}
       >
         <div className="col-span-12 md:col-span-4 row-span-1 md:h-1/2 flex justify-center items-center">
-          <ViewTransition
-            name={`${songId}-cover`}
-            share="song-cover-details"
-            update="song-cover"
-          >
-            <Image
-              src={song?.cover?.url || "/cover-default.svg"}
-              alt={song?.title || ""}
-              className="w-full md:w-1/2 aspect-square object-cover md:rounded-xl md:border-2 bg-accent animate-pulse absolute top-0 left-0"
-              onLoad={(event) => {
-                const target = event.target as HTMLImageElement
-                target.classList.remove("animate-pulse")
-                if (!window) return
-                applyThemeFromImage(target)
-              }}
-              loading="eager"
-              width={330}
-              height={180}
-            />
-          </ViewTransition>
+          <ZStackGrid>
+            <ViewTransition
+              name={`${songId}-cover`}
+              share="song-cover-details"
+              update="song-cover"
+            >
+              <Image
+                src={coverURL}
+                alt={song?.title || ""}
+                className="w-full md:w-1/2 aspect-square object-cover md:rounded-xl md:border-2 bg-accent animate-pulse absolute top-0 left-0"
+                onLoadStart={() => {
+                  setIsCoverLoading(true)
+                }}
+                onLoad={(event) => {
+                  const target = event.target as HTMLImageElement
+                  target.classList.remove("animate-pulse")
+                  if (!window) return
+                  applyThemeFromImage(target)
+                  console.log("Cover loaded.")
+                  setIsCoverLoading(false)
+                }}
+                loading="eager"
+                width={330}
+                height={180}
+              />
+            </ViewTransition>
+            {isCoverLoading && (
+              <>
+                <div className="w-full md:w-1/2 aspect-square md:rounded-xl bg-accent/50 absolute top-0 left-0"></div>
+                <div className="w-full md:w-1/2 aspect-square grid place-items-center absolute top-0 left-0">
+                  <LoadingSpinner className="w-14 h-14" />
+                </div>
+              </>
+            )}
+          </ZStackGrid>
         </div>
         <ViewTransition name="content">
           <div
@@ -308,18 +354,32 @@ export default function SongDetailsPage() {
                     },
                     {
                       icon: "upload",
-                      isActive: isUploadingCover,
-                      setIsActive: setIsUploadingCover,
+                      isActive: isCoverLoading,
+                      setIsActive: setIsCoverLoading,
                       onClick: () => {
-                        // TODO: Implement updating song cover
-                        console.log("NOT IMPLEMENTED")
+                        fileInputRef.current?.click()
                       },
                       isCompact: false,
-                      children: isUploadingCover ? "Uploading..." : "Upload",
+                      children: isCoverLoading ? "Changing..." : "Change Cover",
+                      attributes: {
+                        disabled: isCoverLoading,
+                        className: cn(
+                          isCoverLoading &&
+                            "opacity-70 cursor-not-allowed animate-pulse",
+                        ),
+                      },
                     },
                   ]}
                 />
               </ExpandablePanel>
+              <input
+                type="file"
+                hidden
+                ref={fileInputRef}
+                name="cover"
+                accept="image/jpeg, image/png, image/webp"
+                onChange={handleCoverChange}
+              />
               <LyricsView
                 translatedLyrics={translatedLyrics}
                 originalLyrics={originalLyrics}
