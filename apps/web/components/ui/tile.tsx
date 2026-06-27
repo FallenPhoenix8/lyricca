@@ -20,6 +20,7 @@ export function Tile({
   activeIcon = icon,
   children,
   isCompact = true,
+  subtitle,
   ...props
 }: React.ComponentProps<"button"> & {
   isActive: boolean
@@ -27,6 +28,7 @@ export function Tile({
   icon: IconName
   activeIcon?: IconName
   isCompact?: boolean
+  subtitle?: React.ReactNode
   ref?: React.Ref<HTMLButtonElement>
 }) {
   const { trigger } = useWebHaptics({ debug: true })
@@ -120,8 +122,11 @@ export function Tile({
           </ZStackGrid>
         </ZStackGrid>
         {!isCompact && (
-          <div className="text-lg font-semibold flex-1 text-start">
-            {children}
+          <div className="flex flex-col gap-0.5 text-lg font-semibold flex-1 text-start">
+            <span>{children}</span>
+            {subtitle && (
+              <span className="text-muted-foreground text-sm">{subtitle}</span>
+            )}
           </div>
         )}
       </div>

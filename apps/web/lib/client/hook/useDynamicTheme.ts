@@ -1,5 +1,5 @@
 "use client"
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useLayoutEffect } from "react"
 import {
   createM3Theme,
   transformM3ToShadcn,
@@ -8,22 +8,33 @@ import {
 } from "@/lib/client/theme-engine"
 import { useM3Motion } from "./useM3Motion"
 import { usePathname } from "next/navigation"
+import { useTheme } from "next-themes"
 
 export function useDynamicTheme() {
   useM3Motion()
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isApplied, setIsApplied] = useState(false)
+  const [sourceImage, setSourceImage] = useState<HTMLImageElement | null>(null)
   const [error, setError] = useState<Error | null>(null)
   const pathname = usePathname()
   const dynamicThemePathPrefixes = ["/app/library/[songId]", "/app/add"]
+  const { resolvedTheme } = useTheme()
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (document === undefined) return
     for (const prefix of dynamicThemePathPrefixes) {
       if (!pathname.startsWith(prefix)) {
         clearShadcnTheme()
       }
     }
+    setIsApplied(false)
   }, [pathname])
+
+  useLayoutEffect(() => {
+    if (isApplied && sourceImage) {
+      applyThemeFromImage(sourceImage)
+    }
+  }, [resolvedTheme])
 
   const applyThemeFromImage = useCallback(
     async (imageElement: HTMLImageElement | null) => {
@@ -47,6 +58,7 @@ export function useDynamicTheme() {
 
         // 4. Animate the transition via GSAP
         animateThemeTransitions(shadcnTheme)
+        setSourceImage(imageElement)
       } catch (err) {
         console.error("Failed to extract and apply dynamic theme:", err)
         setError(
@@ -56,15 +68,17 @@ export function useDynamicTheme() {
         )
       } finally {
         setIsProcessing(false)
+        setIsApplied(true)
       }
     },
-    [],
+
+    [resolvedTheme],
   )
 
   const setDefaultTheme = useCallback(() => {
     if (document === undefined) return
     clearShadcnTheme()
-  }, [])
+  }, [resolvedTheme])
 
   return { applyThemeFromImage, isProcessing, error, setDefaultTheme }
 }

@@ -121,7 +121,7 @@ function SongCardRegular(props: {
   return (
     <Card
       className={cn(
-        "relative w-52 min-h-96 pt-0 shadow-sm dark:shadow-muted/50 shadow-foreground/10 hover:shadow-lg hover:-translate-y-1 transition-[shadow,transition,border-radius] group hover:rounded-2xl",
+        "relative w-52 min-h-96 pt-0 shadow-sm dark:shadow-muted/50 shadow-foreground/10 hover:shadow-lg hover:-translate-y-1 transition-[shadow,transition,border-radius] group hover:rounded-2xl bg-card",
         m3ExpressiveDuration.spatial.fast.className,
         m3ExpressiveSpring.spatial.fast.className,
         props.className,

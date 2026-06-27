@@ -240,7 +240,7 @@ export function SongCardList() {
         })}
       </HStack>
       <HStack className="gap-2 px-2" justifyContent="center">
-        <InputGroup className="max-w-lg bg-background">
+        <InputGroup className="max-w-lg bg-background drop-shadow-sm drop-shadow-black/50">
           <InputGroupInput
             placeholder="Search..."
             onChange={handleSearch}

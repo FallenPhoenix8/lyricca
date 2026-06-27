@@ -52,6 +52,7 @@ import { ClipboardCheckIcon, ClipboardIcon, View } from "lucide-react"
 import { ActionButton } from "./action-button"
 import { BlurOverlay } from "./blur-overlay"
 import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
+import { TileGroup } from "./tile-group"
 
 async function translateAction({
   text,
@@ -121,28 +122,33 @@ export function AddPageClientWrapper({
   const { applyThemeFromImage } = useDynamicTheme()
   const coverImageRef = useRef<HTMLImageElement>(null)
 
-  function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
+  const [isCoverUploading, setIsCoverUploading] = useState(false)
+  const [isCoverSuggesting, setIsCoverSuggesting] = useState(false)
+
+  async function handleFileUpload(event: React.MouseEvent<HTMLInputElement>) {
+    setIsCoverUploading(true)
     const target = event.target as HTMLInputElement
     const file = target.files?.[0]
     if (!file) {
+      updateLoadingState(false)
+      setIsCoverUploading(false)
       return
     }
     const temporaryFileURL = URL.createObjectURL(file)
 
     setCoverURL(temporaryFileURL)
-    setCoverFileMutation.mutate()
+    await setCoverFile()
+    console.log("Loading ended")
   }
   function updateOverlayVisibility(newState: boolean) {
-    startTransition(() => {
-      setIsOverlayVisible(newState)
-    })
+    setIsOverlayVisible(newState)
   }
 
   function updateLoadingState(newState: boolean) {
-    startTransition(() => {
-      updateOverlayVisibility(newState)
-      setIsLoading(newState)
-    })
+    // startTransition(() => {
+    updateOverlayVisibility(newState)
+    setIsLoading(newState)
+    // })
   }
 
   const [title, setTitle] = useQueryState("t", { defaultValue: "" })
@@ -190,11 +196,13 @@ export function AddPageClientWrapper({
   const getSuggestionMutation = useMutation(getCoverSuggestionAction, {
     onMutate: () => {
       updateLoadingState(true)
+      setIsCoverSuggesting(true)
     },
     onSuccess: (response) => {
       if (!response.ok) {
         console.error("Failed to get cover suggestion: ", response.error)
-        updateLoadingState(false)
+
+        setIsCoverSuggesting(false)
         return
       }
       console.log(response)
@@ -204,35 +212,57 @@ export function AddPageClientWrapper({
         : "/default.png"
       setCoverURL(suggestionURL)
       setCoverFileMutation.mutate()
-      updateLoadingState(false)
+
+      setIsCoverSuggesting(false)
     },
     onError: (error) => {
-      updateLoadingState(false)
+      setIsCoverSuggesting(false)
       console.error("Failed to get cover suggestion:", error)
     },
   })
+  const uploadCoverMutation = useMutation(handleFileUpload, {
+    onMutate: () => {
+      updateLoadingState(true)
+      setIsCoverUploading(true)
+    },
+    onSuccess: () => {
+      setIsCoverUploading(false)
+    },
+    onError: (error) => {
+      setIsCoverUploading(false)
+      console.error("Failed to upload cover:", error)
+    },
+  })
+  async function setCoverFile() {
+    if (coverURL === "default" || coverURL === "empty") {
+      console.log("Cover URL is empty or default, skipping...")
+      return
+    }
+    const file = await convertURLToFile(coverURL)
+    if (coverFileRef.current) {
+      const dataTransfer = new DataTransfer()
+      dataTransfer.items.add(file)
+      coverFileRef.current.files = dataTransfer.files
+    }
+    console.log("Cover file set successfully.", coverFileRef.current?.files)
+  }
 
-  const setCoverFileMutation = useMutation(
-    async () => {
-      if (coverURL === "default" || coverURL === "empty") {
-        console.log("Cover URL is empty or default, skipping...")
-        return
-      }
-      const file = await convertURLToFile(coverURL)
-      if (coverFileRef.current) {
-        const dataTransfer = new DataTransfer()
-        dataTransfer.items.add(file)
-        coverFileRef.current.files = dataTransfer.files
-      }
-      console.log("Cover file set successfully.", coverFileRef.current?.files)
+  const setCoverFileMutation = useMutation(setCoverFile, {
+    onMutate: () => {
+      updateLoadingState(true)
     },
-    {
-      onSuccess: () => {},
-      onError: (error) => {
-        console.error("Failed to set cover file:", error)
-      },
+    onSuccess: () => {
+      setIsCoverSuggesting(false)
+      setIsCoverUploading(false)
+      updateLoadingState(false)
     },
-  )
+    onError: (error) => {
+      setIsCoverSuggesting(false)
+      setIsCoverUploading(false)
+      updateLoadingState(false)
+      console.error("Failed to set cover file:", error)
+    },
+  })
 
   function handleTranslate() {
     startTransition(() => {
@@ -376,16 +406,6 @@ export function AddPageClientWrapper({
                   !!state.errors?.cover && "border-destructive",
                 )}
               >
-                {/* <img
-                src={coverURL}
-                alt="Empty Cover"
-                className="w-full aspect-video md:aspect-square object-cover rounded-xl"
-                aria-describedby="cover-description"
-                onLoad={() => {
-                  updateLoadingState(false)
-                }}
-              /> */}
-
                 <img
                   src={displayCoverURL}
                   className="w-full aspect-square object-cover rounded-b-xl rounded-t-none md:rounded-t-xl"
@@ -418,70 +438,75 @@ export function AddPageClientWrapper({
           <div className="bg-background/85 backdrop-blur-2xl col-span-12 md:col-span-8 z-10 mt-[40vw] md:mt-10 row-span-1 rounded-t-2xl">
             <div className="py-2 px-4">
               <h1 className="text-2xl font-extrabold py-4">Add a new song</h1>
-              <FieldLabel>Cover</FieldLabel>
+              <TileGroup
+                tiles={[
+                  {
+                    icon: "upload",
+                    isActive: isCoverUploading,
+                    setIsActive: setIsCoverUploading,
+                    onClick: () => {
+                      setIsCoverUploading(true)
+                      buttonFileInputRef.current?.click()
+                    },
+                    isCompact: false,
+                    children: "Upload Cover",
+                    attributes: {
+                      disabled: isCoverUploading,
+                      className: cn(
+                        isLoading &&
+                          "opacity-70 cursor-not-allowed animate-pulse",
+                      ),
+                    },
+                  },
+                  {
+                    icon: "sparkles",
+                    isActive: isCoverSuggesting,
+                    setIsActive: setIsCoverSuggesting,
+                    onClick: () => {
+                      getSuggestionMutation.mutate({
+                        artist,
+                        title,
+                      })
+                    },
+                    isCompact: false,
+                    children: "Cover Suggestion",
+                    subtitle: <>(based on artist and title)</>,
+                    attributes: {
+                      disabled: isCoverSuggesting,
+                      className: cn(
+                        isLoading &&
+                          "opacity-70 cursor-not-allowed animate-pulse",
+                      ),
+                    },
+                  },
+                ]}
+              />
+              <input
+                type="file"
+                hidden
+                ref={buttonFileInputRef}
+                name="cover"
+                accept="image/jpeg, image/png, image/webp"
+                onClick={(event) => {
+                  uploadCoverMutation.mutate(event)
+                }}
+                onChange={(event) => {
+                  uploadCoverMutation.mutate(event as any)
+                }}
+              />
               <FieldDescriptionWithErrors
                 errors={state.errors?.cover ?? []}
                 id="cover-description"
+                className="pt-2"
               >
                 Upload a cover image or get a suggestion from the internet. You
                 can also edit translations line-by-line.
               </FieldDescriptionWithErrors>
-              <div className="flex justify-start gap-2">
-                <HoverCard closeDelay={10} openDelay={50}>
-                  <HoverCardTrigger>
-                    <ActionButton
-                      onClick={() => {
-                        buttonFileInputRef.current?.click()
-                      }}
-                      icon="upload"
-                    ></ActionButton>
-                    <input
-                      type="file"
-                      hidden
-                      ref={buttonFileInputRef}
-                      name="cover"
-                      accept="image/jpeg, image/png, image/webp"
-                      onChange={(event) => {
-                        handleFileUpload(event)
-                      }}
-                    />
-                  </HoverCardTrigger>
-                  <HoverCardContent>
-                    <p className="text-sm">Upload cover</p>
-                  </HoverCardContent>
-                </HoverCard>
-
-                <HoverCard closeDelay={10} openDelay={50}>
-                  <HoverCardTrigger>
-                    <ActionButton
-                      onClick={() => {
-                        getSuggestionMutation.mutate({
-                          artist,
-                          title,
-                        })
-                      }}
-                      icon="sparkles"
-                    ></ActionButton>
-                  </HoverCardTrigger>
-                  <HoverCardContent>
-                    <p className="text-sm">
-                      Get automatic suggestion <br />
-                      <span className="text-muted-foreground text-xs">
-                        (based on artist and title)
-                      </span>
-                    </p>
-                  </HoverCardContent>
-                </HoverCard>
-              </div>
             </div>
             <div className="row-span-2 md:col-start-5 z-10 ">
               <form className="px-2 md:px-4 gap-4 py-2" action={formAction}>
                 <FieldGroup>
                   <FieldSet>
-                    <FieldLegend>Song Details</FieldLegend>
-                    <FieldDescription>
-                      Enter the details of the song you want to add.
-                    </FieldDescription>
                     <FieldGroup>
                       <Field>
                         <FieldLabel htmlFor="title">Title</FieldLabel>
@@ -622,7 +647,7 @@ export function AddPageClientWrapper({
                       ]}
                       id="translation-description"
                     >
-                      <FieldLegend className="text-xl text-foreground">
+                      <FieldLegend className="text-foreground">
                         Translation
                       </FieldLegend>
                       Select the target language for translation. You can also
@@ -655,6 +680,7 @@ export function AddPageClientWrapper({
                         disabled={translateMutation.isLoading}
                         onClick={handleTranslate}
                         type="button"
+                        size="lg"
                       >
                         {translateMutation.isLoading && <LoadingSpinner />}
                         Translate

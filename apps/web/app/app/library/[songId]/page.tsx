@@ -182,7 +182,7 @@ export default function SongDetailsPage() {
   )
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  function handleCoverChange(event: React.ChangeEvent<HTMLInputElement>) {
+  function handleCoverChange(event: React.MouseEvent<HTMLInputElement>) {
     const target = event.target as HTMLInputElement
     const file = target.files?.[0]
     if (!file) {
@@ -346,9 +346,6 @@ export default function SongDetailsPage() {
                       activeIcon: "pencil",
                       isActive: isEditable,
                       setIsActive: setIsEditable,
-                      onClick: () => {
-                        console.log("clicked", isEditable)
-                      },
                       isCompact: false,
                       children: isEditable ? "Edit" : "View",
                     },
@@ -378,7 +375,8 @@ export default function SongDetailsPage() {
                 ref={fileInputRef}
                 name="cover"
                 accept="image/jpeg, image/png, image/webp"
-                onChange={handleCoverChange}
+                onClick={handleCoverChange}
+                onChange={(e) => handleCoverChange(e as any)}
               />
               <LyricsView
                 translatedLyrics={translatedLyrics}

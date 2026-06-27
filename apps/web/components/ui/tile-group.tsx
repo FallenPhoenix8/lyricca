@@ -15,6 +15,7 @@ export type TileGroupItem = {
   onClick?: React.MouseEventHandler<HTMLButtonElement>
   isCompact?: boolean
   children: React.ReactNode
+  subtitle?: React.ReactNode
   attributes?: React.HTMLAttributes<HTMLButtonElement> &
     ButtonHTMLAttributes<HTMLButtonElement>
 }
@@ -161,6 +162,7 @@ export function TileGroup({
           isActive={tile.isActive}
           setIsActive={tile.setIsActive}
           isCompact={tile.isCompact}
+          subtitle={tile.subtitle}
           children={tile.children}
           onClick={(event) => {
             handleTileClick(event, index)
