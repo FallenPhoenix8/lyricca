@@ -6,6 +6,7 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb"
 import { SongCardList } from "@/components/ui/song-card-list"
+import { LogoFull } from "@/components/ui/svg/LogoFull"
 import { ViewTransition } from "react"
 
 export default function LibraryPage() {
