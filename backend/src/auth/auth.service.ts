@@ -123,7 +123,7 @@ export class AuthService {
       expiresAt,
     })
 
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}`
+    const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${rawToken}`
 
     await this.emailService.sendPasswordResetEmail(user.email, resetUrl)
   }
@@ -136,11 +136,11 @@ export class AuthService {
     password: string
   }): Promise<void> {
     if (!token || !password) {
-      throw new BadRequestException("Invalid reset request.")
+      throw new BadRequestException(["Invalid reset request."])
     }
 
     if (password.length < 8) {
-      throw new BadRequestException("Password must be at least 8 characters.")
+      throw new BadRequestException(["Password must be at least 8 characters."])
     }
 
     const tokenHash = this.hashResetToken(token)
@@ -148,14 +148,14 @@ export class AuthService {
     const user = await this.userService.findByResetPasswordTokenHash(tokenHash)
 
     if (!user) {
-      throw new BadRequestException("Invalid or expired reset link.")
+      throw new BadRequestException(["Invalid or expired reset link."])
     }
 
     if (
       !user.reset_password_expires_at ||
       user.reset_password_expires_at < new Date()
     ) {
-      throw new BadRequestException("Invalid or expired reset link.")
+      throw new BadRequestException(["Invalid or expired reset link."])
     }
 
     const hashedPassword = await this.hashPassword(password)

@@ -6,6 +6,8 @@ const ALLOWED_PREFIXES = [
   "/songs",
   "/auth/sign-in",
   "/auth/sign-up",
+  "/auth/forgot-password",
+  "/auth/reset-password",
   "/users/availability",
   "/status",
   "/covers/suggestion",

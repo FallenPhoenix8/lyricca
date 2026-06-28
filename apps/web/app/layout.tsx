@@ -3,6 +3,7 @@ import { Noto_Sans } from "next/font/google"
 import "./globals.css"
 import { ViewTransition } from "react"
 import { ThemeProvider } from "next-themes"
+import { NuqsAdapter } from "nuqs/adapters/next"
 
 const notoSans = Noto_Sans({
   subsets: ["latin"],
@@ -30,9 +31,11 @@ export default function RootLayout({
           fontFamily,
         }}
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
-        </ThemeProvider>
+        <NuqsAdapter>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            {children}
+          </ThemeProvider>
+        </NuqsAdapter>
       </body>
     </html>
   )

@@ -15,7 +15,7 @@ import {
   XIcon,
 } from "@phosphor-icons/react"
 import type { State } from "../actions"
-import TextField from "@/components/ui/form/TextField"
+import { TextField } from "@/components/ui/form/TextField"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import BlobScene from "@/components/ui/svg/BlobScene"
@@ -144,10 +144,21 @@ export default function SignInPage() {
           </VStack>
           <UsernameInput value={username} setValue={setUsername} />
           <PasswordInput value={password} setValue={setPassword} />
-          <p>
-            Don't have an account yet?{" "}
-            <Link href="/auth/sign-up" className="underline underline-offset-4">
-              Sign Up!
+          <p className="flex flex-col gap-1">
+            <div>
+              Don't have an account yet?{" "}
+              <Link
+                href="/auth/sign-up"
+                className="underline underline-offset-4"
+              >
+                Sign Up!
+              </Link>
+            </div>
+            <Link
+              href="/auth/forgot-password"
+              className="underline underline-offset-4"
+            >
+              Forgot password?
             </Link>
           </p>
 

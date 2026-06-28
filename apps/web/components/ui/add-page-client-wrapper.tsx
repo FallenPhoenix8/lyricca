@@ -54,6 +54,7 @@ import { BlurOverlay } from "./blur-overlay"
 import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
 import { TileGroup } from "./tile-group"
 import { useMediaQuery } from "@/lib/client/hook/useMediaQuery"
+import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
 
 async function translateAction({
   text,
@@ -376,6 +377,9 @@ export function AddPageClientWrapper({
 
   const isCompact = useMediaQuery("(max-width: 520px)")
 
+  usePreventEnterKey(document.body, () => setIsEditableLyrics(false), [
+    isEditableLyrics,
+  ])
   return (
     <ViewTransition enter="replace" exit="replace">
       {/* <Breadcrumb className="my-2">

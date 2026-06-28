@@ -14,7 +14,9 @@ export async function proxy(request: NextRequest) {
   const appLibraryURL = new URL("/app/library", request.url)
 
   const isAuthRoute =
-    pathname === "/auth/sign-in" || pathname === "/auth/sign-up"
+    pathname === "/auth/sign-in" ||
+    pathname === "/auth/sign-up" ||
+    pathname === "/auth/forgot-password"
   const isAppProtectedRoute =
     pathname.startsWith("/app/preferences") || pathname.startsWith("/app/add")
 

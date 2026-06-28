@@ -2,7 +2,7 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "../input-group"
 import clsx from "clsx"
 
-export default function TextField({
+export function TextField({
   label,
   description,
   name,
