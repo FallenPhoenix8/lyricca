@@ -33,7 +33,7 @@ export function LanguagesSelect({
           <FieldLabel>Source Language</FieldLabel>
           <FieldContent>
             <Select
-              defaultValue={sourceLanguage}
+              value={sourceLanguage}
               onValueChange={(value) => setSourceLanguage(value)}
             >
               <SelectTrigger>
@@ -42,7 +42,9 @@ export function LanguagesSelect({
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Source Language</SelectLabel>
-                  <SelectItem value="auto">Detect Language</SelectItem>
+                  <SelectItem value={sourceLanguage}>
+                    Detect Language
+                  </SelectItem>
                   {languages.sourceLanguages.map((language) => (
                     <SelectItem
                       value={language.code}
@@ -62,7 +64,7 @@ export function LanguagesSelect({
             <Select
               required
               onValueChange={(value) => setTargetLanguage(value)}
-              defaultValue={targetLanguage ?? undefined}
+              value={targetLanguage}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a target language" />

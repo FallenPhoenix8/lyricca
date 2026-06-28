@@ -301,7 +301,7 @@ export function LyricsView({
               m3ExpressiveSpring.spatial.fast.className,
             )}
             icon="eye"
-            activeIcon="pencil"
+            activeIcon="pencil-sparkles"
           />
 
           <SubmitButton

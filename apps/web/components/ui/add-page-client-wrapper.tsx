@@ -166,7 +166,10 @@ export function AddPageClientWrapper({
     album?: string[]
   }>({})
   const [sourceLanguage] = useQueryState("sl", { defaultValue: "auto" })
-  const [targetLanguage] = useQueryState("tl", { defaultValue: "en-US" })
+  const defaultTargetLanguage = "en-US"
+  const [targetLanguage] = useQueryState("tl", {
+    defaultValue: "en-US",
+  })
   const translateMutation = useMutation(translateAction, {
     onSuccess: (response) => {
       if (!response.ok) {
@@ -438,7 +441,7 @@ export function AddPageClientWrapper({
             </ViewTransition>
           </div>
           <div className="bg-background/30 backdrop-blur-2xl col-span-12 md:col-span-8 z-10 mt-[40vw] md:mt-10 row-span-1 rounded-t-2xl">
-            <div className="py-2 px-4">
+            <div className="py-2 px-1 md:px-4">
               <h1 className="text-2xl font-extrabold py-4">Add a new song</h1>
               <TileGroup
                 tiles={[

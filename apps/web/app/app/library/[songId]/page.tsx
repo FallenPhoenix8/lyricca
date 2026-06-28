@@ -346,7 +346,7 @@ export default function SongDetailsPage() {
                   tiles={[
                     {
                       icon: "eye",
-                      activeIcon: "pencil",
+                      activeIcon: "pencil-sparkles",
                       isActive: isEditable,
                       setIsActive: setIsEditable,
                       isCompact: false,
