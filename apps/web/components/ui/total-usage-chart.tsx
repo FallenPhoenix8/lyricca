@@ -11,77 +11,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "./popover"
 import { LoadingSpinner } from "./loading-spinner"
 import { cn } from "@/lib/utils"
 import { getShapePathData } from "./svg/shapes/shapes"
-import { Shape } from "./svg/shapes/Shape"
-import { m3ExpressiveSpring } from "./constants"
+import { Shape, ShapeFrame } from "./svg/shapes/Shape"
+import { m3ExpressiveDuration, m3ExpressiveSpring } from "./constants"
+import { useM3Motion } from "@/lib/client/hook/useM3Motion"
 
 gsap.registerPlugin(useGSAP, DrawSVGPlugin, MorphSVGPlugin)
-
-const chartOffsetPathPercentage = 5.5
-
-function AnimatedChartPart({
-  usagePercentage,
-  offset,
-  className,
-}: {
-  usagePercentage: number
-  offset: number
-  className?: string
-}) {
-  const maskRef = useRef<SVGPathElement>(null)
-  const circlePathData = getShapePathData("Circle")
-
-  useGSAP(() => {
-    if (!maskRef.current) return
-
-    const chartOffset =
-      usagePercentage >= 100 || usagePercentage <= 0 ? 0 : offset
-    // Animate the mask reveal
-    gsap.fromTo(
-      maskRef.current,
-      { drawSVG: `${chartOffset}%` },
-      {
-        drawSVG: `${chartOffset}% ${usagePercentage - chartOffset}%`,
-        duration: 1.5,
-        ease: m3ExpressiveSpring.spatial.slow.gsap,
-      },
-    )
-  })
-
-  return (
-    <svg
-      width="380"
-      height="380"
-      viewBox="0 0 380 380"
-      className={cn("overflow-visible", className)}
-      style={{ overflow: "visible" }}
-    >
-      <defs>
-        {/* Mask for the chart part, to make the spinning part have rounded edges */}
-        <mask id="fixed-mask" maskUnits="userSpaceOnUse">
-          <path
-            d={circlePathData}
-            fill="none"
-            stroke="white"
-            strokeLinecap="round"
-            ref={maskRef}
-            className="stroke-[5.5rem]"
-          />
-        </mask>
-      </defs>
-
-      {/* The spinning part of the chart */}
-      <g mask="url(#fixed-mask)">
-        <path
-          d={getShapePathData("9-sided cookie")}
-          fill="none"
-          stroke="currentColor"
-          className="stroke-primary origin-center stroke-[3.5rem] animate-spin"
-          style={{ transformOrigin: "center", animationDuration: "10s" }}
-        />
-      </g>
-    </svg>
-  )
-}
 
 export function TotalUsageChartSkeleton({ className }: { className?: string }) {
   return (
@@ -113,9 +47,10 @@ export function TotalUsageChart({
   currentUsage: number
   limitUsage: number
 }) {
+  useM3Motion()
   const [isOpen, setIsOpen] = useState(false)
   // * MARK: - Prepare references for chart elements
-  const arcRef = useRef<SVGSVGElement>(null)
+  const arcOuterRef = useRef<SVGPathElement>(null)
 
   // * MARK: - Calculate percentages and display values
   const usageLeft = limitUsage - currentUsage
@@ -136,22 +71,19 @@ export function TotalUsageChart({
   // 1000ms * 60s * 60m * 24h = 86,400,000 ms per day
   const daysRemaining = Math.ceil(diffInMs / (1000 * 60 * 60 * 24))
   useGSAP(() => {
-    if (!arcRef.current) return
-    const arc = arcRef.current
-    const arcPath = arc.querySelector("path")
+    if (!arcOuterRef.current) return
 
-    const chartOffset =
-      remainingPercentageNum >= 100 || remainingPercentageNum <= 0
-        ? 0
-        : chartOffsetPathPercentage
-    gsap.fromTo(
-      arcPath,
-      {
-        drawSVG: `${chartOffset}%`,
+    const tl = gsap.timeline({
+      defaults: {
+        duration: m3ExpressiveDuration.spatial.slow.seconds,
+        ease: m3ExpressiveSpring.spatial.slow.gsap,
       },
-      {
-        drawSVG: `-${chartOffset}% -${remainingPercentageNum - chartOffset}%`,
-      },
+    })
+
+    tl.fromTo(
+      arcOuterRef.current,
+      { drawSVG: 0 },
+      { drawSVG: `${usagePercentageNum}%` },
     )
   })
   return (
@@ -171,19 +103,24 @@ export function TotalUsageChart({
           >
             {formattedPercentage}
           </div>
-          <ZStackGrid className="p-1 rotate-x-180 rotate-y-180" aria-hidden>
-            <AnimatedChartPart
-              offset={chartOffsetPathPercentage}
-              usagePercentage={usagePercentageNum}
-              className="h-full w-full rotate-70"
-            />
-
-            <Shape
-              className="h-full w-full fill-transparent stroke-[5.1rem] stroke-accent rotate-70 origin-center"
-              ref={arcRef}
-              style={{ overflow: "visible" }}
-              shape="Circle"
-            />
+          <ZStackGrid className="p-1 rotate-x-180 rotate-90" aria-hidden>
+            <ShapeFrame className="h-full w-full fill-transparent stroke-[5.1rem] text-accent origin-center overflow-visible">
+              <path
+                d={getShapePathData("Circle")}
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+              />
+            </ShapeFrame>
+            <ShapeFrame className="h-full w-full fill-transparent stroke-[5.1rem] text-primary origin-center overflow-visible rotate-180 scale-105">
+              <path
+                d={getShapePathData("Circle")}
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                ref={arcOuterRef}
+              />
+            </ShapeFrame>
           </ZStackGrid>
         </ZStackGrid>
       </PopoverTrigger>
@@ -192,7 +129,7 @@ export function TotalUsageChart({
           htmlFor="translation-usage-percentage"
           className="uppercase text-xs font-semibold text-muted-foreground mb-2"
         >
-          Translation Usage Left
+          Shared Translation Usage Left
         </label>
         <p
           className="font-semibold text-center"
@@ -203,7 +140,8 @@ export function TotalUsageChart({
         </p>
         <p className="text-xs text-center font-semibold">characters left</p>
         <p className="text-xs text-center mt-2">
-          Limit will be refreshed in {daysRemaining} days.
+          Limit will be refreshed in {daysRemaining} days. <br />
+          It's shared between all users.
         </p>
       </PopoverContent>
     </Popover>
