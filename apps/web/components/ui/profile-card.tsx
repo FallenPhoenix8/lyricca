@@ -21,7 +21,7 @@ export async function ProfileCard() {
         className="h-16 md:h-20 gap-1 md:gap-4 w-full justify-between"
         alignItems="center"
       >
-        <ProfileImage profileURL={user.profile_url} />
+        <ProfileImage profileURL={user.profile_url} userId={user.id} />
         <VStack className="flex-1 h-full justify-start py-2">
           <p
             className={cn(

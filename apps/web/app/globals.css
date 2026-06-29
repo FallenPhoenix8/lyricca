@@ -177,6 +177,12 @@ html.dark {
     }
   }
 
+  .media-touch-hidden {
+    @media (hover: none) {
+      display: none;
+    }
+  }
+
   @keyframes spin-half {
     from {
       transform: rotate(0deg);

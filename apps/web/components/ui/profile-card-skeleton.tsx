@@ -9,12 +9,12 @@ export function ProfileCardSkeleton() {
   return (
     <VStack>
       <HStack
-        className="h-20 gap-4 rounded-xl w-full justify-between"
+        className="h-20 gap-4 rounded-xl w-full justify-between bg-secondary/50"
         alignItems="center"
       >
         <Shape
-          className="h-20 w-20 animate-pulse fill-accent"
-          shape="9-sided cookie"
+          className="h-20 w-20 aspect-square animate-pulse fill-accent"
+          shape="Circle"
         />
         <VStack className="flex-1 h-full justify-start py-2">
           <Skeleton className="h-5 md:h-6 w-3/4 rounded-sm" />
