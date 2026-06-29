@@ -45,10 +45,12 @@ export function SettingsGroup({
   const [isOpen, setIsOpen] = useState(isInitiallyOpen)
   function handleClick() {
     startTransition(() => {
+      let next: null | boolean = null
       setIsOpen((prev) => {
-        onOpenChange?.(!prev)
+        next = !prev
         return !prev
       })
+      onOpenChange?.(next || !isOpen)
     })
   }
   return (
