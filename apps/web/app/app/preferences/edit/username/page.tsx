@@ -11,7 +11,9 @@ import { ViewTransition } from "react"
 
 export default function EditUsernamePage() {
   const [_, setPageTitle] = useQueryState("title", { defaultValue: "" })
-  const [username, setUsername] = useState("")
+  const [username, setUsername] = useQueryState("username", {
+    defaultValue: "",
+  })
   useEffect(() => {
     setPageTitle("Edit Username")
   }, [])

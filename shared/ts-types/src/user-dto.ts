@@ -20,9 +20,14 @@ type UserCreate = Omit<
 type UserUpdate = Partial<UserCreate>
 type UserDTO = Omit<User, "password" | "songs">
 
-type AvailabilityCheckDTO = {
-  username: string
-  available: boolean
-}
+type AvailabilityCheckDTO =
+  | {
+      username: string
+      available: boolean
+    }
+  | {
+      email: string
+      available: boolean
+    }
 
 export type { User, UserCreate, UserUpdate, UserDTO, AvailabilityCheckDTO }

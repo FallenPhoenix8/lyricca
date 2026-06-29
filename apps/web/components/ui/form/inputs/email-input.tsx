@@ -82,16 +82,36 @@ export function EmailInput({
   })
   const [isOTPSent, setIsOTPSent] = useState(false)
 
+  const [debouncedEmail] = useDebounce(email, 500)
+  const { data: emailAvailability, isLoading } = useQuery<
+    Result<AvailabilityCheckDTO, ErrorResponseDTO>
+  >(["email-availability", [debouncedEmail]], () => {
+    if (debouncedEmail === "") {
+      return Ok<AvailabilityCheckDTO>({ available: false, email: "" })
+    }
+    console.log("Checking availability...")
+    return APIClient.shared.get<AvailabilityCheckDTO>(
+      `/users/availability?email=${encodeURIComponent(debouncedEmail)}`,
+    )
+  })
+
   const validation = useMemo(() => {
     const regex =
       /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
-    const isValid = regex.test(email)
+    const isEmail = regex.test(email)
+    const isAvailable =
+      emailAvailability &&
+      emailAvailability.ok &&
+      emailAvailability.value.available
     const isVerified = emailOTP !== null && userOTP === emailOTP
+    const isValid = isEmail && isAvailable && isVerified
     return {
-      isValid,
+      isEmail,
       isVerified,
+      isAvailable,
+      isValid,
     }
-  }, [emailOTP, email, userOTP])
+  }, [emailOTP, email, userOTP, emailAvailability])
 
   const [countdown, setCountdown] = useState(10)
 
@@ -117,7 +137,7 @@ export function EmailInput({
   }, [countdown])
 
   useEffect(() => {
-    onValidityChange?.((validation.isValid && validation.isVerified) ?? false)
+    onValidityChange?.(validation.isValid || false)
   }, [validation])
   return (
     <VStack>
@@ -147,7 +167,11 @@ export function EmailInput({
               name="email"
             />
             <InputGroupButton
-              disabled={!validation.isValid || countdown !== 10}
+              disabled={
+                !validation.isEmail ||
+                !validation.isAvailable ||
+                countdown !== 10
+              }
               onClick={handleSendOTPClick}
               type="button"
             >
@@ -157,6 +181,12 @@ export function EmailInput({
           <FieldLabel htmlFor="email-verification-code">
             Email Verification Code
           </FieldLabel>
+          <ValidationTile
+            isValid={validation.isAvailable ?? false}
+            isLoading={isLoading}
+          >
+            Email is available
+          </ValidationTile>
           <InputOTP
             maxLength={6}
             value={userOTP}

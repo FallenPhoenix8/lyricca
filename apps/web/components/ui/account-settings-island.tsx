@@ -3,7 +3,10 @@ import { Shield, User } from "lucide-react"
 import { SettingsGroup } from "./settings/SettingsGroup"
 import { useQueryState } from "nuqs"
 
-export function AccountSettingsIsland() {
+export function AccountSettingsIsland(props: {
+  username: string
+  email: string
+}) {
   const [isOpen, setIsOpen] = useQueryState("security-group-state", {
     defaultValue: "closed",
   })
@@ -12,7 +15,7 @@ export function AccountSettingsIsland() {
       items={[
         {
           isLink: true,
-          href: "/app/preferences/edit/username",
+          href: `/app/preferences/edit/username?username=${props.username}`,
           title: "Change Username",
           icon: "user",
           className: "w-full",
@@ -20,7 +23,7 @@ export function AccountSettingsIsland() {
         },
         {
           isLink: true,
-          href: "/app/preferences/edit/email",
+          href: `/app/preferences/edit/email?email=${props.email}`,
           title: "Change Email",
           icon: "mail",
           className: "w-full",

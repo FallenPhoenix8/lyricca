@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef } from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { ZStackGrid } from "./layout"
 import { Shape, ShapeFrame } from "./svg/shapes/Shape"
 import { getShapePathData } from "./svg/shapes/shapes"
@@ -25,14 +25,16 @@ export function InputRadio({
   const activeShapeRef = useRef<SVGSVGElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const isChecked = activeValue === props.value
+  const [isFirstRender, setIsFirstRender] = useState(true)
 
   useGSAP(
     () => {
-      gsap.to("g", {
-        scale: isChecked ? 1 : 0,
-        duration: m3ExpressiveDuration.spatial.default.seconds,
-        ease: m3ExpressiveSpring.spatial.default.gsap,
-      })
+      if (isFirstRender) return
+      //   gsap.to("g", {
+      //     scale: isChecked ? 1 : 0,
+      //     duration: m3ExpressiveDuration.spatial.default.seconds,
+      //     ease: m3ExpressiveSpring.spatial.default.gsap,
+      //   })
       gsap.to("path", {
         morphSVG: isChecked
           ? getShapePathData("6-sided cookie")
@@ -54,14 +56,29 @@ export function InputRadio({
       isChecked,
     })
   }, [isChecked])
+
+  useLayoutEffect(() => {
+    if (isFirstRender) {
+      setIsFirstRender(false)
+    }
+  }, [])
   return (
     <ZStackGrid
       className={cn("place-items-center disabled:opacity-50", className)}
     >
       <Shape shape="Circle" className="size-8 fill-border" />
       <Shape shape="Circle" className="size-7 fill-card" />
-      <ShapeFrame className="size-7.5 fill-primary" ref={activeShapeRef}>
-        <g className="origin-center">
+      <ShapeFrame
+        className={cn(
+          "size-7.5 fill-primary origin-center",
+          m3ExpressiveDuration.spatial.default.className,
+          m3ExpressiveSpring.spatial.default.className,
+          isFirstRender && "scale-0",
+          isChecked ? "scale-100" : "scale-0",
+        )}
+        ref={activeShapeRef}
+      >
+        <g>
           <path
             d={getShapePathData(isChecked ? "6-sided cookie" : "Circle")}
             fill="inherit"
@@ -74,6 +91,7 @@ export function InputRadio({
         ref={inputRef}
         checked={isChecked}
         onChange={(event) => {
+          console.log("Changing value...")
           setActiveValue(event.target.value)
         }}
         {...props}

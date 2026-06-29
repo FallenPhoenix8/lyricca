@@ -98,19 +98,4 @@ class UserImpl implements User {
   reset_password_expires_at?: Date | null
 }
 
-class AvailabilityCheckDTOImpl implements AvailabilityCheckDTO {
-  constructor(username: string, available: boolean) {
-    this.username = username
-    this.available = available
-  }
-  username: string
-  available: boolean
-}
-
-export {
-  UserCreateImpl,
-  UserUpdateImpl,
-  UserDTOImpl,
-  UserImpl,
-  AvailabilityCheckDTOImpl,
-}
+export { UserCreateImpl, UserUpdateImpl, UserDTOImpl, UserImpl }

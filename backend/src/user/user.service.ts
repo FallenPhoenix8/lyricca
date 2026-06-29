@@ -182,7 +182,6 @@ export class UserService {
         where: { email },
       })
     }
-
     return user === null
   }
 

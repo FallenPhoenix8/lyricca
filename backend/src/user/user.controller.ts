@@ -16,15 +16,11 @@ import {
   UploadedFile,
 } from "@nestjs/common"
 import { UserService } from "./user.service"
-import {
-  UserCreateImpl,
-  UserUpdateImpl,
-  UserDTOImpl,
-  AvailabilityCheckDTOImpl,
-} from "./dto/user-dto"
+import { UserCreateImpl, UserUpdateImpl, UserDTOImpl } from "./dto/user-dto"
 import { AuthGuard, type AuthenticatedRequest } from "../auth/auth.guard"
 import { Request } from "@nestjs/common"
 import { FileInterceptor } from "@nestjs/platform-express"
+import { AvailabilityCheckDTO } from "@shared/ts-types"
 @Controller("users")
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -45,9 +41,23 @@ export class UserController {
   @Get("availability")
   async checkAvailability(
     @Query("username") username: string,
-  ): Promise<AvailabilityCheckDTOImpl> {
-    const isAvailable = await this.userService.checkAvailability({ username })
-    return new AvailabilityCheckDTOImpl(username, isAvailable)
+    @Query("email") email: string,
+  ): Promise<AvailabilityCheckDTO> {
+    const isAvailable = await this.userService.checkAvailability({
+      username,
+      email,
+    })
+    if (username) {
+      return {
+        username,
+        available: isAvailable,
+      }
+    } else {
+      return {
+        email,
+        available: isAvailable,
+      }
+    }
   }
 
   @Get(":id")

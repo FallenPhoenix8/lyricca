@@ -12,7 +12,7 @@ import { ViewTransition } from "react"
 
 export default function EditEmailPage() {
   const [_, setPageTitle] = useQueryState("title", { defaultValue: "" })
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useQueryState("email", { defaultValue: "" })
   useEffect(() => {
     setPageTitle("Edit Email")
   }, [])

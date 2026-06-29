@@ -1,3 +1,4 @@
+"use server"
 import React, { Suspense, ViewTransition } from "react"
 import { ProfileCard } from "@/components/ui/profile-card"
 import { ProfileCardSkeleton } from "@/components/ui/profile-card-skeleton"
@@ -18,17 +19,12 @@ import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { AccountSettingsIsland } from "@/components/ui/account-settings-island"
 import { Spacer } from "@/components/ui/layout"
+import { fetchUserProfile } from "@/lib/data/server-fetch"
 
-export default function PreferencesPage() {
+export default async function PreferencesPage() {
+  const { username, email } = await fetchUserProfile()
   return (
     <ViewTransition enter="replace" exit="replace">
-      <Breadcrumb className="my-2">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbPage>Preferences</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
       <section className="px-2">
         {/* <SettingsIsland title="" className="max-w-3xl mx-auto md:p-4 mb-6"> */}
 
@@ -40,7 +36,7 @@ export default function PreferencesPage() {
           {/* Section 1: Appearance */}
 
           <AppearanceSettingsIsland />
-          <AccountSettingsIsland />
+          <AccountSettingsIsland username={username} email={email} />
         </div>
       </section>
     </ViewTransition>

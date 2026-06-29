@@ -38,6 +38,7 @@ function Switch({
     () => (isChecked ? getShapePathData(activeShape) : getShapePathData(shape)),
     [isChecked],
   )
+  const [isFirstRender, setIsFirstRender] = React.useState(true)
 
   useGSAP(() => {
     if (
@@ -66,6 +67,12 @@ function Switch({
       ease: m3ExpressiveSpring.spatial.default.gsap,
     })
   }, [isChecked])
+
+  React.useLayoutEffect(() => {
+    if (isFirstRender) {
+      setIsFirstRender(false)
+    }
+  }, [])
   return (
     /*<SwitchPrimitive.Root
       data-slot="switch"
