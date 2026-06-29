@@ -43,14 +43,21 @@ export default function NavLinks({ origin }: { origin: "app" | "guest" }) {
   }
 
   const splittedPathname = pathname.split("/")
-  const backButtonPath = [
+  let backButtonPath = [
     splittedPathname[0],
     splittedPathname[1],
     splittedPathname[2],
   ].join("/")
+
   const isChildPath = useMemo(() => {
     return splittedPathname.length >= 4 && origin === "app"
   }, [pathname, origin])
+  const isPreferencesEditPath = useMemo(() => {
+    return pathname.startsWith("/app/preferences/edit")
+  }, [pathname])
+  if (isPreferencesEditPath) {
+    backButtonPath += "?security-group-state=open"
+  }
   const [pageTitle] = useQueryState("title", { defaultValue: "" })
 
   return (

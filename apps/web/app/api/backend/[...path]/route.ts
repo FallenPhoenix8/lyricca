@@ -9,6 +9,7 @@ const ALLOWED_PREFIXES = [
   "/auth/forgot-password",
   "/auth/reset-password",
   "/users/availability",
+  "/users/",
   "/status",
   "/covers/suggestion",
   "/translate",

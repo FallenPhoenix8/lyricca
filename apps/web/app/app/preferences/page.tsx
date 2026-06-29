@@ -1,7 +1,6 @@
 import React, { Suspense, ViewTransition } from "react"
 import { ProfileCard } from "@/components/ui/profile-card"
 import { ProfileCardSkeleton } from "@/components/ui/profile-card-skeleton"
-import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { SettingsIsland } from "@/components/ui/settings-island"
@@ -14,8 +13,12 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb"
 import { AppearanceSettingsIsland } from "@/components/ui/appearance-settings-island"
+import { SettingsGroup } from "@/components/ui/settings/SettingsGroup"
+import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
+import { AccountSettingsIsland } from "@/components/ui/account-settings-island"
+import { Spacer } from "@/components/ui/layout"
 
-// TODO: Update the appearance settings looks
 export default function PreferencesPage() {
   return (
     <ViewTransition enter="replace" exit="replace">
@@ -27,22 +30,17 @@ export default function PreferencesPage() {
         </BreadcrumbList>
       </Breadcrumb>
       <section className="px-2">
-        <SettingsIsland title="" className="max-w-3xl mx-auto md:p-4 mb-6">
+        {/* <SettingsIsland title="" className="max-w-3xl mx-auto md:p-4 mb-6"> */}
+
+        {/* </SettingsIsland> */}
+        <div className="max-w-2xl mx-auto p-1 md:py-10 md:px-4 space-y-4 md:space-y-8">
           <Suspense fallback={<ProfileCardSkeleton />}>
             <ProfileCard />
           </Suspense>
-        </SettingsIsland>
-        <div className="max-w-2xl mx-auto p-1 md:py-10 md:px-4 space-y-4 md:space-y-8">
           {/* Section 1: Appearance */}
+
           <AppearanceSettingsIsland />
-          <SettingsIsland title="Account">
-            <SettingsItem
-              label="Account"
-              description="Manage your account settings."
-            >
-              TODO
-            </SettingsItem>
-          </SettingsIsland>
+          <AccountSettingsIsland />
         </div>
       </section>
     </ViewTransition>

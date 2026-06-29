@@ -18,8 +18,8 @@ function Switch({
   size = "default",
   isChecked,
   onCheckedChange,
-  icon = "check",
-  activeIcon = "x",
+  icon = "x",
+  activeIcon = "check",
   ...props
 }: React.ComponentProps<"button"> & {
   isChecked: boolean
@@ -94,7 +94,7 @@ function Switch({
       className={cn(
         "flex shrink-0 items-center rounded-full border border-transparent shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        "data-[state=checked]:bg-primary data-[state=unchecked]:bg-input",
+        isChecked ? "bg-primary" : "bg-input",
         "data-[size=default]:h-[1.15rem] data-[size=default]:w-8 data-[size=sm]:h-3.5 data-[size=sm]:w-6 data-[size=lg]:h-9 data-[size=lg]:w-16",
         m3ExpressiveDuration.effect.default.className,
         m3ExpressiveSpring.effect.default.className,
@@ -111,13 +111,13 @@ function Switch({
           className={cn("absolute size-full origin-center")}
           ref={shapeContainerRef}
         >
-          <path d={shapePathData} fill="inherit" ref={pathRef} />
+          <path d={shapePathData} className="fill-accent" ref={pathRef} />
         </ShapeFrame>
         <ZStackGrid className="absolute place-items-center size-full">
           <DynamicIcon
             name={activeIcon}
             className={cn(
-              "size-1/2 stroke-[3px] origin-center",
+              "size-1/2 stroke-[3px] origin-center text-accent-foreground",
               !isChecked && "opacity-0 scale-0",
               m3ExpressiveDuration.spatial.default.className,
               m3ExpressiveSpring.spatial.default.className,
@@ -126,7 +126,7 @@ function Switch({
           <DynamicIcon
             name={icon}
             className={cn(
-              "size-1/2 stroke-[3px] origin-center",
+              "size-1/2 stroke-[3px] origin-center text-accent-foreground",
               isChecked && "opacity-0 scale-0",
               m3ExpressiveDuration.spatial.default.className,
               m3ExpressiveSpring.spatial.default.className,

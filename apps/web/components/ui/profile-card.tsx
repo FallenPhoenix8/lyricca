@@ -7,42 +7,16 @@ import { cookies } from "next/headers"
 import { TotalUsageChart } from "./total-usage-chart"
 import { cn } from "@/lib/utils"
 
-const apiURL = process.env.NEXT_PUBLIC_API_URL
-if (!apiURL) {
-  throw new Error("NEXT_PUBLIC_API_URL is not set")
-}
-
-async function fetchUserProfile() {
-  const token = (await cookies()).get("token")?.value ?? ""
-  const endpoint = "users/me"
-  const url = new URL(endpoint, apiURL)
-  const response = await fetch(url, {
-    headers: {
-      authorization: `Bearer ${token}`,
-    },
-  })
-  const data = (await response.json()) as UserDTO
-  return data
-}
-
-async function fetchTranslationUsage() {
-  const token = (await cookies()).get("token")?.value ?? ""
-  const endpoint = "translate/usage"
-  const url = new URL(endpoint, apiURL)
-  const response = await fetch(url, {
-    headers: {
-      authorization: `Bearer ${token}`,
-    },
-  })
-  const data = (await response.json()) as TranslationUsageDTO
-  return data
-}
+import {
+  fetchUserProfile,
+  fetchTranslationUsage,
+} from "@/lib/data/server-fetch"
 
 export async function ProfileCard() {
   const user = await fetchUserProfile()
   const usage = await fetchTranslationUsage()
   return (
-    <VStack>
+    <VStack className="drop-shadow-xs drop-shadow-black/20 bg-secondary text-secondary-foreground rounded-full">
       <HStack
         className="h-16 md:h-20 gap-1 md:gap-4 w-full justify-between"
         alignItems="center"

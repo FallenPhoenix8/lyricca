@@ -4,44 +4,81 @@ import { NativeSelect, NativeSelectOption } from "./native-select"
 import { SettingsIsland } from "./settings-island"
 import { SettingsItem } from "./settings-item"
 import { useTheme } from "next-themes"
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { SettingsGroup } from "./settings/SettingsGroup"
+import { Switch } from "./switch"
+import { Button } from "./button"
+import { InputRadio } from "./input-radio"
+import { Palette } from "lucide-react"
 
 export function AppearanceSettingsIsland() {
-  const { setTheme, resolvedTheme } = useTheme()
-  function handleModeChange(event: React.ChangeEvent<HTMLSelectElement>) {
-    const newMode = event.target.value
-    setTheme(newMode)
-  }
+  const { setTheme, resolvedTheme, theme } = useTheme()
+  const isThemeSystem = theme === "system"
 
   return (
-    <SettingsIsland title="Appearance">
-      {/* Row 1: Theme Selection */}
-      <SettingsItem
-        label="Theme"
-        description="Select your preferred interface style."
-      >
-        <NativeSelect value={resolvedTheme} onChange={handleModeChange}>
-          <NativeSelectOption value="light">Light</NativeSelectOption>
-          <NativeSelectOption value="dark">Dark</NativeSelectOption>
-          <NativeSelectOption value="system">System</NativeSelectOption>
-        </NativeSelect>
-      </SettingsItem>
-
-      <Separator />
-
-      {/* Row 2: Animations Toggle */}
-      {/* <SettingsItem
-        label="Accent Color"
-        description="Choose your preferred accent color."
-      >
-        <NativeSelect value={vibe} onChange={handleVibeChange}>
-          <NativeSelectOption value="neutral">Neutral</NativeSelectOption>
-          <NativeSelectOption value="mocha">Mocha</NativeSelectOption>
-          <NativeSelectOption value="pastel">Pastel</NativeSelectOption>
-          <NativeSelectOption value="caffeine">Caffeine</NativeSelectOption>
-          <NativeSelectOption value="catppuccin">Catppuccin</NativeSelectOption>
-        </NativeSelect>
-      </SettingsItem> */}
-    </SettingsIsland>
+    <SettingsGroup
+      items={[
+        {
+          isLink: false,
+          title: "Sync with system",
+          description: "Sync your theme with your system theme.",
+          icon: "settings",
+          children: (
+            <Switch
+              isChecked={isThemeSystem}
+              onCheckedChange={() => {
+                if (theme === "system") {
+                  setTheme(resolvedTheme || "dark")
+                } else {
+                  setTheme("system")
+                }
+              }}
+              size="lg"
+            />
+          ),
+        },
+        {
+          title: "Theme",
+          isLink: false,
+          description: "Set your preferred theme.",
+          icon: "palette",
+          isDisabled: isThemeSystem,
+          variant: "vertical",
+          children: (
+            <div>
+              <div className="flex items-center gap-2 font-semibold">
+                {resolvedTheme && (
+                  <InputRadio
+                    name="theme"
+                    value="dark"
+                    activeValue={resolvedTheme}
+                    setActiveValue={setTheme}
+                    disabled={isThemeSystem}
+                  />
+                )}
+                <div>Dark Theme</div>
+              </div>
+              <div className="flex items-center gap-2 font-semibold">
+                {resolvedTheme && (
+                  <InputRadio
+                    name="theme"
+                    value="light"
+                    activeValue={resolvedTheme}
+                    setActiveValue={setTheme}
+                    disabled={isThemeSystem}
+                  />
+                )}
+                <div>Light Theme</div>
+              </div>
+            </div>
+          ),
+        },
+      ]}
+    >
+      <div className="flex gap-2 items-center">
+        <Palette className="h-full aspect-square" />
+        <div>Appearance</div>
+      </div>
+    </SettingsGroup>
   )
 }

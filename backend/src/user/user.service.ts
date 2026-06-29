@@ -135,6 +135,7 @@ export class UserService {
       where: { id },
       data: {
         username: updateUserDto.username,
+        email: updateUserDto.email,
         password: hashedPassword,
         profile_url: updateUserDto.profile_url,
       },
