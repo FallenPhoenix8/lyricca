@@ -281,7 +281,7 @@ export function LyricsView({
           )}
         ></div>
         <HStack className="gap-2 w-full" alignItems="center">
-          <h3 className="text-xl font-extrabold">Lyrics</h3>
+          <h3 className="text-xl font-extrabold font-heading">Lyrics</h3>
           <Spacer />
           {/* <AnimatedButtonGroup
             buttons={buttons()}

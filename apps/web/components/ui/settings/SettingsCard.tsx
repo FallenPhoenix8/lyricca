@@ -42,7 +42,7 @@ export function SettingsCard({
         <div className="flex items-center gap-2 h-full">
           <DynamicIcon name={icon} className="h-full aspect-square" />
           <div className="flex-1">
-            <h3 className="text-lg font-bold">{cardTitle}</h3>
+            <h3 className="text-lg font-bold font-heading">{cardTitle}</h3>
             <p className="text-base text-muted-foreground">{description}</p>
           </div>
         </div>
@@ -91,7 +91,7 @@ export function SettingsCardLink({
             <div className="flex-1">
               <h3
                 className={cn(
-                  "text-lg font-bold",
+                  "text-lg font-bold font-heading",
                   variant === "destructive" && "text-destructive",
                 )}
               >

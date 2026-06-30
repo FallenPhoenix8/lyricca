@@ -60,7 +60,7 @@ export function SettingsGroup({
     >
       <button
         className={cn(
-          "font-bold text-lg flex w-full px-3 py-4 justify-between items-center bg-secondary text-secondary-foreground drop-shadow-xs drop-shadow-black/20 rounded-full",
+          "font-bold text-lg flex w-full px-3 py-4 justify-between items-center bg-secondary text-secondary-foreground drop-shadow-xs drop-shadow-black/20 rounded-full font-heading",
           isOpen && "rounded-t-xl rounded-b-xs",
         )}
         type="button"

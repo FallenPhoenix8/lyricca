@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { CaretLeftIcon } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
 import { useQueryState } from "nuqs"
+import { overlayBlurClassName } from "../blur-overlay"
 
 export default function Navigation({ origin }: { origin: "app" | "guest" }) {
   const pathname = usePathname()
@@ -27,8 +28,9 @@ export default function Navigation({ origin }: { origin: "app" | "guest" }) {
     <ViewTransition name="navigation">
       <nav
         className={cn(
-          "flex justify-start items-center sticky z-50 top-0 px-2 py-2 w-full",
+          "flex justify-start items-center sticky z-50 top-0 px-2 py-2 w-full font-heading",
           isHidden && "-translate-y-full",
+          origin === "guest" && "bg-background/50 backdrop-blur-2xl",
         )}
       >
         <NavLinks origin={origin} />

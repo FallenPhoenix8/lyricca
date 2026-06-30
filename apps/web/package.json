@@ -20,6 +20,8 @@
     "clsx": "^2.1.1",
     "dexie": "^4.3.0",
     "dexie-react-hooks": "^4.2.0",
+    "embla-carousel-autoplay": "^8.6.0",
+    "embla-carousel-react": "^8.6.0",
     "gsap": "^3.14.2",
     "input-otp": "^1.4.2",
     "lucide-react": "^1.21.0",

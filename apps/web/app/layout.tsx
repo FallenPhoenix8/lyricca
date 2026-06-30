@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Google_Sans_Flex, Noto_Sans } from "next/font/google"
+import { Google_Sans_Flex, Noto_Sans, Outfit } from "next/font/google"
 import "./globals.css"
 import React, { ViewTransition } from "react"
 import { ThemeProvider } from "next-themes"
@@ -11,7 +11,13 @@ const notoSans = Noto_Sans({
   variable: "--font-noto-sans",
 })
 
-const fontFamily = `system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, var(--${notoSans.variable}), sans-serif`
+const outfit = Outfit({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-outfit",
+})
+
+const fontFamily = `var(--font-noto-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto sans-serif`
 
 const selfURL = process.env.SELF_URL
 if (!selfURL) {
@@ -56,7 +62,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${notoSans.variable} ${outfit.variable}`}
+    >
       <body
         className={`antialiased bg-secondary dark:bg-background`}
         style={{

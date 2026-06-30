@@ -25,7 +25,7 @@ export async function ProfileCard() {
         <VStack className="flex-1 h-full justify-start py-2">
           <p
             className={cn(
-              "font-bold line-clamp-1 overflow-elipsis max-w-[14ch]",
+              "font-bold line-clamp-1 overflow-elipsis max-w-[14ch] font-heading",
               user.username.length > 10
                 ? "text-xs md:text-xl"
                 : "text-sm md:text-2xl",

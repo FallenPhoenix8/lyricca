@@ -16,6 +16,9 @@ import { useMemo, ViewTransition } from "react"
 import { useQueryState } from "nuqs"
 import { cn } from "@/lib/utils"
 import { Spacer } from "../layout"
+import { LogoFull } from "../svg/LogoFull"
+import db from "@/lib/client/db"
+import { useLiveQuery } from "dexie-react-hooks"
 
 export default function NavLinks({ origin }: { origin: "app" | "guest" }) {
   const pathname = usePathname()
@@ -104,9 +107,16 @@ export default function NavLinks({ origin }: { origin: "app" | "guest" }) {
           </>
         )}
         {origin === "guest" && (
-          <Link href="/auth/sign-in">
-            <Button tabIndex={-1}>Sign In</Button>
-          </Link>
+          <div className="flex justify-between w-full">
+            <Link href="/landing">
+              <LogoFull isRepeating={false} className="h-10" />
+            </Link>
+            <Link href="/auth/sign-in">
+              <Button tabIndex={-1} size="lg">
+                Sign In
+              </Button>
+            </Link>
+          </div>
         )}
       </div>
     </ViewTransition>
