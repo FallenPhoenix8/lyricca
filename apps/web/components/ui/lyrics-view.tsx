@@ -13,7 +13,7 @@ import React, {
 } from "react"
 import { Skeleton } from "./skeleton"
 import { cn } from "@/lib/utils"
-import { useDebouncedCallback } from "use-debounce"
+import { useDebounce, useDebouncedCallback } from "use-debounce"
 import { Button } from "./button"
 import {
   CheckIcon,
@@ -32,6 +32,9 @@ import { useGSAP } from "@gsap/react"
 import { AnimatedButtonGroup, ButtonGroupItem } from "./animated-button-group"
 import { Switch } from "./switch"
 import { useWindowDimensions } from "@/lib/client/hook/useWindowDimensions"
+import { QueryClient, QueryClientProvider, useQuery } from "react-query"
+import { Romanization } from "@/lib/data/Romanization"
+import { LoadingSpinner } from "./loading-spinner"
 
 gsap.registerPlugin(useGSAP)
 
@@ -48,6 +51,7 @@ function LyricsPair({
   translated,
   original,
   index,
+  isInteractive,
   handleTranslatedLyricsChange,
   handleOriginalLyricsChange,
   handleDelete,
@@ -57,6 +61,7 @@ function LyricsPair({
   translated: string
   original: string
   index: number
+  isInteractive: boolean
   handleTranslatedLyricsChange: (
     lineIndex: number,
     newTranslatedLyrics: string,
@@ -81,23 +86,25 @@ function LyricsPair({
     "font-bold leading-2 px-2 bg-transparent py-1 border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0 text-lg md:text-xl md:font-extrabold"
   return (
     <HStack className="gap-2 items-center">
-      <ViewTransition>
-        <Button
-          variant="outline"
-          type="button"
-          size="icon-lg"
-          className={cn(
-            "text-destructive h-full opacity-0 scale-x-0 origin-left",
-            m3ExpressiveDuration.spatial.fast.className,
-            m3ExpressiveSpring.spatial.fast.className,
-            isEditable && "opacity-100 scale-x-100",
-            !isEditable && "max-w-0",
-          )}
-          onClick={() => handleDelete(index)}
-        >
-          <TrashIcon strokeWidth="2px" />
-        </Button>
-      </ViewTransition>
+      {isInteractive && (
+        <ViewTransition>
+          <Button
+            variant="outline"
+            type="button"
+            size="icon-lg"
+            className={cn(
+              "text-destructive h-full opacity-0 scale-x-0 origin-left",
+              m3ExpressiveDuration.spatial.fast.className,
+              m3ExpressiveSpring.spatial.fast.className,
+              isEditable && "opacity-100 scale-x-100",
+              !isEditable && "max-w-0",
+            )}
+            onClick={() => handleDelete(index)}
+          >
+            <TrashIcon strokeWidth="2px" />
+          </Button>
+        </ViewTransition>
+      )}
 
       <div className="flex flex-col">
         <div
@@ -109,7 +116,7 @@ function LyricsPair({
             isEditable &&
               "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
           )}
-          contentEditable={isEditable}
+          contentEditable={isEditable && isInteractive}
           tabIndex={isEditable ? 0 : -1}
           onInput={(event) => {
             const target = event.target as HTMLDivElement
@@ -130,7 +137,7 @@ function LyricsPair({
               isEditable &&
                 "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2 mt-1",
             )}
-            contentEditable={isEditable}
+            contentEditable={isEditable && isInteractive}
             tabIndex={isEditable ? 0 : -1}
             onInput={(event) => {
               const target = event.target as HTMLDivElement
@@ -150,22 +157,7 @@ function LyricsPair({
   )
 }
 
-export function LyricsView({
-  translatedLyrics,
-  originalLyrics,
-  handleLyricsChange,
-  handleDeletePair,
-  handleAddPair,
-  isLoading = false,
-  isReadyTranslation = true,
-  isEditable,
-  setIsEditable,
-  isMaximized = false,
-  maximizedURL,
-  minimizedURL,
-  isPreventEnterKey = false,
-  ref,
-}: {
+type LyricsViewProps = {
   translatedLyrics: string[]
   originalLyrics: string[]
   handleLyricsChange: ({
@@ -186,7 +178,33 @@ export function LyricsView({
   minimizedURL?: string
   isPreventEnterKey?: boolean
   ref?: React.Ref<HTMLDivElement>
-}) {
+}
+
+export function LyricsView(props: LyricsViewProps) {
+  const queryClient = new QueryClient()
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Content {...props} />
+    </QueryClientProvider>
+  )
+}
+
+function Content({
+  translatedLyrics,
+  originalLyrics,
+  handleLyricsChange,
+  handleDeletePair,
+  handleAddPair,
+  isLoading = false,
+  isReadyTranslation = true,
+  isEditable,
+  setIsEditable,
+  isMaximized = false,
+  maximizedURL,
+  minimizedURL,
+  isPreventEnterKey = false,
+  ref,
+}: LyricsViewProps) {
   useM3Motion()
 
   const editButtonsRef = useRef<HTMLDivElement>(null)
@@ -254,15 +272,6 @@ export function LyricsView({
     originalLyricsRef.current = newOriginalLyrics.join("\n")
   }
 
-  const debouncedHandleChangeSingleTranslatedLyrics = useDebouncedCallback(
-    handleChangeSingleTranslatedLyrics,
-    500,
-  )
-  const debouncedHandleChangeSingleOriginalLyrics = useDebouncedCallback(
-    handleChangeSingleOriginalLyrics,
-    500,
-  )
-
   function handleSubmitNewLyrics() {
     handleLyricsChange({
       translatedLyrics:
@@ -288,6 +297,42 @@ export function LyricsView({
       setIsEditable(false)
     }, [])
 
+  const hasSpecialScript = useMemo(
+    () => Romanization.shared.hasSpecialScript(originalLyrics.join("\n")),
+    [originalLyrics],
+  )
+  const [isRomanized, setIsRomanized] = useState(false)
+  const [debouncedOriginalLyrics] = useDebounce(originalLyrics, 500)
+  const {
+    data: romanizedLyrics = originalLyrics,
+    isLoading: isLoadingRomanized,
+  } = useQuery(
+    ["romanized-lyrics", debouncedOriginalLyrics],
+    () => Romanization.shared.romanizeLyrics(debouncedOriginalLyrics),
+    {
+      _defaulted: true,
+      placeholderData: originalLyrics,
+      initialData: originalLyrics,
+    },
+  )
+  const romanizedLyricPairs = useMemo(
+    () =>
+      romanizedLyrics.map((original, index) => ({
+        original,
+        translated: translatedLyrics[index] || "",
+      })),
+    [romanizedLyrics, translatedLyrics],
+  )
+
+  function toggleIsRomanized() {
+    setIsEditable(false)
+    setIsRomanized((prev) => !prev)
+  }
+
+  useEffect(
+    () => console.log("romanizedLyrics", romanizedLyrics),
+    [romanizedLyrics],
+  )
   return (
     <ViewTransition name="lyrics-view">
       <VStack
@@ -318,19 +363,34 @@ export function LyricsView({
               m3ExpressiveSpring.spatial.fast.className,
             )}
           /> */}
-          <Switch
-            size="lg"
-            isChecked={isEditable}
-            onCheckedChange={setIsEditable}
+          <div
             className={cn(
-              isEditable ? "mr-0" : "-mr-12",
+              "flex gap-2 transition-[margin]",
               m3ExpressiveDuration.spatial.fast.className,
               m3ExpressiveSpring.spatial.fast.className,
+              isEditable ? "mr-0" : "-mr-12",
             )}
-            icon="eye"
-            activeIcon="pencil-sparkles"
-          />
-
+          >
+            <div className="flex gap-1">
+              {hasSpecialScript && isLoadingRomanized && <LoadingSpinner />}
+              <Switch
+                size="lg"
+                isChecked={isRomanized}
+                onCheckedChange={toggleIsRomanized}
+                icon="languages"
+                disabled={isEditable || !hasSpecialScript || isLoadingRomanized}
+                activeIcon="letter-text"
+              />
+            </div>
+            <Switch
+              size="lg"
+              isChecked={isEditable}
+              onCheckedChange={setIsEditable}
+              disabled={isRomanized}
+              icon="eye"
+              activeIcon="pencil-sparkles"
+            />
+          </div>
           <SubmitButton
             handleClick={(e) => {
               e.preventDefault()
@@ -362,11 +422,32 @@ export function LyricsView({
           ref={lyricsContainerRef}
         >
           {!isLoading &&
+            !isRomanized &&
             lyricsPairs.map((pair, index) => {
               return (
                 <LyricsPair
                   key={`lyrics-pair-${index}`}
                   {...pair}
+                  isInteractive
+                  index={index}
+                  isEditable={isEditable}
+                  handleTranslatedLyricsChange={
+                    handleChangeSingleTranslatedLyrics
+                  }
+                  handleOriginalLyricsChange={handleChangeSingleOriginalLyrics}
+                  handleDelete={handleDeletePair}
+                  isReadyTranslation={isReadyTranslation}
+                />
+              )
+            })}
+          {!isLoading &&
+            isRomanized &&
+            romanizedLyricPairs.map((pair, index) => {
+              return (
+                <LyricsPair
+                  key={`lyrics-pair-${index}`}
+                  {...pair}
+                  isInteractive={false}
                   index={index}
                   isEditable={isEditable}
                   handleTranslatedLyricsChange={
