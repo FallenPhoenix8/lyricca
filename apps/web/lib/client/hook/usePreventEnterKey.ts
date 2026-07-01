@@ -1,13 +1,14 @@
 "use client"
-import { DependencyList, useLayoutEffect } from "react"
+import React, { DependencyList, useLayoutEffect } from "react"
 
 export function usePreventEnterKey(
-  element: HTMLElement,
+  element: React.RefObject<HTMLElement | null>,
   callback: () => void,
   deps?: DependencyList,
 ) {
   useLayoutEffect(() => {
-    element.addEventListener("keydown", handleKeyDown)
+    if (!element.current) return
+    element.current.addEventListener("keydown", handleKeyDown)
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key.toLowerCase() === "enter") {
         event.preventDefault()
@@ -16,7 +17,7 @@ export function usePreventEnterKey(
     }
 
     return () => {
-      element.removeEventListener("keydown", handleKeyDown)
+      element.current?.removeEventListener("keydown", handleKeyDown)
     }
-  }, deps)
+  }, [element, deps])
 }

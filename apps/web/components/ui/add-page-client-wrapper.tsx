@@ -158,6 +158,9 @@ export function AddPageClientWrapper({
   const [album, setAlbum] = useQueryState("alb", { defaultValue: "" })
   const [originalLyrics, setOriginalLyrics] = useState("")
   const [translatedLyrics, setTranslatedLyrics] = useState("")
+  const lyricsViewRef = useRef<HTMLDivElement>(null)
+  const [isTranslatedWithGoogleTranslate, setIsTranslatedWithGoogleTranslate] =
+    useState(false)
   const [errors, setErrors] = useState<{
     originalLyrics?: string[]
     translatedLyrics?: string[]
@@ -177,9 +180,22 @@ export function AddPageClientWrapper({
         console.error("Failed to translate lyrics:", response.error)
         return
       }
-      const translatedLyrics = response.value.translatedTextLines.join("\n")
+      const translatedLyrics = response.value.translatedTextLines
+        .map((l) => (l.endsWith("\n") ? l : l + "\n"))
+        .join("")
       console.log("Translated lyrics:", translatedLyrics)
-      setTranslatedLyrics(translatedLyrics)
+      startTransition(() => {
+        setTranslatedLyrics(translatedLyrics.trim())
+        setIsTranslatedWithGoogleTranslate(
+          response.value.withGoogleTranslate || false,
+        )
+      })
+      originalLyrics.split("\n").map((l, index) => {
+        console.log({
+          original: l,
+          translated: translatedLyrics.split("\n")[index],
+        })
+      })
     },
     onError: (error) => {
       console.error("Failed to translate lyrics:", error)
@@ -292,7 +308,6 @@ export function AddPageClientWrapper({
       if (isHasErrors) {
         return
       }
-
       setOriginalLyrics(originalLyrics.trim())
       setErrors({})
       translateMutation.mutate({
@@ -377,7 +392,7 @@ export function AddPageClientWrapper({
 
   const isCompact = useMediaQuery("(max-width: 520px)")
 
-  usePreventEnterKey(document.body, () => setIsEditableLyrics(false), [
+  usePreventEnterKey(lyricsViewRef, () => setIsEditableLyrics(false), [
     isEditableLyrics,
   ])
   return (
@@ -672,6 +687,14 @@ export function AddPageClientWrapper({
                           className="underline underline-offset-2"
                         >
                           DeepL
+                        </a>{" "}
+                        &{" "}
+                        <a
+                          href="https://translate.google.com/"
+                          target="_blank"
+                          className="underline underline-offset-2"
+                        >
+                          Google Translate
                         </a>
                         )
                       </span>
@@ -697,6 +720,11 @@ export function AddPageClientWrapper({
                         Translate
                       </Button>
                     </Field>
+                    {isTranslatedWithGoogleTranslate && (
+                      <p className="text-sm bg-[linear-gradient(90deg,#4285F4_0%,#EA4335_30%,#FBBC04_55%,#34A853_75%,#4285F4_100%)] bg-clip-text text-transparent font-semibold">
+                        Translated with Google Translate.
+                      </p>
+                    )}
                   </FieldGroup>
                   <LyricsView
                     translatedLyrics={translatedLyrics.split("\n")}
@@ -706,6 +734,7 @@ export function AddPageClientWrapper({
                     isEditable={isEditableLyrics}
                     setIsEditable={setIsEditableLyrics}
                     aria-describedby="translation-description"
+                    ref={lyricsViewRef}
                   />
                 </FieldGroup>
                 <input type="file" name="cover" hidden ref={coverFileRef} />

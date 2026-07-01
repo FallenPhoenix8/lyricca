@@ -58,6 +58,7 @@ export default function SongDetailsPage() {
   const titleElementRef = useRef<HTMLDivElement>(null)
   const artistElementRef = useRef<HTMLDivElement>(null)
   const albumElementRef = useRef<HTMLDivElement>(null)
+  const lyricsViewRef = useRef<HTMLDivElement>(null)
 
   const [searchParams] = useQueryState("q", { defaultValue: "" })
 
@@ -151,27 +152,23 @@ export default function SongDetailsPage() {
     }
   }
 
-  usePreventEnterKey(
-    document.body,
-    () => {
-      const titleElement = titleElementRef.current
-      const artistElement = artistElementRef.current
-      const albumElement = albumElementRef.current
+  usePreventEnterKey(lyricsViewRef, () => {
+    const titleElement = titleElementRef.current
+    const artistElement = artistElementRef.current
+    const albumElement = albumElementRef.current
 
-      if (titleElement) {
-        titleElement.blur()
-      }
-      if (artistElement) {
-        artistElement.blur()
-      }
-      if (albumElement) {
-        albumElement.blur()
-      }
+    if (titleElement) {
+      titleElement.blur()
+    }
+    if (artistElement) {
+      artistElement.blur()
+    }
+    if (albumElement) {
+      albumElement.blur()
+    }
 
-      setIsEditable(false)
-    },
-    [isEditable],
-  )
+    setIsEditable(false)
+  }, [isEditable, lyricsViewRef])
 
   useEffect(() => {
     if (titleElementRef.current && song && !isEditable) {
@@ -390,6 +387,7 @@ export default function SongDetailsPage() {
                 setIsEditable={setIsEditable}
                 maximizedURL={maximizedURL}
                 minimizedURL={minimizedURL}
+                ref={lyricsViewRef}
               />
             </VStack>
           </div>

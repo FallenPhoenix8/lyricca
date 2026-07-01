@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   UseGuards,
 } from "@nestjs/common"
 import { TranslationService } from "./translation.service"
@@ -38,11 +39,14 @@ export class TranslationController {
   @HttpCode(HttpStatus.OK)
   async translate(
     @Body() body: TranslationInputDTOImpl,
+    @Req() req: Request,
   ): Promise<TranslationOutputDTO> {
+    const userAgent: string = req.headers["user-agent"] || "Lyricca App @ 1.0"
     return await this.translationService.translate({
       text: body.text,
       from: body.from as SourceLanguageCode | undefined,
       to: body.to as TargetLanguageCode,
+      userAgent,
     })
   }
 }

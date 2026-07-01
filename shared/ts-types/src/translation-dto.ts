@@ -17,6 +17,7 @@ type TranslationInputDTO = {
 type TranslationOutputDTO = {
   translatedTextLines: string[]
   detectedLanguages: LanguageDTO[]
+  withGoogleTranslate?: boolean
 }
 
 type TranslationUsageDTO = {

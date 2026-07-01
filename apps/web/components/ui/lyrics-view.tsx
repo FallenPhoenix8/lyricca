@@ -137,6 +137,7 @@ export function LyricsView({
   maximizedURL,
   minimizedURL,
   isPreventEnterKey = false,
+  ref,
 }: {
   translatedLyrics: string[]
   originalLyrics: string[]
@@ -155,6 +156,7 @@ export function LyricsView({
   maximizedURL?: string
   minimizedURL?: string
   isPreventEnterKey?: boolean
+  ref?: React.Ref<HTMLDivElement>
 }) {
   useM3Motion()
 
@@ -271,6 +273,7 @@ export function LyricsView({
           m3ExpressiveSpring.effect.fast.className,
           isMaximized && "fixed inset-0 z-100",
         )}
+        ref={ref}
       >
         <div
           className={cn(

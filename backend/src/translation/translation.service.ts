@@ -29,6 +29,80 @@ export class TranslationService {
 
   private readonly key: string = process.env.DEEPL_TRANSLATION_API_KEY || ""
   private readonly client: deepl.DeepLClient
+  private readonly googleTranslateURLBase = "https://translate.googleapis.com/"
+
+  //translate_a/single?client=gtx&sl=auto&tl=pl&dt=t&q=something
+  private async getGoogleTranslateFullURL(
+    sourceLanguage: string,
+    targetLanguage: string,
+    text: string,
+  ): Promise<URL> {
+    const url = new URL("/translate_a/single", this.googleTranslateURLBase)
+    url.searchParams.append("client", "gtx")
+    url.searchParams.append("sl", sourceLanguage)
+    url.searchParams.append("tl", targetLanguage)
+    url.searchParams.append("dt", "t")
+    url.searchParams.append("q", text)
+    return url
+  }
+
+  /**
+   * @throws
+   */
+  private async translateWithGoogleTranslate(parameters: {
+    text: string
+    from: string
+    to: string
+    userAgent: string
+  }): Promise<TranslationOutputDTO> {
+    const url = await this.getGoogleTranslateFullURL(
+      parameters.from,
+      parameters.to,
+      parameters.text,
+    )
+    const response = await fetch(url, {
+      headers: { "User-Agent": parameters.userAgent },
+    })
+    if (!response.ok) {
+      throw new Error("Google Translate API request failed.")
+    }
+    const data = await response.json()
+    let translatedTextLines: string[] = []
+    const dataLines = data[0] as any[][]
+    for (const line of dataLines) {
+      translatedTextLines.push(line[0])
+    }
+
+    const detectedLanguagesOptional = [await this.getLanguageDetails(data[2])]
+    let detectedLanguages: LanguageDTO[] = []
+
+    for (const detectedLanguage of detectedLanguagesOptional) {
+      if (detectedLanguage) {
+        detectedLanguages.push(detectedLanguage)
+      }
+    }
+
+    if (!detectedLanguages.length) {
+      throw new Error(
+        "Invalid Google Translate API response (detected languages).",
+        data,
+      )
+    }
+
+    for (const _ of translatedTextLines) {
+      if (!translatedTextLines) {
+        throw new Error(
+          "Invalid Google Translate API response (text lines).",
+          data,
+        )
+      }
+    }
+
+    return {
+      translatedTextLines,
+      detectedLanguages,
+    }
+  }
 
   /**
    * Cache key for available languages
@@ -91,6 +165,7 @@ export class TranslationService {
     text: string
     to: deepl.TargetLanguageCode
     from?: deepl.SourceLanguageCode
+    userAgent: string
   }): Promise<TranslationOutputDTO> {
     // * MARK: - Check if language code exists
     if (!(await this.isLanguageCodeExists(properties.to, "target"))) {
@@ -107,9 +182,28 @@ export class TranslationService {
         `Language code "${properties.from}" does not exist in source languages.`,
       )
     }
-
-    // * MARK: - Make request to API
     const lines = properties.text.split("\n")
+    // * MARK: - Make request to Google Translate API
+    try {
+      const result = await this.translateWithGoogleTranslate({
+        from: properties.from || "auto",
+        to: properties.to,
+        text: lines.map((l) => (!l ? " " : l)).join("\n"),
+        userAgent: properties.userAgent,
+      })
+      return {
+        ...result,
+        withGoogleTranslate: true,
+      }
+    } catch (error) {
+      console.error(
+        "Google Translate API request failed, falling back to DeepL:",
+        error,
+      )
+    }
+
+    // * MARK: - Make request to DeepL API
+    console.log("Translating with DeepL...")
     let result: deepl.TextResult[] | null = null
     try {
       result = await this.client.translateText(

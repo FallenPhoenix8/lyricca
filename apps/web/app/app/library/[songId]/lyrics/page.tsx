@@ -6,7 +6,7 @@ import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
 import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
 import { SongUpateSchema } from "@/lib/model/Song"
 import { redirect, useParams } from "next/navigation"
-import { useLayoutEffect, useState } from "react"
+import { createRef, useLayoutEffect, useRef, useState } from "react"
 
 export default function SongLyricsPage() {
   const { songId } = useParams<{ songId: string }>()
@@ -22,6 +22,7 @@ export default function SongLyricsPage() {
   }
 
   const [isEditable, setIsEditable] = useState(false)
+  const body = useRef<HTMLBodyElement>(null)
 
   function updateLyrics({
     translatedLyrics,
@@ -43,13 +44,9 @@ export default function SongLyricsPage() {
     }
   }
 
-  usePreventEnterKey(
-    document.body,
-    () => {
-      setIsEditable(false)
-    },
-    [],
-  )
+  usePreventEnterKey(body, () => {
+    setIsEditable(false)
+  }, [])
 
   return (
     <>
