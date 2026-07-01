@@ -255,14 +255,9 @@ export function LyricsView({
   }, [isEditable])
 
   isPreventEnterKey &&
-    lyricsContainerRef.current &&
-    usePreventEnterKey(
-      lyricsContainerRef.current,
-      () => {
-        setIsEditable(false)
-      },
-      [],
-    )
+    usePreventEnterKey(lyricsContainerRef, () => {
+      setIsEditable(false)
+    }, [])
 
   return (
     <ViewTransition name="lyrics-view">
