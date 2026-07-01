@@ -176,6 +176,7 @@ type LyricsViewProps = {
   isMaximized?: boolean
   maximizedURL?: string
   minimizedURL?: string
+  canShowRomanization?: boolean
   isPreventEnterKey?: boolean
   ref?: React.Ref<HTMLDivElement>
 }
@@ -200,6 +201,7 @@ function Content({
   isEditable,
   setIsEditable,
   isMaximized = false,
+  canShowRomanization = true,
   maximizedURL,
   minimizedURL,
   isPreventEnterKey = false,
@@ -371,7 +373,7 @@ function Content({
               isEditable ? "mr-0" : "-mr-12",
             )}
           >
-            {hasSpecialScript && (
+            {canShowRomanization && hasSpecialScript && (
               <div className="flex gap-1">
                 {isLoadingRomanized && <LoadingSpinner />}
                 <Switch

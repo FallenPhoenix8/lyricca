@@ -759,6 +759,7 @@ export function AddPageClientWrapper({
                     setIsEditable={setIsEditableLyrics}
                     aria-describedby="translation-description"
                     handleDeletePair={handleDeletePair}
+                    canShowRomanization={false}
                     handleAddPair={handleAddPair}
                     ref={lyricsViewRef}
                   />
