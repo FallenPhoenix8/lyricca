@@ -12,10 +12,7 @@ export function ValidationTile({
 }) {
   return (
     <div className="flex items-center gap-2 rounded-md px-2 md:px-4 py-2 bg-secondary/20 flex-nowrap mb-1 border border-border">
-      {isLoading && (
-        // <SpinnerIcon className="w-5 h-5 animate-spin" weight="bold" />
-        <LoadingSpinner className="w-5 h-5 shrink-0" />
-      )}
+      {isLoading && <LoadingSpinner className="w-5 h-5 shrink-0" />}
       {isValid && !isLoading && (
         <CheckIcon className="w-5 h-5 text-green-500" />
       )}

@@ -202,6 +202,18 @@ async function checkAndUpdateAllLocally(
   }
 }
 
+/**
+ * This hook provides a way to access and manipulate songs in the local database. It returns an object with the following properties:
+ * - `count`: The total number of songs in the local database.
+ * - `songs`: An array of songs from the local database. This allows components to access and display the songs without needing to make API calls, improving performance and responsiveness. The local database is kept in sync with the API through the `checkAndUpdateAllLocally` function, ensuring that the data is always up-to-date.
+ * - `create`: A mutation that creates a new song by sending a request to the API and then updates the local database with the new song. It returns a query that can be used to track the status of the creation process and handle any errors that may occur.
+ * - `update`: A mutation that updates an existing song by sending a request to the API and then updates the local database with the updated song. It returns a query that can be used to track the status of the update process and handle any errors that may occur.
+ * - `updateCover`: A mutation that updates the cover of a song by sending a request to the API and then updates the local database with the updated song. It returns a query that can be used to track the status of the update process and handle any errors that may occur.
+ * - `remove`: A mutation that removes a song by sending a request to the API and then updates the local database with the deleted song. It returns a query that can be used to track the status of the removal process and handle any errors that may occur.
+ * - `findOneLocally`: A function that finds a song in the local database by its ID. It returns the song if found, or null otherwise.
+ * - `isLoading`: A boolean indicating whether the songs are being loaded from the API.
+ * - `syncNow`: A function that triggers a sync of the local database with the API. It is called automatically when the user comes back to the tab.
+ */
 export function useSongs(
   searchQuery: string,
   filterTags: { type: "artist" | "album"; value: string }[],

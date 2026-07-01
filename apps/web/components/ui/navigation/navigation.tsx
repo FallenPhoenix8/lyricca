@@ -1,20 +1,8 @@
 "use client"
-import { HStack, Spacer } from "../layout"
 import NavLinks from "./nav-links"
-import { LogoFull } from "../svg/LogoFull"
-import Link from "next/link"
-import {
-  startTransition,
-  useLayoutEffect,
-  useMemo,
-  ViewTransition,
-} from "react"
+import { useMemo, ViewTransition } from "react"
 import { usePathname } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { CaretLeftIcon } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
-import { useQueryState } from "nuqs"
-import { overlayBlurClassName } from "../blur-overlay"
 
 export default function Navigation({ origin }: { origin: "app" | "guest" }) {
   const pathname = usePathname()

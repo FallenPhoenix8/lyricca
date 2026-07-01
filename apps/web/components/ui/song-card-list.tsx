@@ -1,9 +1,7 @@
 import {
   addTransitionType,
   startTransition,
-  use,
   useEffect,
-  useRef,
   useState,
   ViewTransition,
 } from "react"
@@ -34,14 +32,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./dropdown-menu"
 import { HStack } from "./layout"

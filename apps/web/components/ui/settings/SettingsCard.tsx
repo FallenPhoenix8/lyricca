@@ -5,6 +5,9 @@ import Link from "next/link"
 import { ReactNode } from "react"
 import { ViewTransition } from "react"
 
+/**
+ * Represents a universal card in the settings page.
+ */
 export function SettingsCard({
   cardTitle,
   description,
@@ -52,6 +55,9 @@ export function SettingsCard({
   )
 }
 
+/**
+ * Represents a link in the settings page.
+ */
 export function SettingsCardLink({
   cardTitle,
   icon,

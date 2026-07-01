@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { Slot } from "radix-ui"
 import { useWebHaptics } from "web-haptics/react"
 import { cn } from "@/lib/utils"
-import { useLayoutEffect, useState } from "react"
+import { useState } from "react"
 import { m3ExpressiveDuration, m3ExpressiveSpring } from "./constants"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
@@ -79,7 +79,7 @@ function Button({
     }, 100)
   }
   const Comp = asChild ? Slot.Root : "button"
-  const { trigger } = useWebHaptics({ debug: true })
+  const { trigger } = useWebHaptics({ debug: false })
 
   useGSAP(() => {
     if (!targetRef.current) return

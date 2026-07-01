@@ -46,7 +46,6 @@ export function UsernameInput({
     const isValid = isAvailable && isMinimumLength
     const isValidForUI = isValid === false && isMinimumLength
 
-    // setIsValid(isValid === undefined ? false : isValid)
     return {
       isAvailable,
       isMinimumLength,

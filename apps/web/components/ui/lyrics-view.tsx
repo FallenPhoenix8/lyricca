@@ -2,7 +2,6 @@ import { EyeIcon, PenIcon } from "@phosphor-icons/react"
 import { HStack, Spacer, VStack } from "./layout"
 import React, {
   Activity,
-  startTransition,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -13,11 +12,10 @@ import React, {
 } from "react"
 import { Skeleton } from "./skeleton"
 import { cn } from "@/lib/utils"
-import { useDebounce, useDebouncedCallback } from "use-debounce"
+import { useDebounce } from "use-debounce"
 import { Button } from "./button"
 import {
   CheckIcon,
-  Maximize2,
   Maximize2Icon,
   Minimize2Icon,
   PlusIcon,
@@ -29,9 +27,8 @@ import { m3ExpressiveDuration, m3ExpressiveSpring } from "./constants"
 import { useM3Motion } from "@/lib/client/hook/useM3Motion"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
-import { AnimatedButtonGroup, ButtonGroupItem } from "./animated-button-group"
+import { ButtonGroupItem } from "./animated-button-group"
 import { Switch } from "./switch"
-import { useWindowDimensions } from "@/lib/client/hook/useWindowDimensions"
 import { QueryClient, QueryClientProvider, useQuery } from "react-query"
 import { Romanization } from "@/lib/data/Romanization"
 import { LoadingSpinner } from "./loading-spinner"
@@ -209,37 +206,15 @@ function Content({
 }: LyricsViewProps) {
   useM3Motion()
 
-  const editButtonsRef = useRef<HTMLDivElement>(null)
-
   const skeletonLyricsPairs: null[] = new Array(20).fill(null)
+
   const [isFirstRender, setIsFirstRender] = useState(true)
+  const [isRomanized, setIsRomanized] = useState(false)
+  const [debouncedOriginalLyrics] = useDebounce(originalLyrics, 500)
 
   const lyricsContainerRef = useRef<HTMLDivElement>(null)
-
-  const buttons = useCallback(
-    () =>
-      [
-        {
-          role: "button",
-          label: "View",
-          icon: <EyeIcon className="h-5 w-5" />,
-          isInitialActive: isEditable === false,
-          onClick: () => {
-            setIsEditable((prev) => !prev)
-          },
-        },
-        {
-          role: "button",
-          label: "Edit",
-          icon: <PenIcon className="w-5 h-5" />,
-          isInitialActive: isEditable === true,
-          onClick: () => {
-            setIsEditable((prev) => !prev)
-          },
-        },
-      ] satisfies ButtonGroupItem[],
-    [isEditable],
-  )
+  const originalLyricsRef = useRef(originalLyrics.join("\n"))
+  const translatedLyricsRef = useRef(translatedLyrics.join("\n"))
 
   const lyricsPairs: { translated: string; original: string }[] =
     originalLyrics.map((original, index) => ({
@@ -247,8 +222,10 @@ function Content({
       original,
     }))
 
-  const originalLyricsRef = useRef(originalLyrics.join("\n"))
-  const translatedLyricsRef = useRef(translatedLyrics.join("\n"))
+  const hasSpecialScript = useMemo(
+    () => Romanization.shared.hasSpecialScript(originalLyrics.join("\n")),
+    [originalLyrics],
+  )
 
   function handleChangeSingleTranslatedLyrics(
     lineIndex: number,
@@ -282,9 +259,10 @@ function Content({
     })
   }
 
-  useEffect(() => {
-    console.log("translatedLyricsRef changed:", translatedLyricsRef.current)
-  }, [translatedLyricsRef])
+  function toggleIsRomanized() {
+    setIsEditable(false)
+    setIsRomanized((prev) => !prev)
+  }
 
   useEffect(() => {
     if (isFirstRender) {
@@ -299,12 +277,6 @@ function Content({
       setIsEditable(false)
     }, [])
 
-  const hasSpecialScript = useMemo(
-    () => Romanization.shared.hasSpecialScript(originalLyrics.join("\n")),
-    [originalLyrics],
-  )
-  const [isRomanized, setIsRomanized] = useState(false)
-  const [debouncedOriginalLyrics] = useDebounce(originalLyrics, 500)
   const {
     data: romanizedLyrics = originalLyrics,
     isLoading: isLoadingRomanized,
@@ -317,6 +289,7 @@ function Content({
       initialData: originalLyrics,
     },
   )
+
   const romanizedLyricPairs = useMemo(
     () =>
       romanizedLyrics.map((original, index) => ({
@@ -326,15 +299,6 @@ function Content({
     [romanizedLyrics, translatedLyrics],
   )
 
-  function toggleIsRomanized() {
-    setIsEditable(false)
-    setIsRomanized((prev) => !prev)
-  }
-
-  useEffect(
-    () => console.log("romanizedLyrics", romanizedLyrics),
-    [romanizedLyrics],
-  )
   return (
     <ViewTransition name="lyrics-view">
       <VStack
@@ -357,14 +321,6 @@ function Content({
         <HStack className="gap-2 w-full" alignItems="center">
           <h3 className="text-xl font-extrabold font-heading">Lyrics</h3>
           <Spacer />
-          {/* <AnimatedButtonGroup
-            buttons={buttons()}
-            className={cn(
-              isEditable ? "mr-0" : "-mr-12",
-              m3ExpressiveDuration.spatial.fast.className,
-              m3ExpressiveSpring.spatial.fast.className,
-            )}
-          /> */}
           <div
             className={cn(
               "flex gap-2 transition-[margin]",

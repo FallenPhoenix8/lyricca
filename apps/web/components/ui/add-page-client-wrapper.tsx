@@ -1,20 +1,17 @@
 "use client"
 import { Button } from "@/components/ui/button"
-import { VStack, ZStackGrid } from "@/components/ui/layout"
+import { ZStackGrid } from "@/components/ui/layout"
 import {
   startTransition,
   Suspense,
   useActionState,
-  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  useTransition,
   ViewTransition,
 } from "react"
-import { UploadSimpleIcon, SparkleIcon } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
 import {
   m3ExpressiveDuration,
@@ -23,7 +20,6 @@ import {
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import {
   Field,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldLegend,
@@ -37,25 +33,23 @@ import APIClient from "@/lib/data/APIClient"
 import { useMutation } from "react-query"
 import { useQueryState } from "nuqs"
 import { LyricsView } from "./lyrics-view"
-import { useDebounce, useDebouncedCallback } from "use-debounce"
 import { SuggestionDTO } from "@shared/ts-types/cover-dto"
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "./hover-card"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-} from "./breadcrumb"
 import { addSongAction, SongState } from "@/app/app/add/actions"
 import { FieldDescriptionWithErrors } from "./field-description-with-errors"
-import { ClipboardCheckIcon, ClipboardIcon, View } from "lucide-react"
-import { ActionButton } from "./action-button"
+import { ClipboardCheckIcon, ClipboardIcon } from "lucide-react"
 import { BlurOverlay } from "./blur-overlay"
 import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
 import { TileGroup } from "./tile-group"
 import { useMediaQuery } from "@/lib/client/hook/useMediaQuery"
 import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
 
+/**
+ * Responsible for translating the lyrics.
+ * @param text The lyrics to translate.
+ * @param from The source language.
+ * @param to The target language.
+ * @returns The translation result.
+ */
 async function translateAction({
   text,
   from,
@@ -65,6 +59,7 @@ async function translateAction({
   from: string | null
   to: string
 }): Promise<Result<TranslationOutputDTO, ErrorResponseDTO>> {
+  // * MARK: - Check if parameters are valid
   if (!text.trim() || !to.trim()) {
     return Err({
       error: "Invalid input",
@@ -72,6 +67,7 @@ async function translateAction({
       statusCode: 400,
     })
   }
+  // * MARK: - Translate the text
   const result = await APIClient.shared.post<TranslationOutputDTO>(
     "/translate",
     {
@@ -83,6 +79,12 @@ async function translateAction({
   return result
 }
 
+/**
+ * Responsible for getting a suggestion for the cover art.
+ * @param artist The artist name.
+ * @param title The song title.
+ * @returns The suggestion result.
+ */
 async function getCoverSuggestionAction({
   artist,
   title,
@@ -95,7 +97,6 @@ async function getCoverSuggestionAction({
   const result = await APIClient.shared.get<SuggestionDTO>(
     `/covers/suggestion?${query}`,
   )
-  console.log(result)
   if (!result.ok) {
     console.error("Failed to get cover suggestion:", result.error)
     return Err(result.error)
@@ -104,6 +105,11 @@ async function getCoverSuggestionAction({
   return Ok(result.value)
 }
 
+/**
+ * Creates a `File` object from a given URL.
+ * @param url URL to the file.
+ * @returns a `File` object from the URL target.
+ */
 async function convertURLToFile(url: string): Promise<File> {
   const response = await fetch(url)
   const blob = await response.blob()
@@ -112,53 +118,43 @@ async function convertURLToFile(url: string): Promise<File> {
   return new File([blob], fileName, { type: blob.type })
 }
 
+/**
+ * The main component for the add page. It handles the translation, cover suggestion, and file upload.
+ */
 export function AddPageClientWrapper({
   children,
 }: {
   children: React.ReactNode
 }) {
   const [isOverlayVisible, setIsOverlayVisible] = useState(true)
-  // const [isImageActionsVisible, setIsImageActionsVisible] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
 
   const { applyThemeFromImage } = useDynamicTheme()
-  const coverImageRef = useRef<HTMLImageElement>(null)
 
-  const [isCoverUploading, setIsCoverUploading] = useState(false)
-  const [isCoverSuggesting, setIsCoverSuggesting] = useState(false)
-
-  async function handleFileUpload(event: React.MouseEvent<HTMLInputElement>) {
-    setIsCoverUploading(true)
-    const target = event.target as HTMLInputElement
-    const file = target.files?.[0]
-    if (!file) {
-      updateLoadingState(false)
-      setIsCoverUploading(false)
-      return
-    }
-    const temporaryFileURL = URL.createObjectURL(file)
-
-    setCoverURL(temporaryFileURL)
-    await setCoverFile()
-    console.log("Loading ended")
-  }
+  // * MARK: - Overlay State
   function updateOverlayVisibility(newState: boolean) {
     setIsOverlayVisible(newState)
   }
 
   function updateLoadingState(newState: boolean) {
-    // startTransition(() => {
     updateOverlayVisibility(newState)
     setIsLoading(newState)
-    // })
   }
 
+  // * MARK: - Song State
   const [title, setTitle] = useQueryState("t", { defaultValue: "" })
   const [artist, setArtist] = useQueryState("art", { defaultValue: "" })
   const [album, setAlbum] = useQueryState("alb", { defaultValue: "" })
+  const [sourceLanguage] = useQueryState("sl", { defaultValue: "auto" })
+  const [targetLanguage] = useQueryState("tl", {
+    defaultValue: "en-US",
+  })
+
   const [originalLyrics, setOriginalLyrics] = useState("")
   const [translatedLyrics, setTranslatedLyrics] = useState("")
-  const lyricsViewRef = useRef<HTMLDivElement>(null)
+  const [isEditableLyrics, setIsEditableLyrics] = useState(false)
+  const [isPasted, setIsPasted] = useState(false)
+
   const [isTranslatedWithGoogleTranslate, setIsTranslatedWithGoogleTranslate] =
     useState(false)
   const [errors, setErrors] = useState<{
@@ -169,11 +165,84 @@ export function AddPageClientWrapper({
     artist?: string[]
     album?: string[]
   }>({})
-  const [sourceLanguage] = useQueryState("sl", { defaultValue: "auto" })
-  const defaultTargetLanguage = "en-US"
-  const [targetLanguage] = useQueryState("tl", {
-    defaultValue: "en-US",
-  })
+  const lyricsViewRef = useRef<HTMLDivElement>(null)
+
+  function handleDeletePair(index: number) {
+    const newOriginalLyrics: string = originalLyrics
+      .split("\n")
+      .filter((_, i) => i !== index)
+      .join("\n")
+    setOriginalLyrics(newOriginalLyrics)
+    const newTranslatedLyrics: string = translatedLyrics
+      .split("\n")
+      .filter((_, i) => i !== index)
+      .join("\n")
+    setTranslatedLyrics(newTranslatedLyrics)
+  }
+
+  function handleAddPair() {
+    const newOriginalLyrics: string = originalLyrics
+      .split("\n")
+      .concat("")
+      .join("\n")
+    setOriginalLyrics(newOriginalLyrics)
+    const newTranslatedLyrics: string = translatedLyrics
+      .split("\n")
+      .concat("")
+      .join("\n")
+    setTranslatedLyrics(newTranslatedLyrics)
+  }
+
+  function pasteOriginalLyrics() {
+    const text = navigator.clipboard.readText()
+    text.then((content) => {
+      setOriginalLyrics(content)
+      setIsPasted(true)
+    })
+  }
+
+  function handleTranslate() {
+    startTransition(() => {
+      const fromLanguage = sourceLanguage === "auto" ? null : sourceLanguage
+      let isHasErrors = false
+      if (!targetLanguage) {
+        setErrors((prev) => ({
+          ...prev,
+          targetLanguage: ["Target language is required."],
+        }))
+        isHasErrors = true
+      }
+      if (originalLyrics.trim() === "") {
+        setErrors((prev) => ({
+          ...prev,
+          originalLyrics: ["Original lyrics cannot be empty."],
+        }))
+        isHasErrors = true
+      }
+
+      if (isHasErrors) {
+        return
+      }
+      setOriginalLyrics(originalLyrics.trim())
+      setErrors({})
+      translateMutation.mutate({
+        text: originalLyrics.trim(),
+        from: fromLanguage,
+        to: targetLanguage!,
+      })
+    })
+  }
+  function handleLyricsChange({
+    translatedLyrics,
+    originalLyrics,
+  }: {
+    translatedLyrics: string
+    originalLyrics: string
+  }) {
+    setTranslatedLyrics(translatedLyrics)
+    setOriginalLyrics(originalLyrics)
+  }
+
   const translateMutation = useMutation(translateAction, {
     onSuccess: (response) => {
       if (!response.ok) {
@@ -202,7 +271,15 @@ export function AddPageClientWrapper({
     },
   })
 
+  // * MARK: - Cover Art State
+  const coverImageRef = useRef<HTMLImageElement>(null)
+  const coverFileRef = useRef<HTMLInputElement>(null)
+  const buttonFileInputRef = useRef<HTMLInputElement>(null)
+
   const [coverURL, setCoverURL] = useState<string>("default")
+  const [isCoverUploading, setIsCoverUploading] = useState(false)
+  const [isCoverSuggesting, setIsCoverSuggesting] = useState(false)
+
   const isCoverDefault = coverURL === "default" || isLoading
   const displayCoverURL = useMemo((): string => {
     if (coverURL === "default") {
@@ -213,6 +290,22 @@ export function AddPageClientWrapper({
       return coverURL
     }
   }, [coverURL])
+
+  async function handleFileUpload(event: React.MouseEvent<HTMLInputElement>) {
+    setIsCoverUploading(true)
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+    if (!file) {
+      updateLoadingState(false)
+      setIsCoverUploading(false)
+      return
+    }
+    const temporaryFileURL = URL.createObjectURL(file)
+
+    setCoverURL(temporaryFileURL)
+    await setCoverFile()
+    console.log("Loading ended")
+  }
 
   const getSuggestionMutation = useMutation(getCoverSuggestionAction, {
     onMutate: () => {
@@ -286,76 +379,18 @@ export function AddPageClientWrapper({
     },
   })
 
-  function handleTranslate() {
-    startTransition(() => {
-      const fromLanguage = sourceLanguage === "auto" ? null : sourceLanguage
-      let isHasErrors = false
-      if (!targetLanguage) {
-        setErrors((prev) => ({
-          ...prev,
-          targetLanguage: ["Target language is required."],
-        }))
-        isHasErrors = true
-      }
-      if (originalLyrics.trim() === "") {
-        setErrors((prev) => ({
-          ...prev,
-          originalLyrics: ["Original lyrics cannot be empty."],
-        }))
-        isHasErrors = true
-      }
+  // * MARK: - Form State
+  const initialState: SongState = {
+    errors: {},
+    message: null,
+  }
+  const [state, formAction, isPending] = useActionState(
+    addSongAction,
+    initialState,
+  )
 
-      if (isHasErrors) {
-        return
-      }
-      setOriginalLyrics(originalLyrics.trim())
-      setErrors({})
-      translateMutation.mutate({
-        text: originalLyrics.trim(),
-        from: fromLanguage,
-        to: targetLanguage!,
-      })
-    })
-  }
-  function handleLyricsChange({
-    translatedLyrics,
-    originalLyrics,
-  }: {
-    translatedLyrics: string
-    originalLyrics: string
-  }) {
-    setTranslatedLyrics(translatedLyrics)
-    setOriginalLyrics(originalLyrics)
-  }
-  function handleDeletePair(index: number) {
-    const newOriginalLyrics: string = originalLyrics
-      .split("\n")
-      .filter((_, i) => i !== index)
-      .join("\n")
-    setOriginalLyrics(newOriginalLyrics)
-    const newTranslatedLyrics: string = translatedLyrics
-      .split("\n")
-      .filter((_, i) => i !== index)
-      .join("\n")
-    setTranslatedLyrics(newTranslatedLyrics)
-  }
-
-  function handleAddPair() {
-    const newOriginalLyrics: string = originalLyrics
-      .split("\n")
-      .concat("")
-      .join("\n")
-    setOriginalLyrics(newOriginalLyrics)
-    const newTranslatedLyrics: string = translatedLyrics
-      .split("\n")
-      .concat("")
-      .join("\n")
-    setTranslatedLyrics(newTranslatedLyrics)
-  }
-  const [isEditableLyrics, setIsEditableLyrics] = useState(false)
-
-  const buttonFileInputRef = useRef<HTMLInputElement>(null)
-  const coverFileRef = useRef<HTMLInputElement>(null)
+  // * MARK: - Effects
+  const isCompact = useMediaQuery("(max-width: 520px)")
 
   useEffect(() => {
     console.log("Lyrics changed:", { originalLyrics, translatedLyrics })
@@ -372,35 +407,9 @@ export function AddPageClientWrapper({
     setCoverFileMutation.mutate()
   }, [coverURL])
 
-  const initialState: SongState = {
-    errors: {},
-    message: null,
-  }
-  const [state, formAction, isPending] = useActionState(
-    addSongAction,
-    initialState,
-  )
   useEffect(() => {
     setErrors(state.errors ?? {})
   }, [state])
-
-  // const [isPending, startTransition] = useTransition()
-  // function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
-  //   event.preventDefault()
-  //   const formData = new FormData(event.currentTarget)
-  //   startTransition(() => {
-  //     formAction(formData)
-  //   })
-  // }
-
-  const [isPasted, setIsPasted] = useState(false)
-  function pasteOriginalLyrics() {
-    const text = navigator.clipboard.readText()
-    text.then((content) => {
-      setOriginalLyrics(content)
-      setIsPasted(true)
-    })
-  }
 
   useEffect(() => {
     console.log("translatedLyrics changed:", translatedLyrics)
@@ -414,35 +423,22 @@ export function AddPageClientWrapper({
     applyThemeFromImage(coverImageRef.current)
   }, [displayCoverURL, coverImageRef, isLoading])
 
-  const isCompact = useMediaQuery("(max-width: 520px)")
-
   usePreventEnterKey(lyricsViewRef, () => setIsEditableLyrics(false), [
     isEditableLyrics,
   ])
   return (
     <ViewTransition enter="replace" exit="replace">
-      {/* <Breadcrumb className="my-2">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbPage>Add</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb> */}
-
-      {/* <ViewTransition name="background-overlays"> */}
+      {/*// * MARK: - Overlays */}
       <BlurOverlay />
-
       <div
         className="fixed inset-0 -z-30 bg-cover bg-center"
         style={{
           backgroundImage: `url("${displayCoverURL}")`,
         }}
       ></div>
-      {/* </ViewTransition> */}
-
       <ViewTransition name="add-page-content">
         <div className="grid grid-cols-12 grid-rows-[300px 1fr]">
-          {/* <ViewTransition name="content"> */}
+          {/*// * MARK: - Cover Art */}
           <div className="col-span-12 md:col-span-4 row-span-2 md:h-screen flex flex-col md:sticky top-0">
             <ViewTransition name="add-cover-image">
               <ZStackGrid
@@ -483,6 +479,7 @@ export function AddPageClientWrapper({
               </ZStackGrid>
             </ViewTransition>
           </div>
+          {/*// * MARK: - Form Fields */}
           <div className="bg-background/30 backdrop-blur-2xl col-span-12 md:col-span-8 z-10 mt-[40vw] md:mt-10 row-span-1 rounded-t-2xl">
             <div className="py-2 px-1 md:px-4">
               <h1 className="text-2xl font-extrabold py-4 font-heading">
@@ -785,7 +782,6 @@ export function AddPageClientWrapper({
               </form>
             </div>
           </div>
-          {/* </ViewTransition> */}
         </div>
       </ViewTransition>
     </ViewTransition>

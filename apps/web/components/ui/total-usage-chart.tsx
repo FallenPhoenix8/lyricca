@@ -1,11 +1,10 @@
 "use client"
 
-import { ZStack, ZStackGrid } from "./layout"
+import { ZStackGrid } from "./layout"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
 import { DrawSVGPlugin, MorphSVGPlugin } from "gsap/all"
 import { useRef, useState } from "react"
-// import { Circle, pathData as circlePathData } from "./svg/shapes/Circle"
 
 import { Popover, PopoverContent, PopoverTrigger } from "./popover"
 import { LoadingSpinner } from "./loading-spinner"

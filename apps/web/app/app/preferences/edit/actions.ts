@@ -1,16 +1,8 @@
 "use server"
-import APIClient from "@/lib/data/APIClient"
-import { Err, Ok, Result } from "@/types/Result"
-import { COOKIE_OPTIONS } from "@/constants-server"
 import { UserUpateSchema } from "@/lib/model/User"
 import { ArkErrors } from "arktype"
-import { ErrorResponseDTO, UserDTO } from "@shared/ts-types"
 import { redirect } from "next/navigation"
-import {
-  fetchUpdateUser,
-  fetchUserProfile,
-  getToken,
-} from "@/lib/data/server-fetch"
+import { fetchUpdateUser } from "@/lib/data/server-fetch"
 
 export type State = {
   errors?: {

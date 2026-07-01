@@ -2,7 +2,6 @@
 
 import { Badge } from "./badge"
 import { Card, CardTitle, CardHeader, CardDescription } from "./card"
-import { ImageRosetta } from "./svg/ImageRosetta"
 import { SongDTO } from "@shared/ts-types"
 import Image from "next/image"
 import { DotIcon, MoreHorizontal, Trash2, TrashIcon } from "lucide-react"
@@ -11,15 +10,14 @@ import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { m3ExpressiveDuration, m3ExpressiveSpring } from "./constants"
 import { HStack, VStack } from "./layout"
-import { Ref, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { Ref, useState } from "react"
 import { Skeleton } from "./skeleton"
 import { ViewTransition } from "react"
 import { useGSAP } from "@gsap/react"
 import gsap from "gsap"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useQueryState } from "nuqs"
 import { useReferralSongContext } from "./ReferralSongContext"
-import { useWindowDimensions } from "@/lib/client/hook/useWindowDimensions"
 import { Button } from "./button"
 import {
   DropdownMenu,
@@ -36,7 +34,6 @@ import {
   AlertDialogHeader,
   AlertDialogDescription,
   AlertDialogCancel,
-  AlertDialogTrigger,
 } from "./alert-dialog"
 import { useSongsContext } from "./SongsContext"
 import {

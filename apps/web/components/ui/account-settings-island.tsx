@@ -1,5 +1,5 @@
 "use client"
-import { Shield, User } from "lucide-react"
+import { Shield } from "lucide-react"
 import { SettingsGroup } from "./settings/SettingsGroup"
 import { useQueryState } from "nuqs"
 

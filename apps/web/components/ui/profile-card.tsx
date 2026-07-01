@@ -1,9 +1,7 @@
 "use server"
 
-import { HStack, VStack, ZStack } from "./layout"
+import { HStack, VStack } from "./layout"
 import { ProfileImage } from "./profile-image"
-import { TranslationUsageDTO, UserDTO } from "@shared/ts-types"
-import { cookies } from "next/headers"
 import { TotalUsageChart } from "./total-usage-chart"
 import { cn } from "@/lib/utils"
 

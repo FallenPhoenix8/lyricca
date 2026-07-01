@@ -2,14 +2,13 @@
 
 import { cn } from "@/lib/utils"
 import { DynamicIcon, IconName } from "lucide-react/dynamic"
-import { useRef, useState } from "react"
+import { useRef } from "react"
 import { m3ExpressiveDuration, m3ExpressiveSpring } from "./constants"
 import { useGSAP } from "@gsap/react"
 import gsap from "gsap"
 import { ZStackGrid } from "./layout"
-import { Shape, ShapeFrame } from "./svg/shapes/Shape"
+import { ShapeFrame } from "./svg/shapes/Shape"
 import { getShapePathData, Shape as ShapeType } from "./svg/shapes/shapes"
-import { MorphSVGPlugin } from "gsap/all"
 import { useWebHaptics } from "web-haptics/react"
 
 gsap.registerPlugin(useGSAP)
@@ -31,7 +30,7 @@ export function Tile({
   subtitle?: React.ReactNode
   ref?: React.Ref<HTMLButtonElement>
 }) {
-  const { trigger } = useWebHaptics({ debug: true })
+  const { trigger } = useWebHaptics({ debug: false })
   const activeIconBackgroundShape: ShapeType = "6-sided cookie"
   const inactiveIconBackgroundShape: ShapeType = "Square"
   const shape = isActive

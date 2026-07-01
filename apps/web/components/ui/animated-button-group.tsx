@@ -1,27 +1,13 @@
 "use client"
-import { HStack, ZStack, ZStackGrid } from "@/components/ui/layout"
-import {
-  ButtonHTMLAttributes,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react"
+import { HStack } from "@/components/ui/layout"
+import { useMemo, useRef, useState } from "react"
 import { Button } from "./button"
 import { useLayoutEffect } from "react"
 import { useWindowDimensions } from "@/lib/client/hook/useWindowDimensions"
 import Link from "next/link"
-import clsx from "clsx"
 import { cn } from "@/lib/utils"
 import { useM3Motion } from "@/lib/client/hook/useM3Motion"
 import { m3ExpressiveDuration, m3ExpressiveSpring } from "./constants"
-import { useGSAP } from "@gsap/react"
-import { MorphSVGPlugin } from "gsap/MorphSVGPlugin"
-import gsap from "gsap"
-import { Shape } from "./svg/shapes/Shape"
-import { getShapePathData, Shape as ShapeType } from "./svg/shapes/shapes"
-import { Library } from "lucide-react"
-import { ViewTransition } from "react"
 import { DynamicIcon, IconName } from "lucide-react/dynamic"
 
 /**
@@ -208,6 +194,9 @@ export function AnimatedButtonGroup({
   )
 }
 
+/**
+ * Used to render links in navigation.
+ */
 export function NavigationLinkGroup({
   buttons,
   backgroundOffset = 4,

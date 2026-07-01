@@ -4,12 +4,7 @@ import {
   NavigationLinkGroup,
 } from "@/components/ui/animated-button-group"
 import { usePathname } from "next/navigation"
-import {
-  PlusIcon,
-  BooksIcon,
-  GearSixIcon,
-  CaretLeftIcon,
-} from "@phosphor-icons/react"
+import { CaretLeftIcon } from "@phosphor-icons/react"
 import { Button } from "../button"
 import Link from "next/link"
 import { useMemo, ViewTransition } from "react"
@@ -17,8 +12,6 @@ import { useQueryState } from "nuqs"
 import { cn } from "@/lib/utils"
 import { Spacer } from "../layout"
 import { LogoFull } from "../svg/LogoFull"
-import db from "@/lib/client/db"
-import { useLiveQuery } from "dexie-react-hooks"
 
 export default function NavLinks({ origin }: { origin: "app" | "guest" }) {
   const pathname = usePathname()
@@ -52,20 +45,29 @@ export default function NavLinks({ origin }: { origin: "app" | "guest" }) {
     splittedPathname[2],
   ].join("/")
 
+  /**
+   * Used to determine whether to show the back button or not.
+   * @example If the pathname is "/app/preferences/edit", then the back button should be shown.
+   */
   const isChildPath = useMemo(() => {
     return splittedPathname.length >= 4 && origin === "app"
   }, [pathname, origin])
+  /**
+   * Used to determine if `?security-group-state=open` should be added to the back button path.
+   */
   const isPreferencesEditPath = useMemo(() => {
     return pathname.startsWith("/app/preferences/edit")
   }, [pathname])
   if (isPreferencesEditPath) {
     backButtonPath += "?security-group-state=open"
   }
+
   const [pageTitle] = useQueryState("title", { defaultValue: "" })
 
   return (
     <ViewTransition name="nav-links">
       <div className="flex gap-2 z-150 w-full">
+        {/*// * MARK: - App Navigation */}
         {origin === "app" && (
           <>
             {!isChildPath && <Spacer />}
@@ -106,6 +108,7 @@ export default function NavLinks({ origin }: { origin: "app" | "guest" }) {
             />
           </>
         )}
+        {/*// * MARK: - Guest Navigation */}
         {origin === "guest" && (
           <div className="flex justify-between w-full">
             <Link href="/landing">

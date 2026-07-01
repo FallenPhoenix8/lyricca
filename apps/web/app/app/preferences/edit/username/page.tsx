@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button"
 import { UsernameInput } from "@/components/ui/form/inputs/username-input"
-import { Spacer } from "@/components/ui/layout"
 import { useQueryState } from "nuqs"
 import { useActionState, useEffect, useState } from "react"
 import { editUsernameAction, State } from "../actions"

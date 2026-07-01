@@ -1,22 +1,6 @@
 "use client"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
 import { HStack, VStack, ZStackGrid } from "@/components/ui/layout"
-import Link from "next/link"
-import {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  ViewTransition,
-} from "react"
+import { useEffect, useRef, useState, ViewTransition } from "react"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { LyricsView } from "@/components/ui/lyrics-view"
@@ -37,31 +21,19 @@ import { useReferralSongContext } from "@/components/ui/ReferralSongContext"
 import { useM3Motion } from "@/lib/client/hook/useM3Motion"
 import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
 import { BlurOverlay, overlayBlurClassName } from "@/components/ui/blur-overlay"
-import { Tile } from "@/components/ui/tile"
 import { TileGroup } from "@/components/ui/tile-group"
-import { Shape } from "@/components/ui/svg/shapes/Shape"
 import { ExpandablePanel } from "@/components/ui/expandable-panel"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useMediaQuery } from "@/lib/client/hook/useMediaQuery"
 
 export default function SongDetailsPage() {
   useM3Motion()
+  // * MARK: - Fetching Song Data
   const { songId } = useParams<{ songId: string }>()
   const maximizedURL = `/app/library/${songId}/lyrics`
   const minimizedURL = `/app/library/${songId}`
-
-  const { applyThemeFromImage } = useDynamicTheme()
-
   const unknownArtist = "Unknown Artist"
   const unknownAlbum = "Unknown Album"
-
-  const titleElementRef = useRef<HTMLDivElement>(null)
-  const artistElementRef = useRef<HTMLDivElement>(null)
-  const albumElementRef = useRef<HTMLDivElement>(null)
-  const lyricsViewRef = useRef<HTMLDivElement>(null)
-
-  const [searchParams] = useQueryState("q", { defaultValue: "" })
-
   const { findOneLocally, update, updateCover, isLoading, songs } =
     useSongsContext()
   const song = findOneLocally(songId)
@@ -69,24 +41,25 @@ export default function SongDetailsPage() {
   if (song === null && !isLoading && songs.length !== 0) {
     redirect(`/app/library`)
   }
-  const [isEditable, setIsEditable] = useState(false)
-  const { setReferralSongId } = useReferralSongContext()
 
+  // * MARK: - Refs
+  const titleElementRef = useRef<HTMLDivElement>(null)
+  const artistElementRef = useRef<HTMLDivElement>(null)
+  const albumElementRef = useRef<HTMLDivElement>(null)
+  const lyricsViewRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // * MARK: - State
   const [_, setTitle] = useQueryState("title", { defaultValue: "" })
   const [artist, setArtist] = useState<string | null>(song?.artist || null)
   const [album, setAlbum] = useState<string | null>(song?.album || null)
   const [originalLyrics, setOriginalLyrics] = useState<string[]>([])
   const [translatedLyrics, setTranslatedLyrics] = useState<string[]>([])
-
-  const isMobile = useMediaQuery("(max-width: 460px)")
-
-  useEffect(() => {
-    if (!song) return
-    setArtist(song.artist || null)
-    setAlbum(song.album || null)
-    setOriginalLyrics(song.original_lyrics.split("\n"))
-    setTranslatedLyrics(song.translated_lyrics.split("\n"))
-  }, [song])
+  const [isEditable, setIsEditable] = useState(false)
+  const [isCoverLoading, setIsCoverLoading] = useState(true)
+  const [coverURL, setCoverURL] = useState<string>(
+    song?.cover?.url || "/cover-default.svg",
+  )
 
   function handleAlbumChange(event: React.KeyboardEvent<HTMLDivElement>) {
     const target = event.target as HTMLDivElement
@@ -170,6 +143,36 @@ export default function SongDetailsPage() {
     setTranslatedLyrics(newTranslatedLyrics)
   }
 
+  function handleCoverChange(event: React.MouseEvent<HTMLInputElement>) {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+    if (!file) {
+      setIsCoverLoading(false)
+      return
+    }
+    const temporaryFileURL = URL.createObjectURL(file)
+    setCoverURL(temporaryFileURL)
+    setIsCoverLoading(false)
+    updateCover.mutate({
+      id: songId,
+      file,
+    })
+  }
+
+  // * MARK: - Effects
+
+  const isMobile = useMediaQuery("(max-width: 460px)")
+
+  const { applyThemeFromImage } = useDynamicTheme()
+
+  useEffect(() => {
+    if (!song) return
+    setArtist(song.artist || null)
+    setAlbum(song.album || null)
+    setOriginalLyrics(song.original_lyrics.split("\n"))
+    setTranslatedLyrics(song.translated_lyrics.split("\n"))
+  }, [song])
+
   usePreventEnterKey(lyricsViewRef, () => {
     const titleElement = titleElementRef.current
     const artistElement = artistElementRef.current
@@ -194,28 +197,6 @@ export default function SongDetailsPage() {
     }
   }, [titleElementRef.current?.textContent, song, isEditable])
 
-  const [isCoverLoading, setIsCoverLoading] = useState(true)
-  const [coverURL, setCoverURL] = useState<string>(
-    song?.cover?.url || "/cover-default.svg",
-  )
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  function handleCoverChange(event: React.MouseEvent<HTMLInputElement>) {
-    const target = event.target as HTMLInputElement
-    const file = target.files?.[0]
-    if (!file) {
-      setIsCoverLoading(false)
-      return
-    }
-    const temporaryFileURL = URL.createObjectURL(file)
-    setCoverURL(temporaryFileURL)
-    setIsCoverLoading(false)
-    updateCover.mutate({
-      id: songId,
-      file,
-    })
-  }
-
   useEffect(() => {
     setCoverURL(song?.cover?.url || "/cover-default.svg")
     setTitle(song?.title || "")
@@ -227,8 +208,6 @@ export default function SongDetailsPage() {
 
   return (
     <>
-      {/* <ViewTransition default="auto"> */}
-
       <BlurOverlay className="z-0" />
       <div
         className="grid grid-cols-12 grid-rows-[200px 200px] gap-4 -z-10 bg-cover bg-center"
@@ -413,7 +392,6 @@ export default function SongDetailsPage() {
           </div>
         </ViewTransition>
       </div>
-      {/* </ViewTransition> */}
     </>
   )
 }

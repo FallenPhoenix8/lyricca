@@ -1,6 +1,6 @@
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "../input-group"
-import clsx from "clsx"
+import { cn } from "@/lib/utils"
 
 export function TextField({
   label,
@@ -34,10 +34,10 @@ export function TextField({
 }) {
   const inputId = `input-${name}`
   return (
-    <Field className={clsx("max-w-md", className)}>
+    <Field className={cn("max-w-md", className)}>
       {label && <FieldLabel htmlFor={inputId}>{label}</FieldLabel>}
       <InputGroup
-        className={clsx({
+        className={cn({
           "border-destructive": isInvalid,
         })}
       >

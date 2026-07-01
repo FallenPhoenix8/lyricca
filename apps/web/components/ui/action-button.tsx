@@ -1,13 +1,6 @@
 "use client"
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react"
+import React, { useRef, useState } from "react"
 import { ZStackGrid } from "./layout"
-import { Button } from "./button"
 
 import { cn } from "@/lib/utils"
 import { useGSAP } from "@gsap/react"
@@ -20,9 +13,7 @@ import { useM3Motion } from "@/lib/client/hook/useM3Motion"
 import { useWebHaptics } from "web-haptics/react"
 import { DynamicIcon, type IconName } from "lucide-react/dynamic"
 
-gsap.registerPlugin(useGSAP)
-gsap.registerPlugin(MorphSVGPlugin)
-gsap.registerPlugin(CustomEase)
+gsap.registerPlugin(useGSAP, MorphSVGPlugin, CustomEase)
 
 export function ActionButton({
   initialShape = "Square",
@@ -39,11 +30,9 @@ export function ActionButton({
   icon: IconName
 }) {
   useM3Motion()
-  const { trigger } = useWebHaptics({ debug: true })
+  const { trigger } = useWebHaptics({ debug: false })
   const [shape, setShape] = useState<Shape>(initialShape)
   const transitionDurationType = useRef<"touch" | "hover">("hover")
-  const touchTransitionDuration = m3ExpressiveDuration.spatial.fast.seconds
-  const hoverTransitionDuration = m3ExpressiveDuration.spatial.default.seconds
   const durationSpatial = m3ExpressiveDuration.spatial.default.seconds
   const easeSpatial = m3ExpressiveSpring.spatial.default.gsap
   const pathRef = useRef<SVGPathElement>(null)

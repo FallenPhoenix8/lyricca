@@ -1,13 +1,7 @@
 "use client"
-import { Separator } from "./separator"
-import { NativeSelect, NativeSelectOption } from "./native-select"
-import { SettingsIsland } from "./settings-island"
-import { SettingsItem } from "./settings-item"
 import { useTheme } from "next-themes"
-import { useEffect, useMemo, useState } from "react"
 import { SettingsGroup } from "./settings/SettingsGroup"
 import { Switch } from "./switch"
-import { Button } from "./button"
 import { InputRadio } from "./input-radio"
 import { Palette } from "lucide-react"
 

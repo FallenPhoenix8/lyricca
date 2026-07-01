@@ -6,7 +6,7 @@ import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
 import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
 import { SongUpateSchema } from "@/lib/model/Song"
 import { redirect, useParams } from "next/navigation"
-import { createRef, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export default function SongLyricsPage() {
   const { songId } = useParams<{ songId: string }>()

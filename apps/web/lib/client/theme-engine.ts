@@ -102,6 +102,8 @@ export type ShadcnThemeVariables = {
 
 /**
  * Extracts the seed color from an image and returns a strictly typed M3 role object.
+ * @param imageElement The image element to extract the seed color from.
+ * @param isDark Whether the theme should be dark or light.
  */
 export async function createM3Theme(
   imageElement: HTMLImageElement,
