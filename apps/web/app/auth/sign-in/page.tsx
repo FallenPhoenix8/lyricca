@@ -21,6 +21,7 @@ import Link from "next/link"
 import BlobScene from "@/components/ui/svg/BlobScene"
 import clsx from "clsx"
 import { VStack } from "@/components/ui/layout"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 function UsernameInput({
   value,
@@ -119,8 +120,13 @@ export default function SignInPage() {
     message: null,
   }
 
-  const [state, formAction] = useActionState(signInAction, initialState)
-  const [isPending, setIsPending] = useState(false)
+  const [state, formAction, isPending] = useActionState(
+    signInAction,
+    initialState,
+  )
+  useEffect(() => {
+    console.log(state)
+  }, [state])
 
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
@@ -129,9 +135,7 @@ export default function SignInPage() {
     <div className="flex">
       <form
         action={(formData) => {
-          setIsPending(true)
           formAction(formData)
-          setIsPending(false)
         }}
         className="flex md:border-2 border-border mx-auto rounded-lg h-fit mt-10 md:shadow-lg shadow-muted-foreground/10 bg-background dark:bg-secondary/10"
         aria-describedby="sign-in-error"
@@ -145,7 +149,7 @@ export default function SignInPage() {
           <UsernameInput value={username} setValue={setUsername} />
           <PasswordInput value={password} setValue={setPassword} />
           <p className="flex flex-col gap-1">
-            <div>
+            <span className="block">
               Don't have an account yet?{" "}
               <Link
                 href="/auth/sign-up"
@@ -153,7 +157,7 @@ export default function SignInPage() {
               >
                 Sign Up!
               </Link>
-            </div>
+            </span>
             <Link
               href="/auth/forgot-password"
               className="underline underline-offset-4"
@@ -168,7 +172,7 @@ export default function SignInPage() {
             className="max-w flex items-center"
             disabled={isPending || username === "" || password === ""}
           >
-            {isPending && <SpinnerIcon className="w-5 h-5 mr-2 animate-spin" />}
+            {isPending && <LoadingSpinner className="w-5 h-5 mr-2" />}
             <div>Sign In</div>
           </Button>
 

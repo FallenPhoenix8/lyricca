@@ -34,9 +34,9 @@ export class AuthService {
     name: string
     password: string
   }): Promise<AuthPayload> {
-    const invalidCredentialsException = new UnauthorizedException(
+    const invalidCredentialsException = new UnauthorizedException([
       "Invalid username or password.",
-    )
+    ])
     let user: UserImpl | null = null
     user = await this.userService.findOne({ username: name })
     if (!user && name.includes("@")) {
@@ -62,9 +62,9 @@ export class AuthService {
     password: string
     email: string
   }): Promise<AuthPayload> {
-    const usernameExistsException = new ConflictException(
+    const usernameExistsException = new ConflictException([
       "Username already exists.",
-    )
+    ])
     const existingUser = await this.userService.findOne({ username })
     if (existingUser) {
       throw usernameExistsException

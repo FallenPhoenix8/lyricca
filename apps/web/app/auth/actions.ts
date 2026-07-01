@@ -7,6 +7,7 @@ import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { COOKIE_OPTIONS } from "@/constants-server"
 import { checkIsPasswordValid } from "@/lib/utils"
+import { signIn } from "@/lib/data/server-fetch"
 
 export type State = {
   errors?: {
@@ -75,18 +76,18 @@ export async function signInAction(
   formData: FormData,
 ): Promise<State> {
   const fields = {
-    username: formData.get("username") ?? "",
-    password: formData.get("password") ?? "",
+    username: (formData.get("username") as string) || "",
+    password: (formData.get("password") as string) || "",
   }
 
-  const data = await APIClient.shared.post<AuthPayload>("/auth/sign-in", fields)
+  const data = await signIn(fields.username, fields.password)
 
   // If the APIClient redirected (401), this line is never reached.
   // If the API returned a structured error (400, 500), we handle it here.
   if (!data.ok) {
     return {
       errors: {},
-      message: data.error?.message[0] ?? "Incorrect username or password",
+      message: data.error.message[0],
     }
   }
 
@@ -147,7 +148,6 @@ export async function resetPasswordAction(
         password,
       },
     )
-    console.log(result)
     if (!result.ok) {
       return {
         errors: {},

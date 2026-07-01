@@ -1,9 +1,10 @@
 import type { Metadata } from "next"
 import { Google_Sans_Flex, Noto_Sans, Outfit } from "next/font/google"
 import "./globals.css"
-import React, { ViewTransition } from "react"
+import React, { Suspense, ViewTransition } from "react"
 import { ThemeProvider } from "next-themes"
 import { NuqsAdapter } from "nuqs/adapters/next"
+import LoadingPage from "./app/loading"
 
 const notoSans = Noto_Sans({
   subsets: ["latin"],
@@ -73,11 +74,13 @@ export default function RootLayout({
           fontFamily,
         }}
       >
-        <NuqsAdapter>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            {children}
-          </ThemeProvider>
-        </NuqsAdapter>
+        <Suspense fallback={<LoadingPage />}>
+          <NuqsAdapter>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+              {children}
+            </ThemeProvider>
+          </NuqsAdapter>
+        </Suspense>
       </body>
     </html>
   )

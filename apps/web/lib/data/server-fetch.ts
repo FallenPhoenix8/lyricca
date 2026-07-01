@@ -2,6 +2,7 @@
 
 import { Err, Ok, Result } from "@/types/Result"
 import {
+  AuthPayload,
   ErrorResponseDTO,
   TranslationUsageDTO,
   UserDTO,
@@ -67,6 +68,43 @@ export async function fetchUpdateUser(
     return Err({
       statusCode: 500,
       error: "Failed to update user.",
+      message: ["Something went wrong."],
+    })
+  }
+}
+
+export async function signIn(
+  username: string,
+  password: string,
+): Promise<Result<AuthPayload, ErrorResponseDTO>> {
+  const endpoint = "auth/sign-in"
+  const url = new URL(endpoint, apiURL)
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        username,
+        password,
+      }),
+    })
+
+    const data = await response.json()
+    if (!response.ok) {
+      return Err({
+        statusCode: response.status,
+        error: "Failed to sign in.",
+        message: data.message,
+      })
+    }
+    return Ok(data)
+  } catch (error) {
+    console.error("Failed to sign in:", error)
+    return Err({
+      statusCode: 500,
+      error: "Failed to sign in.",
       message: ["Something went wrong."],
     })
   }
