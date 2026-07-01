@@ -371,17 +371,19 @@ function Content({
               isEditable ? "mr-0" : "-mr-12",
             )}
           >
-            <div className="flex gap-1">
-              {hasSpecialScript && isLoadingRomanized && <LoadingSpinner />}
-              <Switch
-                size="lg"
-                isChecked={isRomanized}
-                onCheckedChange={toggleIsRomanized}
-                icon="languages"
-                disabled={isEditable || !hasSpecialScript || isLoadingRomanized}
-                activeIcon="letter-text"
-              />
-            </div>
+            {hasSpecialScript && (
+              <div className="flex gap-1">
+                {isLoadingRomanized && <LoadingSpinner />}
+                <Switch
+                  size="lg"
+                  isChecked={isRomanized}
+                  onCheckedChange={toggleIsRomanized}
+                  icon="languages"
+                  disabled={isEditable || isLoadingRomanized}
+                  activeIcon="letter-text"
+                />
+              </div>
+            )}
             <Switch
               size="lg"
               isChecked={isEditable}
