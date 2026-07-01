@@ -152,6 +152,24 @@ export default function SongDetailsPage() {
     }
   }
 
+  function handleDeletePair(index: number) {
+    const newOriginalLyrics: string[] = originalLyrics.filter(
+      (_, i) => i !== index,
+    )
+    setOriginalLyrics(newOriginalLyrics)
+    const newTranslatedLyrics: string[] = translatedLyrics.filter(
+      (_, i) => i !== index,
+    )
+    setTranslatedLyrics(newTranslatedLyrics)
+  }
+
+  function handleAddPair() {
+    const newOriginalLyrics = originalLyrics.concat("")
+    setOriginalLyrics(newOriginalLyrics)
+    const newTranslatedLyrics = translatedLyrics.concat("")
+    setTranslatedLyrics(newTranslatedLyrics)
+  }
+
   usePreventEnterKey(lyricsViewRef, () => {
     const titleElement = titleElementRef.current
     const artistElement = artistElementRef.current
@@ -382,6 +400,8 @@ export default function SongDetailsPage() {
                 translatedLyrics={translatedLyrics}
                 originalLyrics={originalLyrics}
                 handleLyricsChange={handleSongUpdateTransaction}
+                handleDeletePair={handleDeletePair}
+                handleAddPair={handleAddPair}
                 isLoading={isLoading}
                 isEditable={isEditable}
                 setIsEditable={setIsEditable}

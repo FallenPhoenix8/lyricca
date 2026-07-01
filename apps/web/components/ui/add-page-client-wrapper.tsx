@@ -327,7 +327,31 @@ export function AddPageClientWrapper({
     setTranslatedLyrics(translatedLyrics)
     setOriginalLyrics(originalLyrics)
   }
+  function handleDeletePair(index: number) {
+    const newOriginalLyrics: string = originalLyrics
+      .split("\n")
+      .filter((_, i) => i !== index)
+      .join("\n")
+    setOriginalLyrics(newOriginalLyrics)
+    const newTranslatedLyrics: string = translatedLyrics
+      .split("\n")
+      .filter((_, i) => i !== index)
+      .join("\n")
+    setTranslatedLyrics(newTranslatedLyrics)
+  }
 
+  function handleAddPair() {
+    const newOriginalLyrics: string = originalLyrics
+      .split("\n")
+      .concat("")
+      .join("\n")
+    setOriginalLyrics(newOriginalLyrics)
+    const newTranslatedLyrics: string = translatedLyrics
+      .split("\n")
+      .concat("")
+      .join("\n")
+    setTranslatedLyrics(newTranslatedLyrics)
+  }
   const [isEditableLyrics, setIsEditableLyrics] = useState(false)
 
   const buttonFileInputRef = useRef<HTMLInputElement>(null)
@@ -734,6 +758,8 @@ export function AddPageClientWrapper({
                     isEditable={isEditableLyrics}
                     setIsEditable={setIsEditableLyrics}
                     aria-describedby="translation-description"
+                    handleDeletePair={handleDeletePair}
+                    handleAddPair={handleAddPair}
                     ref={lyricsViewRef}
                   />
                 </FieldGroup>

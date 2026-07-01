@@ -6,7 +6,7 @@ import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
 import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
 import { SongUpateSchema } from "@/lib/model/Song"
 import { redirect, useParams } from "next/navigation"
-import { createRef, useLayoutEffect, useRef, useState } from "react"
+import { createRef, useEffect, useLayoutEffect, useRef, useState } from "react"
 
 export default function SongLyricsPage() {
   const { songId } = useParams<{ songId: string }>()
@@ -23,6 +23,13 @@ export default function SongLyricsPage() {
 
   const [isEditable, setIsEditable] = useState(false)
   const body = useRef<HTMLBodyElement>(null)
+  const [originalLyrics, setOriginalLyrics] = useState<string[]>([])
+  const [translatedLyrics, setTranslatedLyrics] = useState<string[]>([])
+  useEffect(() => {
+    if (!song) return
+    setOriginalLyrics(song.original_lyrics.split("\n"))
+    setTranslatedLyrics(song.translated_lyrics.split("\n"))
+  }, [song])
 
   function updateLyrics({
     translatedLyrics,
@@ -42,6 +49,23 @@ export default function SongLyricsPage() {
       console.error("Failed to update lyrics:", error)
       return
     }
+  }
+  function handleDeletePair(index: number) {
+    const newOriginalLyrics: string[] = originalLyrics.filter(
+      (_, i) => i !== index,
+    )
+    setOriginalLyrics(newOriginalLyrics)
+    const newTranslatedLyrics: string[] = translatedLyrics.filter(
+      (_, i) => i !== index,
+    )
+    setTranslatedLyrics(newTranslatedLyrics)
+  }
+
+  function handleAddPair() {
+    const newOriginalLyrics: string[] = originalLyrics.concat("")
+    setOriginalLyrics(newOriginalLyrics)
+    const newTranslatedLyrics: string[] = translatedLyrics.concat("")
+    setTranslatedLyrics(newTranslatedLyrics)
   }
 
   usePreventEnterKey(body, () => {
@@ -70,9 +94,11 @@ export default function SongLyricsPage() {
         }}
       ></div>
       <LyricsView
-        translatedLyrics={song?.translated_lyrics.split("\n") ?? []}
-        originalLyrics={song?.original_lyrics.split("\n") ?? []}
+        translatedLyrics={translatedLyrics}
+        originalLyrics={originalLyrics}
         handleLyricsChange={updateLyrics}
+        handleAddPair={handleAddPair}
+        handleDeletePair={handleDeletePair}
         isEditable={isEditable}
         setIsEditable={setIsEditable}
         isLoading={isLoading}

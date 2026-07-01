@@ -20,6 +20,8 @@ import {
   Maximize2,
   Maximize2Icon,
   Minimize2Icon,
+  PlusIcon,
+  TrashIcon,
 } from "lucide-react"
 import Link from "next/link"
 import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
@@ -29,6 +31,7 @@ import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
 import { AnimatedButtonGroup, ButtonGroupItem } from "./animated-button-group"
 import { Switch } from "./switch"
+import { useWindowDimensions } from "@/lib/client/hook/useWindowDimensions"
 
 gsap.registerPlugin(useGSAP)
 
@@ -47,6 +50,7 @@ function LyricsPair({
   index,
   handleTranslatedLyricsChange,
   handleOriginalLyricsChange,
+  handleDelete,
   isEditable = false,
   isReadyTranslation = true,
 }: {
@@ -61,6 +65,7 @@ function LyricsPair({
     lineIndex: number,
     newOriginalLyrics: string,
   ) => void
+  handleDelete: (index: number) => void
   isEditable?: boolean
   isReadyTranslation?: boolean
 }) {
@@ -75,53 +80,73 @@ function LyricsPair({
   const sharedClassName =
     "font-bold leading-2 px-2 bg-transparent py-1 border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0 text-lg md:text-xl md:font-extrabold"
   return (
-    <VStack>
-      <div
-        className={cn(
-          "text-foreground",
-          sharedClassName,
-          m3ExpressiveDuration.effect.fast.className,
-          m3ExpressiveSpring.effect.fast.className,
-          isEditable &&
-            "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
-        )}
-        contentEditable={isEditable}
-        tabIndex={isEditable ? 0 : -1}
-        onInput={(event) => {
-          const target = event.target as HTMLDivElement
-          handleOriginalLyricsChange(index, target.textContent)
-        }}
-        suppressContentEditableWarning
-        ref={originalElementRef}
-      >
-        {original}
-      </div>
-      {(isReadyTranslation || isEditable) && (
+    <HStack className="gap-2 items-center">
+      <ViewTransition>
+        <Button
+          variant="outline"
+          type="button"
+          size="icon-lg"
+          className={cn(
+            "text-destructive h-full opacity-0 scale-x-0 origin-left",
+            m3ExpressiveDuration.spatial.fast.className,
+            m3ExpressiveSpring.spatial.fast.className,
+            isEditable && "opacity-100 scale-x-100",
+            !isEditable && "max-w-0",
+          )}
+          onClick={() => handleDelete(index)}
+        >
+          <TrashIcon strokeWidth="2px" />
+        </Button>
+      </ViewTransition>
+
+      <div className="flex flex-col">
         <div
           className={cn(
-            "text-muted-foreground",
+            "text-foreground",
             sharedClassName,
             m3ExpressiveDuration.effect.fast.className,
             m3ExpressiveSpring.effect.fast.className,
             isEditable &&
-              "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2 mt-1",
+              "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2",
           )}
           contentEditable={isEditable}
           tabIndex={isEditable ? 0 : -1}
           onInput={(event) => {
             const target = event.target as HTMLDivElement
-            handleTranslatedLyricsChange(index, target.textContent)
+            handleOriginalLyricsChange(index, target.textContent)
           }}
           suppressContentEditableWarning
-          ref={translatedElementRef}
+          ref={originalElementRef}
         >
-          {translated}
+          {original}
         </div>
-      )}
-      {!isReadyTranslation && !isEditable && (
-        <Skeleton className="h-5 w-full rounded-xs px-2 py-1 ml-2" />
-      )}
-    </VStack>
+        {(isReadyTranslation || isEditable) && (
+          <div
+            className={cn(
+              "text-muted-foreground",
+              sharedClassName,
+              m3ExpressiveDuration.effect.fast.className,
+              m3ExpressiveSpring.effect.fast.className,
+              isEditable &&
+                "rounded-sm border-2 border-accent cursor-text bg-input focus:outline-2 mt-1",
+            )}
+            contentEditable={isEditable}
+            tabIndex={isEditable ? 0 : -1}
+            onInput={(event) => {
+              const target = event.target as HTMLDivElement
+              handleTranslatedLyricsChange(index, target.textContent)
+            }}
+            suppressContentEditableWarning
+            ref={translatedElementRef}
+          >
+            {translated}
+          </div>
+        )}
+        {!isReadyTranslation && !isEditable && (
+          <Skeleton className="h-5 w-full rounded-xs px-2 py-1 ml-2" />
+        )}
+      </div>
+    </HStack>
   )
 }
 
@@ -129,6 +154,8 @@ export function LyricsView({
   translatedLyrics,
   originalLyrics,
   handleLyricsChange,
+  handleDeletePair,
+  handleAddPair,
   isLoading = false,
   isReadyTranslation = true,
   isEditable,
@@ -150,6 +177,8 @@ export function LyricsView({
   }) => void
   isEditable: boolean
   setIsEditable: React.Dispatch<React.SetStateAction<boolean>>
+  handleDeletePair: (index: number) => void
+  handleAddPair: () => void
   isLoading?: boolean
   isReadyTranslation?: boolean
   isMaximized?: boolean
@@ -344,6 +373,7 @@ export function LyricsView({
                     handleChangeSingleTranslatedLyrics
                   }
                   handleOriginalLyricsChange={handleChangeSingleOriginalLyrics}
+                  handleDelete={handleDeletePair}
                   isReadyTranslation={isReadyTranslation}
                 />
               )
@@ -352,6 +382,17 @@ export function LyricsView({
             skeletonLyricsPairs.map((_, index) => (
               <SkeletonLyricsPair key={`skeleton-lyrics-pair-${index}`} />
             ))}
+          {isEditable && (
+            <Button
+              size="lg"
+              variant="outline"
+              type="button"
+              className="w-full"
+              onClick={handleAddPair}
+            >
+              <PlusIcon strokeWidth="2px" />
+            </Button>
+          )}
         </VStack>
       </VStack>
     </ViewTransition>
