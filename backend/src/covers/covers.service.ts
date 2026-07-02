@@ -4,7 +4,8 @@ import { v7 as uuid } from "uuid"
 import { DatabaseService } from "../database/database.service"
 import { CoverDTOImpl, CoverUpdateDTOImpl } from "./dto/cover-dto"
 import { ImageService } from "../image/image.service"
-import puppeteer, { Browser, Page } from "puppeteer"
+import puppeteer, { Browser, Page } from "puppeteer-core"
+import chromium from "@sparticuz/chromium"
 
 @Injectable()
 export class CoversService {
@@ -89,69 +90,87 @@ export class CoversService {
     artist: string | null
     album: string | null
   }): Promise<URL | null> {
-    const page = await this.browserOpenEmptyPage(userAgent)
-    const queryTechnicalParts: string[] = [
-      `ia=images`,
-      `t=h_`,
-      `iax=images`,
-      "origin=funnel_home_website_duckaihomepage_topbanner",
-      "chip-select=images",
-    ]
-    let querySearch: string = `q=${encodeURIComponent(title)}`
-    if (artist) {
-      querySearch += `+${encodeURIComponent(artist)}`
-    }
-    if (album) {
-      querySearch += `+${encodeURIComponent(album)}`
-    }
-    querySearch += "+song"
+    const { browser, page } = await this.browserOpenEmptyPage(userAgent)
 
-    const queryParams = queryTechnicalParts.join(`&`) + `&` + querySearch
-    const searchURL = new URL(this.searchEngineBaseURL)
-    searchURL.search = queryParams
+    try {
+      const queryTechnicalParts: string[] = [
+        `ia=images`,
+        `t=h_`,
+        `iax=images`,
+        "origin=funnel_home_website_duckaihomepage_topbanner",
+        "chip-select=images",
+      ]
 
-    await page.goto(searchURL.toString())
+      let querySearch: string = `q=${encodeURIComponent(title)}`
 
-    await page.waitForSelector(`img[loading="lazy"]`)
-    const imageURL = await page.evaluate(() => {
-      const imageElement = document.querySelector(
-        `img[loading="lazy"]`,
-      ) as HTMLImageElement | null
-      if (!imageElement) {
-        return null
+      if (artist) {
+        querySearch += `+${encodeURIComponent(artist)}`
       }
-      return imageElement.src
-    })
 
-    await page.close()
-    return imageURL ? new URL(imageURL) : null
-  }
+      if (album) {
+        querySearch += `+${encodeURIComponent(album)}`
+      }
 
-  private async browserOpenEmptyPage(userAgent: string): Promise<Page> {
-    if (!this.browser || !this.browserWSEndpoint) {
-      this.logger.log("Launching browser...")
-      this.browser = await puppeteer.launch({
-        headless: true,
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-        ],
+      querySearch += "+song"
+
+      const queryParams = queryTechnicalParts.join(`&`) + `&` + querySearch
+      const searchURL = new URL(this.searchEngineBaseURL)
+      searchURL.search = queryParams
+
+      await page.goto(searchURL.toString(), {
+        waitUntil: "networkidle2",
+        timeout: 30_000,
       })
-      this.browserWSEndpoint = this.browser.wsEndpoint()
-      this.browser.disconnect()
-      this.logger.log("Browser launched successfully.")
+
+      await page.waitForSelector(`img[loading="lazy"]`, {
+        timeout: 15_000,
+      })
+
+      const imageURL = await page.evaluate(() => {
+        const imageElement = document.querySelector(
+          `img[loading="lazy"]`,
+        ) as HTMLImageElement | null
+
+        return imageElement?.src ?? null
+      })
+
+      return imageURL ? new URL(imageURL) : null
+    } finally {
+      await page.close().catch(() => undefined)
+      await browser.close().catch(() => undefined)
     }
-    const browser = await puppeteer.connect({
-      browserWSEndpoint: this.browserWSEndpoint,
+  }
+  private async browserOpenEmptyPage(userAgent: string): Promise<{
+    browser: Browser
+    page: Page
+  }> {
+    this.logger.log("Launching browser...")
+
+    const browser = await puppeteer.launch({
+      args: [
+        ...chromium.args,
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+      ],
+      defaultViewport: {
+        width: 1280,
+        height: 720,
+      },
+      executablePath: await chromium.executablePath(),
+      headless: true,
     })
+
     const page = await browser.newPage()
+
     await page.setUserAgent(userAgent)
     await page.setViewport({
       width: 1280,
       height: 720,
     })
 
-    return page
+    this.logger.log("Browser launched successfully.")
+
+    return { browser, page }
   }
 }
