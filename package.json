@@ -3,12 +3,5 @@
   "private": true,
   "devDependencies": {
     "typescript": "^5.9.3"
-  },
-  "pnpm": {
-    "overrides": {
-      "file-type": "16.5.4",
-      "uuid": "9.0.1",
-      "puppeteer-core": "24.40.0"
-    }
   }
 }
