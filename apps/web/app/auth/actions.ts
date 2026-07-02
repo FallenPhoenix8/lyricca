@@ -7,7 +7,7 @@ import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { COOKIE_OPTIONS } from "@/constants-server"
 import { checkIsPasswordValid } from "@/lib/utils"
-import { signIn } from "@/lib/data/server-fetch"
+import { signIn, signUp } from "@/lib/data/server-fetch"
 
 export type State = {
   errors?: {
@@ -54,11 +54,8 @@ export async function signUpAction(
     return state
   }
 
-  const data = await APIClient.shared.post<AuthPayload>(
-    "/auth/sign-up",
-    validatedFields,
-  )
-  console.log(data)
+  const data = await signUp(validatedFields)
+
   if (!data.ok) {
     return {
       errors: {},
@@ -93,7 +90,6 @@ export async function signInAction(
 
   ;(await cookies()).set("token", data.value.token, COOKIE_OPTIONS)
 
-  // This throws a NEW redirect error
   redirect("/app/library")
 }
 

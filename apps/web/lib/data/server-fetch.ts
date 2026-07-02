@@ -109,3 +109,40 @@ export async function signIn(
     })
   }
 }
+
+export async function signUp(user: {
+  username: string
+  email: string
+  password: string
+}): Promise<Result<AuthPayload, ErrorResponseDTO>> {
+  const endpoint = "auth/sign-up"
+  const url = new URL(endpoint, apiURL)
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(user),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error("Backend Error:", errorData)
+      return Err({
+        statusCode: response.status,
+        error: "Failed to sign up.",
+        message: errorData.message,
+      })
+    }
+    const data = (await response.json()) as AuthPayload
+    return Ok(data)
+  } catch (error) {
+    console.error("Failed to sign up:", error)
+    return Err({
+      statusCode: 500,
+      error: "Failed to sign up.",
+      message: ["Something went wrong."],
+    })
+  }
+}

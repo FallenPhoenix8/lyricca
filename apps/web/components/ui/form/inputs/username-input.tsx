@@ -44,13 +44,11 @@ export function UsernameInput({
       usernameAvailability.value.available
     const isMinimumLength = username.length >= 3 && username.length <= 15
     const isValid = isAvailable && isMinimumLength
-    const isValidForUI = isValid === false && isMinimumLength
 
     return {
       isAvailable,
       isMinimumLength,
       isValid,
-      isValidForUI,
     }
   }, [usernameAvailability])
 
@@ -60,7 +58,7 @@ export function UsernameInput({
     }
     if (validation.isValid) {
       return <CheckIcon className="w-5 h-5 text-green-500" weight="bold" />
-    } else if (!validation.isValidForUI) {
+    } else if (!validation.isValid) {
       return <XIcon className="w-5 h-5 text-destructive" weight="bold" />
     } else {
       return <></>
@@ -89,10 +87,10 @@ export function UsernameInput({
         addonAlignment="inline-end"
         addon={getStateIcon()}
         className={clsx({
-          "border-green-500": validation.isValidForUI,
-          "border-destructive": !validation.isValidForUI,
+          "border-green-500": validation.isValid,
+          "border-destructive": !validation.isValid,
         })}
-        isInvalid={!validation.isValidForUI}
+        isInvalid={!validation.isValid}
       />
 
       <ValidationTile
