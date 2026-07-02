@@ -22,17 +22,17 @@ import { SourceLanguageCode, TargetLanguageCode } from "deepl-node"
 export class TranslationController {
   constructor(private readonly translationService: TranslationService) {}
 
-  @UseGuards(AuthGuard)
-  @Get("languages")
-  async availableLanguages(): Promise<AvailableLanguages> {
-    return await this.translationService.availableLanguages()
-  }
+  // @UseGuards(AuthGuard)
+  // @Get("languages")
+  // async availableLanguages(): Promise<AvailableLanguages> {
+  //   return await this.translationService.availableLanguages()
+  // }
 
-  @UseGuards(AuthGuard)
-  @Get("usage")
-  async usage(): Promise<TranslationUsageDTO> {
-    return await this.translationService.getUsage()
-  }
+  // @UseGuards(AuthGuard)
+  // @Get("usage")
+  // async usage(): Promise<TranslationUsageDTO> {
+  //   return await this.translationService.getUsage()
+  // }
 
   @UseGuards(AuthGuard)
   @Post()

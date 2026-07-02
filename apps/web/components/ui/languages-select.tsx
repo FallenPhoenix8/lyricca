@@ -21,7 +21,7 @@ export function LanguagesSelect({
     defaultValue: "auto",
   })
   const [targetLanguage, setTargetLanguage] = useQueryState("tl", {
-    defaultValue: "en-US",
+    defaultValue: "en",
   })
   return (
     <FieldGroup className="gap-2">

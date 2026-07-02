@@ -1,6 +1,6 @@
 type ErrorResponseDTO = {
   error: string
-  message: string[]
+  message: string[] | string
   statusCode: number
 }
 

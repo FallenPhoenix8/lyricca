@@ -151,7 +151,7 @@ export async function resetPasswordAction(
     if (!result.ok) {
       return {
         errors: {},
-        message: result.error.message.join(", "),
+        message: result.error.message.toString(),
       }
     }
     if (!result.value.message.includes("success")) {

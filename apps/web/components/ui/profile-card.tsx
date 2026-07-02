@@ -12,7 +12,7 @@ import {
 
 export async function ProfileCard() {
   const user = await fetchUserProfile()
-  const usage = await fetchTranslationUsage()
+  // const usage = await fetchTranslationUsage()
   return (
     <VStack className="drop-shadow-xs drop-shadow-black/20 bg-secondary text-secondary-foreground rounded-full">
       <HStack
@@ -35,7 +35,7 @@ export async function ProfileCard() {
             {user.email}
           </p>
         </VStack>
-        <TotalUsageChart limitUsage={usage.limit} currentUsage={usage.count} />
+        {/* <TotalUsageChart limitUsage={usage.limit} currentUsage={usage.count} /> */}
       </HStack>
     </VStack>
   )
