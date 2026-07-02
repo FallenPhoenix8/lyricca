@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common"
 import sharp from "sharp"
+import { fileTypeFromBuffer } from "file-type"
 
 @Injectable()
 export class ImageService {
@@ -39,9 +40,8 @@ export class ImageService {
     height: number
   }> {
     // * MARK: - Validate file type from content
-    const { fileTypeFromBuffer } = await import("file-type")
-
     const fileType = await fileTypeFromBuffer(file.buffer)
+
     if (!fileType || !this.allowedMimeTypes.has(fileType.mime)) {
       throw new BadRequestException(
         `Invalid file type. Allowed file types: ${[...this.allowedFileExtensions].map((ext) => `.${ext}`).join(", ")}`,
