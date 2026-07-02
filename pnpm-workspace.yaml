@@ -2,3 +2,11 @@ packages:
   - "shared/*"
   - "apps/*"
   - "backend"
+
+onlyBuiltDependencies:
+  - "@prisma/client"
+  - "@prisma/engines"
+  - "@swc/core"
+  - "bcrypt"
+  - "prisma"
+  - "sharp"
