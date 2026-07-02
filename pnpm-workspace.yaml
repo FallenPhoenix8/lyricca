@@ -10,3 +10,7 @@ onlyBuiltDependencies:
   - "bcrypt"
   - "prisma"
   - "sharp"
+  - "@nestjs/core"
+  - "msw"
+  - "puppeteer"
+  - "unrs-resolver"
