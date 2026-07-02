@@ -381,7 +381,14 @@ export function AddPageClientWrapper({
 
   // * MARK: - Form State
   const initialState: SongState = {
-    errors: {},
+    errors: {
+      title: [],
+      artist: [],
+      album: [],
+      originalLyrics: [],
+      translatedLyrics: [],
+      cover: [],
+    },
     message: null,
   }
   const [state, formAction, isPending] = useActionState(
@@ -447,7 +454,9 @@ export function AddPageClientWrapper({
                   isLoading && "animate-pulse",
                   m3ExpressiveDuration.effect.fast.className,
                   m3ExpressiveSpring.effect.fast.className,
-                  !!state.errors?.cover && "border-destructive",
+                  !!state.errors?.cover &&
+                    state.errors?.cover.length > 0 &&
+                    "border-destructive",
                 )}
               >
                 <img
@@ -568,7 +577,9 @@ export function AddPageClientWrapper({
                           required
                           className={cn(
                             "max-w-lg",
-                            !!state.errors?.title && "border-destructive",
+                            !!state.errors?.title &&
+                              state.errors?.title.length > 0 &&
+                              "border-destructive",
                           )}
                           id="title"
                           onChange={(event) => {
@@ -597,7 +608,9 @@ export function AddPageClientWrapper({
                           placeholder="Artist"
                           className={cn(
                             "max-w-md",
-                            !!state.errors?.artist && "border-destructive",
+                            !!state.errors?.artist &&
+                              state.errors?.artist.length > 0 &&
+                              "border-destructive",
                           )}
                           id="artist"
                           onChange={(event) => {
@@ -626,7 +639,9 @@ export function AddPageClientWrapper({
                           placeholder="Album"
                           className={cn(
                             "max-w-md",
-                            !!state.errors?.album && "border-destructive",
+                            !!state.errors?.album &&
+                              state.errors?.album.length > 0 &&
+                              "border-destructive",
                           )}
                           id="album"
                           onChange={(event) => {
@@ -669,7 +684,9 @@ export function AddPageClientWrapper({
                         required
                         className={cn(
                           "resize-none",
-                          state.errors?.originalLyrics && "border-destructive",
+                          state.errors?.originalLyrics &&
+                            state.errors?.originalLyrics.length > 0 &&
+                            "border-destructive",
                         )}
                         onChange={(event) => {
                           const target = event.target as HTMLTextAreaElement

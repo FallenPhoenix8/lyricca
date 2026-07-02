@@ -63,8 +63,8 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
 
   const validatedFields = SongCreateSchema({
     title: formData.get("title"),
-    artist: formData.get("artist") ?? null,
-    album: formData.get("album") ?? null,
+    artist: formData.get("artist") || null,
+    album: formData.get("album") || null,
     original_lyrics: formData.get("original_lyrics"),
     translated_lyrics: formData.get("translated_lyrics"),
   })

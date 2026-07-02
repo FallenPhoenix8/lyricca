@@ -62,7 +62,6 @@ class SongCreateDTOImpl implements SongCreateDTO {
   @IsString()
   original_lyrics: string
 
-  @IsNotEmpty()
   @IsString()
   translated_lyrics: string
 

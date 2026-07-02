@@ -13,7 +13,7 @@ const SongSchema = type({
   artist: "string > 0",
   album: "string > 0",
   original_lyrics: "string > 0",
-  translated_lyrics: "string > 0",
+  translated_lyrics: "string",
   created_at: "Date",
   updated_at: "Date",
   cover_id: "string.uuid",
@@ -23,17 +23,17 @@ const SongSchema = type({
 const SongCreateSchema = type({
   title: "string > 0",
   original_lyrics: "string > 0",
-  translated_lyrics: "string > 0",
-  "artist?": "string",
-  "album?": "string",
+  translated_lyrics: "string",
+  "artist?": "string | null",
+  "album?": "string | null",
 })
 
 const SongUpateSchema = type({
   title: "string > 0",
   original_lyrics: "string > 0",
   translated_lyrics: "string > 0",
-  artist: "string",
-  album: "string",
+  artist: "string | null",
+  album: "string | null",
 }).partial()
 
 // export type { TypeSongDTO, TypeSongCreate }

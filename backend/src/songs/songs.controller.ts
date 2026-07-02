@@ -73,9 +73,17 @@ export class SongsController {
   ): Promise<SongDTOImpl> {
     //* MARK: - Get user from request
     const user = await req.user()
+    let translatedLyrics: string = body.translated_lyrics
+    if (!translatedLyrics) {
+      const originalLyricsLines = body.original_lyrics.split("\n")
+      for (const _ of originalLyricsLines) {
+        translatedLyrics += " \n"
+      }
+    }
 
     const songToBeCreated: SongCreateDTOImpl & { cover_id?: string } = {
       ...body,
+      translated_lyrics: translatedLyrics,
     }
     // * MARK: - Convert `Express.Multer.File` to `File` object
     if (coverFile && coverFile.size > 0) {

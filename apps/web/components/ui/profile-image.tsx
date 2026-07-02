@@ -88,6 +88,11 @@ function Content({
           setIsOpenDrawer(true)
         }
       }}
+      onTouchStart={() => {
+        if (isTouchDevice) {
+          setIsOpenDrawer(true)
+        }
+      }}
     >
       <input
         type="file"

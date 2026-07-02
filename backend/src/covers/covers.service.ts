@@ -110,7 +110,10 @@ export class CoversService {
     const searchURL = new URL(this.searchEngineBaseURL)
     searchURL.search = queryParams
 
-    await page.goto(searchURL.toString())
+    await page.goto(searchURL.toString(), {
+      waitUntil: "domcontentloaded",
+      timeout: 60_000,
+    })
 
     await page.waitForSelector(`img[loading="lazy"]`)
     const imageURL = await page.evaluate(() => {
