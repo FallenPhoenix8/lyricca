@@ -1,5 +1,3 @@
-"use server"
-
 import { HStack, VStack } from "./layout"
 import { ProfileImage } from "./profile-image"
 import { TotalUsageChart } from "./total-usage-chart"
@@ -9,9 +7,19 @@ import {
   fetchUserProfile,
   fetchTranslationUsage,
 } from "@/lib/data/server-fetch"
+import { UserDTO } from "@shared/ts-types"
 
-export async function ProfileCard() {
-  const user = await fetchUserProfile()
+export async function ProfileCard({
+  user,
+}: {
+  user: {
+    username: string
+    email: string
+    profile_url: string | null
+    id: string
+  }
+}) {
+  // const user = await fetchUserProfile()
   // const usage = await fetchTranslationUsage()
   return (
     <VStack className="drop-shadow-xs drop-shadow-black/20 bg-secondary text-secondary-foreground rounded-full">

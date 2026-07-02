@@ -44,6 +44,7 @@ export function AccountSettingsIsland(props: {
           icon: "log-out",
           className: "w-full",
           variant: "destructive",
+          isDisabledPrefetch: true,
         },
       ]}
       isInitiallyOpen={isOpen === "open"}

@@ -26,6 +26,7 @@ export type SettingsCardType =
       className?: string
       variant?: "default" | "destructive"
       viewTransitionName?: string
+      isDisabledPrefetch?: boolean
     }
 
 export function SettingsGroup({
@@ -85,6 +86,7 @@ export function SettingsGroup({
                   item.className,
                 )}
                 viewTransitionName={item.viewTransitionName}
+                isDisabledPrefetch={item.isDisabledPrefetch}
               />
             ) : (
               <SettingsCard

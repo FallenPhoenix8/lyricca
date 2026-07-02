@@ -66,6 +66,7 @@ export function SettingsCardLink({
   className,
   variant = "default",
   viewTransitionName,
+  isDisabledPrefetch = false,
 }: {
   cardTitle: ReactNode
   icon: IconName
@@ -74,6 +75,7 @@ export function SettingsCardLink({
   className?: string
   variant?: "default" | "destructive"
   viewTransitionName?: string
+  isDisabledPrefetch?: boolean
 }) {
   return (
     <ViewTransition name={viewTransitionName}>
@@ -83,6 +85,7 @@ export function SettingsCardLink({
           className,
         )}
         href={href}
+        prefetch={!isDisabledPrefetch}
       >
         <div className={cn("flex gap-2 justify-between items-center")}>
           <div className="flex items-center gap-2 h-full">

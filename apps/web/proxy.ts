@@ -32,7 +32,6 @@ export async function proxy(request: NextRequest) {
   // If you want to avoid calling refresh when no token exists:
   let ok = false
   let newToken: string | undefined
-
   if (token) {
     const apiRefreshURL = new URL("/auth/refresh", apiUrl)
     const apiResponse = await fetch(apiRefreshURL, {
@@ -42,14 +41,12 @@ export async function proxy(request: NextRequest) {
       },
     })
 
-    ok = apiResponse.ok
-
     if (apiResponse.ok && apiResponse.status !== 204) {
       const data = (await apiResponse.json()) as AuthPayload
       newToken = data.token
     }
+    ok = apiResponse.ok
   }
-
   // Auth pages: only redirect to app if already authorized
   if (isAuthRoute) {
     if (ok) {
@@ -63,7 +60,9 @@ export async function proxy(request: NextRequest) {
   // App pages: require authorization
   if (isAppProtectedRoute) {
     if (!ok) return NextResponse.redirect(signInURL)
-    const res = NextResponse.next()
+    const res = NextResponse.next({
+      headers: request.headers,
+    })
     if (newToken) res.cookies.set("token", newToken, COOKIE_OPTIONS)
     return res
   }

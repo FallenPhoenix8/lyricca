@@ -1,3 +1,4 @@
+"use client"
 import { fetchLanguages } from "@/app/app/add/actions"
 import { LanguagesSelect } from "./languages-select"
 import { AvailableLanguages } from "@shared/ts-types"

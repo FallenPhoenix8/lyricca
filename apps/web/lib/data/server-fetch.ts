@@ -15,7 +15,7 @@ if (!apiURL) {
 }
 
 export async function getToken() {
-  const token = (await cookies()).get("token")?.value ?? ""
+  const token = (await cookies()).get("token")?.value || ""
   return token
 }
 
