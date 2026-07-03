@@ -267,7 +267,7 @@ export class EmailService {
   async sendEmail(email: string, subject: string, body: string) {
     const emailData = {
       from: `Lyricca <${fromEmailAddress}>`,
-      to: email.trim(),
+      to: email.trim().toLowerCase(),
       subject,
       html: body,
     }
