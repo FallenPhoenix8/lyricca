@@ -3,5 +3,9 @@
   "private": true,
   "devDependencies": {
     "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "build-backend": "pnpm i && pnpm -C shared/ts-types build && pnpm -C backend build",
+    "build-frontend": "pnpm i && pnpm -C shared/ts-types build && pnpm -C apps/web build"
   }
 }
