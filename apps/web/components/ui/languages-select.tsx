@@ -34,7 +34,7 @@ export function LanguagesSelect({
               onValueChange={(value) => setSourceLanguage(value)}
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select a source language" />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>

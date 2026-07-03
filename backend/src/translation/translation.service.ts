@@ -12,7 +12,7 @@ import type {
   TranslationUsageDTO,
 } from "@shared/ts-types"
 import { Cache, CACHE_MANAGER } from "@nestjs/cache-manager"
-import * as deepl from "deepl-node"
+// import * as deepl from "deepl-node"
 
 @Injectable()
 export class TranslationService {
@@ -26,6 +26,10 @@ export class TranslationService {
   }
 
   private readonly logger = new Logger(TranslationService.name)
+  /**
+   * Maximum size of a chunk in characters.
+   */
+  private readonly maxChunkSize = 3000
 
   private readonly key: string = process.env.DEEPL_TRANSLATION_API_KEY || ""
   // private readonly client: deepl.DeepLClient
@@ -46,6 +50,59 @@ export class TranslationService {
     return url
   }
 
+  private makeLineMarker(index: number): string {
+    return `⟬${String(index).padStart(6, "0")}⟭`
+  }
+
+  private encodeLinesForTranslation(text: string): {
+    text: string
+    lineCount: number
+  } {
+    const lines = text.split("\n")
+
+    return {
+      lineCount: lines.length,
+
+      // Marker before every original line.
+      // Keep the original line content untouched.
+      text: lines
+        .map((line, index) => `${this.makeLineMarker(index)}${line}`)
+        .join("\n"),
+    }
+  }
+
+  private decodeTranslatedLines(text: string, lineCount: number): string[] {
+    const markerRegex = /⟬\s*(\d{6})\s*⟭/g
+    const matches = [...text.matchAll(markerRegex)]
+
+    const result = new Array<string>(lineCount).fill("")
+
+    if (matches.length === 0) {
+      this.logger.warn("No translation line markers found.")
+      result[0] = text
+      return result
+    }
+
+    for (let i = 0; i < matches.length; i++) {
+      const current = matches[i]
+      const next = matches[i + 1]
+
+      const rawIndex = current[1]
+      const index = Number(rawIndex)
+
+      if (!Number.isInteger(index) || index < 0 || index >= lineCount) {
+        continue
+      }
+
+      const start = current.index! + current[0].length
+      const end = next?.index ?? text.length
+
+      result[index] = text.slice(start, end).trim()
+    }
+
+    return result
+  }
+
   async translate(properties: {
     text: string
     to: string
@@ -53,15 +110,41 @@ export class TranslationService {
     userAgent: string
   }): Promise<TranslationOutputDTO> {
     const lines = properties.text.split("\n")
+    console.log(lines, lines.length)
     const result = await this.translateWithGoogleTranslate({
       from: properties.from || "auto",
       to: properties.to,
       text: lines.map((l) => (!l ? " " : l)).join("\n"),
       userAgent: properties.userAgent,
+      lineCount: lines.length,
+    })
+    console.log(result, result.translatedTextLines.length)
+
+    lines.map((l, index) => {
+      console.log(`[${index}] ${l} ->`, result.translatedTextLines[index])
     })
     return {
       ...result,
       withGoogleTranslate: true,
+    }
+  }
+
+  private covertTextToChunks(text: string): string[] {
+    if (text.length <= this.maxChunkSize) {
+      return [text]
+    } else {
+      const chunks: string[] = []
+      let currentChunk: string = ""
+      const lines = text.split("\n")
+      for (const line of lines) {
+        if (currentChunk.length + line.length <= this.maxChunkSize) {
+          currentChunk += line + "\n"
+        } else {
+          chunks.push(currentChunk)
+          currentChunk = line + "\n"
+        }
+      }
+      return chunks
     }
   }
 
@@ -73,49 +156,68 @@ export class TranslationService {
     from: string
     to: string
     userAgent: string
+    lineCount: number
   }): Promise<TranslationOutputDTO> {
-    const url = await this.getGoogleTranslateFullURL(
-      parameters.from,
-      parameters.to,
-      parameters.text,
-    )
-    const response = await fetch(url, {
-      headers: { "User-Agent": parameters.userAgent },
-    })
-    if (!response.ok) {
-      throw new Error("Google Translate API request failed.")
-    }
-    const data = await response.json()
-    let translatedTextLines: string[] = []
-    const dataLines = data[0] as any[][]
-    for (const line of dataLines) {
-      translatedTextLines.push(line[0])
-    }
+    const chunks = this.covertTextToChunks(parameters.text)
+    const translatedTextChunks: string[] = []
 
-    const detectedLanguagesOptional = [{ code: data[2], name: data[2] }]
-    let detectedLanguages: LanguageDTO[] = []
+    const detectedLanguagesOptional: LanguageDTO[] = []
 
-    for (const detectedLanguage of detectedLanguagesOptional) {
-      if (detectedLanguage) {
-        detectedLanguages.push(detectedLanguage)
+    for (const chunk of chunks) {
+      const url = await this.getGoogleTranslateFullURL(
+        parameters.from,
+        parameters.to,
+        chunk,
+      )
+
+      const response = await fetch(url, {
+        headers: { "User-Agent": parameters.userAgent },
+      })
+
+      if (!response.ok) {
+        throw new Error("Google Translate API request failed.")
       }
+
+      const data = await response.json()
+
+      const detectedLanguageCode = data?.[2]
+      if (
+        detectedLanguageCode &&
+        !detectedLanguagesOptional.some((l) => l.code === detectedLanguageCode)
+      ) {
+        detectedLanguagesOptional.push({
+          code: detectedLanguageCode,
+          name: detectedLanguageCode,
+        })
+      }
+
+      const dataLines = data?.[0] as any[][] | undefined
+
+      if (!Array.isArray(dataLines)) {
+        throw new Error("Invalid Google Translate API response.")
+      }
+
+      const translatedChunk = dataLines
+        .map((segment) => segment?.[0] ?? "")
+        .join("")
+
+      translatedTextChunks.push(translatedChunk)
     }
+
+    const detectedLanguages = detectedLanguagesOptional.filter(Boolean)
 
     if (!detectedLanguages.length) {
       throw new Error(
         "Invalid Google Translate API response (detected languages).",
-        data,
       )
     }
 
-    for (const _ of translatedTextLines) {
-      if (!translatedTextLines) {
-        throw new Error(
-          "Invalid Google Translate API response (text lines).",
-          data,
-        )
-      }
-    }
+    const translatedText = translatedTextChunks.join("")
+
+    const translatedTextLines = this.decodeTranslatedLines(
+      translatedText,
+      parameters.lineCount,
+    )
 
     return {
       translatedTextLines,
