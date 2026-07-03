@@ -110,7 +110,7 @@ export class TranslationService {
     userAgent: string
   }): Promise<TranslationOutputDTO> {
     const lines = properties.text.split("\n")
-    console.log(lines, lines.length)
+
     const result = await this.translateWithGoogleTranslate({
       from: properties.from || "auto",
       to: properties.to,
@@ -118,11 +118,7 @@ export class TranslationService {
       userAgent: properties.userAgent,
       lineCount: lines.length,
     })
-    console.log(result, result.translatedTextLines.length)
 
-    lines.map((l, index) => {
-      console.log(`[${index}] ${l} ->`, result.translatedTextLines[index])
-    })
     return {
       ...result,
       withGoogleTranslate: true,
