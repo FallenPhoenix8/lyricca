@@ -7,6 +7,7 @@ export function TranslationLanguageChoiceCard() {
   // const languages = await fetchLanguages()
   const languages: AvailableLanguages = {
     sourceLanguages: [
+      { code: "auto", name: "Detect Language" },
       { code: "af", name: "Afrikaans" },
       { code: "sq", name: "Albanian" },
       { code: "am", name: "Amharic" },

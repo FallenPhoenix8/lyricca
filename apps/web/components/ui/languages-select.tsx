@@ -39,15 +39,12 @@ export function LanguagesSelect({
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Source Language</SelectLabel>
-                  <SelectItem value={sourceLanguage}>
-                    Detect Language
-                  </SelectItem>
                   {languages.sourceLanguages.map((language) => (
                     <SelectItem
                       value={language.code}
                       key={`source-${language.code}`}
                     >
-                      {language.name}
+                      {language.name || "Detect Language"}
                     </SelectItem>
                   ))}
                 </SelectGroup>

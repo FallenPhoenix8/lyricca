@@ -433,6 +433,10 @@ export function AddPageClientWrapper({
   usePreventEnterKey(lyricsViewRef, () => setIsEditableLyrics(false), [
     isEditableLyrics,
   ])
+
+  const isValid = useMemo(() => {
+    return !!title.trim() && !!originalLyrics.trim()
+  }, [title, originalLyrics])
   return (
     <ViewTransition enter="replace" exit="replace">
       {/*// * MARK: - Overlays */}
@@ -784,7 +788,14 @@ export function AddPageClientWrapper({
                   name="default-cover"
                   value={isCoverDefault ? "default" : ""}
                 />
-                <Button className="my-3 w-full" disabled={isPending} size="lg">
+                <Button
+                  className={cn(
+                    "my-3 w-full",
+                    !isValid && "cursor-not-allowed",
+                  )}
+                  disabled={isPending || !isValid}
+                  size="lg"
+                >
                   {isPending && <LoadingSpinner />} Add Song
                 </Button>
                 {state.message && (
