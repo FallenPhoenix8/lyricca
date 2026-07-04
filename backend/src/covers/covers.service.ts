@@ -286,17 +286,17 @@ export class CoversService {
       album,
       userAgent,
     })
+
+    if (duckDuckGoResult) {
+      return duckDuckGoResult
+    }
+
     const appleResult = await this.getAppleArtworkURL({
       title,
       artist,
       album,
       userAgent,
     })
-
-    if (duckDuckGoResult) {
-      return duckDuckGoResult
-    }
-
     return appleResult
   }
 }
