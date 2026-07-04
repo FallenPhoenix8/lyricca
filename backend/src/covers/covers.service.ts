@@ -175,18 +175,25 @@ export class CoversService {
     searchURL.searchParams.set("iax", "images")
     searchURL.searchParams.set("ia", "images")
 
-    const htmlResponse = await fetch(searchURL, {
-      headers: {
-        "user-agent": userAgent,
-        accept: "text/html",
-      },
-      signal: AbortSignal.timeout(8_000),
-    })
+    let htmlResponse: Response | null = null
+    try {
+      htmlResponse = await fetch(searchURL, {
+        headers: {
+          "user-agent": userAgent,
+          accept: "text/html",
+        },
+        signal: AbortSignal.timeout(10_000),
+      })
 
-    if (!htmlResponse.ok) {
+      if (!htmlResponse.ok) {
+        return null
+      }
+    } catch {
       return null
     }
-
+    if (!htmlResponse) {
+      return null
+    }
     const html = await htmlResponse.text()
 
     /**
@@ -227,16 +234,21 @@ export class CoversService {
     apiURL.searchParams.set("l", "us-en")
     apiURL.searchParams.set("p", "1")
 
-    const imageResponse = await fetch(apiURL, {
-      headers: {
-        "user-agent": userAgent,
-        referer: searchURL.toString(),
-        accept: "application/json",
-      },
-      signal: AbortSignal.timeout(8_000),
-    })
+    let imageResponse: Response | null = null
+    try {
+      imageResponse = await fetch(apiURL, {
+        headers: {
+          "user-agent": userAgent,
+          referer: searchURL.toString(),
+          accept: "application/json",
+        },
+        signal: AbortSignal.timeout(10_000),
+      })
 
-    if (!imageResponse.ok) {
+      if (!imageResponse.ok) {
+        return null
+      }
+    } catch {
       return null
     }
 
