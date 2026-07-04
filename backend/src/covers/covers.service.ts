@@ -2,17 +2,13 @@ import { Injectable, Logger } from "@nestjs/common"
 import { SupabaseService } from "../supabase/supabase.service"
 import { v7 as uuid } from "uuid"
 import { DatabaseService } from "../database/database.service"
-import { CoverDTOImpl, CoverUpdateDTOImpl } from "./dto/cover-dto"
+import { CoverDTOImpl } from "./dto/cover-dto"
 import { ImageService } from "../image/image.service"
-import puppeteer, { Browser, Page } from "puppeteer"
 
 @Injectable()
 export class CoversService {
   private readonly bucketName = "covers"
-  private readonly searchEngineBaseURL = "https://duckduckgo.com/"
   private readonly logger = new Logger(CoversService.name)
-  private browser: Browser | null = null
-  private browserWSEndpoint: string | null = null
 
   constructor(
     private readonly supabaseService: SupabaseService,
@@ -78,6 +74,201 @@ export class CoversService {
     return new CoverDTOImpl(cover)
   }
 
+  /**
+   * Retrieves a cover art URL from Apple Music.
+   * @param title - The song title.
+   * @param artist - The song artist.
+   * @param album - The song album.
+   * @param userAgent - The user agent string.
+   * @returns The cover art URL, or null if no cover art was found.
+   */
+  private async getAppleArtworkURL({
+    title,
+    artist,
+    album,
+    userAgent,
+  }: {
+    title: string
+    artist: string | null
+    album: string | null
+    userAgent: string
+  }): Promise<URL | null> {
+    const queryParts: string[] = []
+
+    if (artist) {
+      queryParts.push(artist)
+    }
+
+    if (album) {
+      queryParts.push(album)
+    } else {
+      queryParts.push(title)
+    }
+
+    const query = queryParts.join(" ")
+
+    const url = new URL("https://itunes.apple.com/search")
+    url.searchParams.set("term", query)
+    url.searchParams.set("media", "music")
+    url.searchParams.set("entity", album ? "album" : "song")
+    url.searchParams.set("limit", "5")
+
+    const response = await fetch(url, {
+      headers: {
+        "user-agent": userAgent,
+        accept: "application/json",
+      },
+      signal: AbortSignal.timeout(8_000),
+    })
+
+    if (!response.ok) {
+      return null
+    }
+
+    const data = (await response.json()) as {
+      results?: Array<{
+        artworkUrl100?: string
+        collectionName?: string
+        trackName?: string
+        artistName?: string
+      }>
+    }
+
+    const result = data.results?.[0]
+
+    if (!result?.artworkUrl100) {
+      return null
+    }
+
+    // Apple usually exposes larger variants by changing the size.
+    const largerArtworkURL = result.artworkUrl100
+      .replace("100x100bb", "600x600bb")
+      .replace("100x100", "600x600")
+
+    this.logger.log("Suggestion URL retrieved from Apple Music successfully.")
+    return new URL(largerArtworkURL)
+  }
+
+  /**
+   * Retrieves a cover art URL from DuckDuckGo.
+   * @param title - The song title.
+   * @param artist - The song artist.
+   * @param album - The song album.
+   * @param userAgent - The user agent string.
+   * @returns The cover art URL, or null if no cover art was found.
+   */
+  private async getDuckDuckGoSuggestionURL({
+    title,
+    artist,
+    album,
+    userAgent,
+  }: {
+    title: string
+    userAgent: string
+    artist: string | null
+    album: string | null
+  }): Promise<URL | null> {
+    const query = [title, artist, album, "cover art"].filter(Boolean).join(" ")
+
+    const searchURL = new URL("https://duckduckgo.com/")
+    searchURL.searchParams.set("q", query)
+    searchURL.searchParams.set("iax", "images")
+    searchURL.searchParams.set("ia", "images")
+
+    const htmlResponse = await fetch(searchURL, {
+      headers: {
+        "user-agent": userAgent,
+        accept: "text/html",
+      },
+      signal: AbortSignal.timeout(8_000),
+    })
+
+    if (!htmlResponse.ok) {
+      return null
+    }
+
+    const html = await htmlResponse.text()
+
+    /**
+     * DuckDuckGo requires a temporary `vqd` token when calling its image JSON endpoint.
+     *
+     * The first request to `https://duckduckgo.com/?q=...` returns an HTML page that
+     * contains this token somewhere inside the page source, usually in one of these forms:
+     *
+     *   vqd=abc123
+     *   vqd='abc123'
+     *   vqd="abc123"
+     *
+     * This regex searches the HTML for `vqd=...` and captures only the token value.
+     *
+     * Regex breakdown:
+     * - `vqd=`          finds the text "vqd="
+     * - `['"]?`        allows an optional opening quote: ' or "
+     * - `([^'"\s&]+)`  captures the token until a quote, whitespace, or `&`
+     * - `['"]?`        allows an optional closing quote
+     *
+     * After `match()`, index 0 is the full matched text and index 1 is the captured token.
+     *
+     * Example:
+     *   html:      `<script>var vqd='4-123abc';</script>`
+     *   match[0]:  `vqd='4-123abc'`
+     *   match[1]:  `4-123abc`
+     */
+    const vqdMatch = html.match(/vqd=['"]?([^'"\s&]+)['"]?/)
+
+    if (!vqdMatch?.[1]) {
+      return null
+    }
+
+    const apiURL = new URL("https://duckduckgo.com/i.js")
+    apiURL.searchParams.set("q", query)
+    apiURL.searchParams.set("vqd", vqdMatch[1])
+    apiURL.searchParams.set("o", "json")
+    apiURL.searchParams.set("l", "us-en")
+    apiURL.searchParams.set("p", "1")
+
+    const imageResponse = await fetch(apiURL, {
+      headers: {
+        "user-agent": userAgent,
+        referer: searchURL.toString(),
+        accept: "application/json",
+      },
+      signal: AbortSignal.timeout(8_000),
+    })
+
+    if (!imageResponse.ok) {
+      return null
+    }
+
+    const data = (await imageResponse.json()) as {
+      results?: Array<{
+        image?: string
+        thumbnail?: string
+        title?: string
+        url?: string
+      }>
+    }
+
+    const imageURL = data.results?.find((result) => result.image)?.image
+
+    if (!imageURL) {
+      return null
+    }
+
+    try {
+      const parsedURL = new URL(imageURL)
+
+      if (!["http:", "https:"].includes(parsedURL.protocol)) {
+        return null
+      }
+
+      this.logger.log("Suggestion URL retrieved from DuckDuckGo successfully.")
+      return parsedURL
+    } catch {
+      return null
+    }
+  }
+
   async getSuggestionURL({
     title,
     artist,
@@ -89,72 +280,23 @@ export class CoversService {
     artist: string | null
     album: string | null
   }): Promise<URL | null> {
-    const page = await this.browserOpenEmptyPage(userAgent)
-    const queryTechnicalParts: string[] = [
-      `ia=images`,
-      `t=h_`,
-      `iax=images`,
-      "origin=funnel_home_website_duckaihomepage_topbanner",
-      "chip-select=images",
-    ]
-    let querySearch: string = `q=${encodeURIComponent(title)}`
-    if (artist) {
-      querySearch += `+${encodeURIComponent(artist)}`
+    const duckDuckGoResult = await this.getDuckDuckGoSuggestionURL({
+      title,
+      artist,
+      album,
+      userAgent,
+    })
+    const appleResult = await this.getAppleArtworkURL({
+      title,
+      artist,
+      album,
+      userAgent,
+    })
+
+    if (duckDuckGoResult) {
+      return duckDuckGoResult
     }
-    if (album) {
-      querySearch += `+${encodeURIComponent(album)}`
-    }
-    querySearch += "+song"
 
-    const queryParams = queryTechnicalParts.join(`&`) + `&` + querySearch
-    const searchURL = new URL(this.searchEngineBaseURL)
-    searchURL.search = queryParams
-
-    await page.goto(searchURL.toString(), {
-      waitUntil: "domcontentloaded",
-      timeout: 60_000,
-    })
-
-    await page.waitForSelector(`img[loading="lazy"]`)
-    const imageURL = await page.evaluate(() => {
-      const imageElement = document.querySelector(
-        `img[loading="lazy"]`,
-      ) as HTMLImageElement | null
-      if (!imageElement) {
-        return null
-      }
-      return imageElement.src
-    })
-
-    await page.close()
-    return imageURL ? new URL(imageURL) : null
-  }
-
-  private async browserOpenEmptyPage(userAgent: string): Promise<Page> {
-    if (!this.browser || !this.browserWSEndpoint) {
-      this.logger.log("Launching browser...")
-      this.browser = await puppeteer.launch({
-        headless: true,
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-        ],
-      })
-      this.browserWSEndpoint = this.browser.wsEndpoint()
-      this.browser.disconnect()
-      this.logger.log("Browser launched successfully.")
-    }
-    const browser = await puppeteer.connect({
-      browserWSEndpoint: this.browserWSEndpoint,
-    })
-    const page = await browser.newPage()
-    await page.setUserAgent(userAgent)
-    await page.setViewport({
-      width: 1280,
-      height: 720,
-    })
-
-    return page
+    return appleResult
   }
 }
