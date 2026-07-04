@@ -2,12 +2,12 @@
 import APIClient from "@/lib/data/APIClient"
 import { UserCreateSchema } from "@/lib/model/User"
 import { AuthPayload } from "@shared/ts-types"
-import { ArkErrors } from "arktype"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { COOKIE_OPTIONS } from "@/constants-server"
 import { checkIsPasswordValid } from "@/lib/utils"
 import { signIn, signUp } from "@/lib/data/server-fetch"
+import { z } from "zod"
 
 export type State = {
   errors?: {
@@ -23,38 +23,29 @@ export async function signUpAction(
   prevState: State,
   formData: FormData,
 ): Promise<State> {
-  const validatedFields = UserCreateSchema({
+  // Use safeParse to capture validation metrics cleanly
+  const result = UserCreateSchema.safeParse({
     username: formData.get("username"),
     password: formData.get("password"),
     email: formData.get("email"),
   })
-  const state: State = {
-    errors: {
-      username: [],
-      password: [],
-      email: [],
-    },
-    message: null,
+
+  // If validation fails, leverage the flatError map utility
+  if (!result.success) {
+    const flatErrors = z.flattenError(result.error)
+
+    return {
+      errors: {
+        username: flatErrors.fieldErrors.username || [],
+        password: flatErrors.fieldErrors.password || [],
+        email: flatErrors.fieldErrors.email || [],
+      },
+      message: "Validation failed.",
+    }
   }
 
-  if (validatedFields instanceof ArkErrors) {
-    validatedFields.flat().map((error) => {
-      if (error.message.toLowerCase().includes("username")) {
-        state.errors?.username?.push(error.message)
-      }
-
-      if (error.message.toLowerCase().includes("password")) {
-        state.errors?.password?.push(error.message)
-      }
-
-      if (error.message.toLowerCase().includes("email")) {
-        state.errors?.email?.push(error.message)
-      }
-    })
-    return state
-  }
-
-  const data = await signUp(validatedFields)
+  // Pass perfectly typed validated data down to your database
+  const data = await signUp(result.data)
 
   if (!data.ok) {
     return {

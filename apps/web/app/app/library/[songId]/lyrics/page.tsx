@@ -4,7 +4,7 @@ import { LyricsView } from "@/components/ui/lyrics-view"
 import { useSongsContext } from "@/components/ui/SongsContext"
 import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
 import { usePreventEnterKey } from "@/lib/client/hook/usePreventEnterKey"
-import { SongUpateSchema } from "@/lib/model/Song"
+import { SongUpdateSchema } from "@/lib/model/Song"
 import { redirect, useParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 
@@ -39,16 +39,15 @@ export default function SongLyricsPage() {
     originalLyrics: string
   }) {
     console.log("Updating lyrics...")
-    try {
-      const input = SongUpateSchema.assert({
-        translated_lyrics: translatedLyrics,
-        original_lyrics: originalLyrics,
-      })
-      update.mutate({ id: songId, input })
-    } catch (error) {
-      console.error("Failed to update lyrics:", error)
+    const input = SongUpdateSchema.safeParse({
+      translated_lyrics: translatedLyrics,
+      original_lyrics: originalLyrics,
+    })
+    if (!input.success) {
+      console.error("Failed to update lyrics:", input.error)
       return
     }
+    update.mutate({ id: songId, input: input.data })
   }
   function handleDeletePair(index: number) {
     const newOriginalLyrics: string[] = originalLyrics.filter(

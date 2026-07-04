@@ -2,9 +2,9 @@
 
 import { SongCreateSchema } from "@/lib/model/Song"
 import { AvailableLanguages } from "@shared/ts-types"
-import { ArkErrors } from "arktype"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import { z } from "zod"
 
 const apiURL = process.env.NEXT_PUBLIC_API_URL
 if (!apiURL) {
@@ -60,20 +60,19 @@ export async function fetchLanguages(): Promise<AvailableLanguages> {
  */
 export async function addSongAction(prevState: SongState, formData: FormData) {
   // * MARK: - Extract fields from form and validate them
-  let validatedFields:
-    | {
-        title: string
-        original_lyrics: string
-        translated_lyrics: string
-        artist?: string | null | undefined
-        album?: string | null | undefined
-      }
-    | ArkErrors
-    | undefined = undefined
+  let validatedData: {
+    title: string
+    original_lyrics: string
+    translated_lyrics: string
+    artist?: string | null
+    album?: string | null
+  }
   let file: File | null = null
   let isDefaultCover = false
+
   try {
-    validatedFields = SongCreateSchema({
+    // Use safeParse to prevent errors from crashing the block
+    const result = SongCreateSchema.safeParse({
       title: formData.get("title"),
       artist: formData.get("artist") || null,
       album: formData.get("album") || null,
@@ -81,57 +80,36 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
       translated_lyrics: formData.get("translated_lyrics"),
     })
 
-    const state: SongState = {
-      errors: {
-        title: [],
-        artist: [],
-        album: [],
-        originalLyrics: [],
-        translatedLyrics: [],
-        cover: [],
-      },
-      message: null,
+    if (!result.success) {
+      const flatErrors = z.flattenError(result.error)
+
+      return {
+        errors: {
+          title: flatErrors.fieldErrors.title || [],
+          artist: flatErrors.fieldErrors.artist || [],
+          album: flatErrors.fieldErrors.album || [],
+          originalLyrics: flatErrors.fieldErrors.original_lyrics || [],
+          translatedLyrics: flatErrors.fieldErrors.translated_lyrics || [],
+          cover: [],
+        },
+        message: "Validation failed.",
+      }
     }
 
-    if (validatedFields instanceof ArkErrors) {
-      validatedFields.flat().map((error) => {
-        console.log(error.message)
-        if (error.message.toLowerCase().includes("title")) {
-          state.errors?.title?.push(error.message)
-        }
-
-        if (error.message.toLowerCase().includes("artist")) {
-          state.errors?.artist?.push(error.message)
-        }
-
-        if (error.message.toLowerCase().includes("album")) {
-          state.errors?.album?.push(error.message)
-        }
-
-        if (error.message.toLowerCase().includes("original_lyrics")) {
-          state.errors?.originalLyrics?.push(error.message)
-        }
-
-        if (error.message.toLowerCase().includes("translated_lyrics")) {
-          state.errors?.translatedLyrics?.push(error.message)
-        }
-      })
-      return state
-    }
+    // Assign the successfully parsed data
+    validatedData = result.data
 
     // * MARK: - Verify if cover file is included with the submitted form
-
     file = formData.get("cover") as File | null
-
     isDefaultCover = formData.get("default-cover") === "default"
+
     if (!file || file.size < 1) {
       isDefaultCover = true
     }
 
     if (file && file.size > 0) {
-      const fileObj = file as File
-      const fileName = fileObj.name
-      const fileExtension = fileName.split(".").pop()
+      const fileName = file.name
+      const fileExtension = fileName.split(".").pop()?.toLowerCase()
 
       if (
         fileExtension !== "jpg" &&
@@ -139,14 +117,23 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
         fileExtension !== "png" &&
         fileExtension !== "webp"
       ) {
-        state.errors?.cover?.push(
-          "Invalid file type. Only JPEG and JPG files are supported.",
-        )
-        return state
+        return {
+          errors: {
+            title: [],
+            artist: [],
+            album: [],
+            originalLyrics: [],
+            translatedLyrics: [],
+            cover: [
+              "Invalid file type. Only JPEG, JPG, PNG, and WEBP files are supported.",
+            ],
+          },
+          message: null,
+        }
       }
     }
   } catch (error) {
-    console.error("Failed to add song:", error)
+    console.error("Failed to add song handling form:", error)
     return { errors: {}, message: "Something went wrong. Please try again." }
   }
 
@@ -154,11 +141,12 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
     // * MARK: - Create new `FormData` and append all validated fields
     const dataToSend = new FormData()
 
-    Object.entries(validatedFields).forEach(([key, value]) => {
+    Object.entries(validatedData).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
-        dataToSend.append(key, value as string)
+        dataToSend.append(key, value)
       }
     })
+
     // * MARK: - Append file to `FormData`
     const isFileValid = file && file instanceof File
     if (file && isFileValid && !isDefaultCover) {

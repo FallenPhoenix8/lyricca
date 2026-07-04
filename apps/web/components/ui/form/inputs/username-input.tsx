@@ -38,7 +38,11 @@ export function UsernameInput({
     )
   })
   const validation = useMemo(() => {
+    const emailRegex =
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+    const isEmail = emailRegex.test(username)
     const isAvailable =
+      !isEmail &&
       usernameAvailability &&
       usernameAvailability.ok &&
       usernameAvailability.value.available

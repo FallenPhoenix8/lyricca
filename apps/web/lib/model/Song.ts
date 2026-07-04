@@ -4,37 +4,40 @@ import type {
   SongUpdateDTO,
 } from "@shared/ts-types/song-dto"
 import { CoverSchema } from "./Cover"
-import { type } from "arktype"
-import { title } from "process"
+import { z } from "zod"
 
-const SongSchema = type({
-  id: "string.uuid",
-  title: "string > 0",
-  artist: "string > 0",
-  album: "string > 0",
-  original_lyrics: "string > 0",
-  translated_lyrics: "string",
-  created_at: "Date",
-  updated_at: "Date",
-  cover_id: "string.uuid",
-  cover: CoverSchema,
+// Helper to handle standard non-empty strings
+const nonEmptyString = z.string().min(1)
+
+const SongSchema: z.ZodType<SongDTO> = z.object({
+  id: z.uuid(),
+  title: nonEmptyString,
+  artist: nonEmptyString,
+  album: nonEmptyString,
+  original_lyrics: nonEmptyString,
+  translated_lyrics: z.string(),
+  created_at: z.date(),
+  updated_at: z.date(),
+  cover_id: z.uuid(),
+  cover: CoverSchema, // Assumes CoverSchema is a Zod schema returning the correct Cover type
 })
 
-const SongCreateSchema = type({
-  title: "string > 0",
-  original_lyrics: "string > 0",
-  translated_lyrics: "string",
-  "artist?": "string | null",
-  "album?": "string | null",
-})
+const SongCreateSchema = z.object({
+  title: nonEmptyString,
+  original_lyrics: nonEmptyString,
+  translated_lyrics: z.string(),
+  artist: z.string().nullable().optional(),
+  album: z.string().nullable().optional(),
+}) as z.ZodType<SongCreateDTO>
 
-const SongUpateSchema = type({
-  title: "string > 0",
-  original_lyrics: "string > 0",
-  translated_lyrics: "string > 0",
-  artist: "string | null",
-  album: "string | null",
-}).partial()
+const SongUpdateSchema: z.ZodType<SongUpdateDTO> = z
+  .object({
+    title: nonEmptyString,
+    original_lyrics: nonEmptyString,
+    translated_lyrics: nonEmptyString,
+    artist: z.string().nullable(),
+    album: z.string().nullable(),
+  })
+  .partial()
 
-// export type { TypeSongDTO, TypeSongCreate }
-export { SongSchema, SongCreateSchema, SongUpateSchema }
+export { SongSchema, SongCreateSchema, SongUpdateSchema }

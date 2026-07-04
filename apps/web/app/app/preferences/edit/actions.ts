@@ -1,8 +1,8 @@
 "use server"
-import { UserUpateSchema } from "@/lib/model/User"
-import { ArkErrors } from "arktype"
+import { UserUpdateSchema } from "@/lib/model/User"
 import { redirect } from "next/navigation"
 import { fetchUpdateUser } from "@/lib/data/server-fetch"
+import { z } from "zod"
 
 export type State = {
   errors?: {
@@ -17,43 +17,35 @@ async function updateUserField(
   field: "username" | "email" | "password",
   formData: FormData,
 ): Promise<State> {
-  const validatedFields = UserUpateSchema({
+  // Use safeParse to cleanly evaluate dynamic form fields
+  const result = UserUpdateSchema.safeParse({
     [field]: formData.get(field),
   })
-  const state: State = {
-    errors: {
-      username: [],
-      email: [],
-      password: [],
-    },
-    message: null,
+
+  // Handle validation failures using the flatError utility
+  if (!result.success) {
+    const flatErrors = z.flattenError(result.error)
+
+    return {
+      errors: {
+        username: flatErrors.fieldErrors.username || [],
+        email: flatErrors.fieldErrors.email || [],
+        password: flatErrors.fieldErrors.password || [],
+      },
+      message: "Validation failed.",
+    }
   }
 
-  if (validatedFields instanceof ArkErrors) {
-    validatedFields.flat().map((error) => {
-      if (error.message.toLowerCase().includes("username")) {
-        state.errors?.username?.push(error.message)
-      }
-
-      if (error.message.toLowerCase().includes("password")) {
-        state.errors?.password?.push(error.message)
-      }
-
-      if (error.message.toLowerCase().includes("email")) {
-        state.errors?.email?.push(error.message)
-      }
-    })
-    return state
-  }
-
-  const data = await fetchUpdateUser(validatedFields)
+  // Pass the successfully validated object down to your fetch function
+  const data = await fetchUpdateUser(result.data)
   if (!data.ok) {
-    console.error("Failed to update username:", data.error)
+    console.error(`Failed to update ${field}:`, data.error)
     return {
       errors: {},
       message: "Something went wrong.",
     }
   }
+
   console.log(data.value)
   redirect("/app/preferences?security-group-state=open")
 }

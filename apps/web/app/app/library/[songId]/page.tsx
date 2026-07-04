@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, ViewTransition } from "react"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { LyricsView } from "@/components/ui/lyrics-view"
-import { SongUpateSchema } from "@/lib/model/Song"
+import { SongUpdateSchema } from "@/lib/model/Song"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useSongsContext } from "@/components/ui/SongsContext"
 import { redirect } from "next/navigation"
@@ -111,8 +111,12 @@ export default function SongDetailsPage() {
         details.translated_lyrics = translatedLyrics.trim()
       }
 
-      const input = SongUpateSchema.assert(details)
-      update.mutate({ id: songId, input })
+      const input = SongUpdateSchema.safeParse(details)
+      if (!input.success) {
+        console.error("Failed to update song details:", input.error)
+        return
+      }
+      update.mutate({ id: songId, input: input.data })
 
       // Optimistically update artist and album
       if (song) {
@@ -267,7 +271,7 @@ export default function SongDetailsPage() {
                 >
                   <div
                     className={cn(
-                      "app-title-heading mt-3 min-w-1 bg-transparent border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0 bg-secondary rounded-md px-3 py-1.5 w-full drop-shadow-sm drop-shadow-black/50",
+                      "app-title-heading mt-3 min-w-[10ch] min-h-[1ch] bg-transparent border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0 bg-secondary rounded-md px-3 py-1.5 w-full drop-shadow-sm drop-shadow-black/50",
                       m3ExpressiveDuration.effect.fast.className,
                       m3ExpressiveSpring.effect.fast.className,
                       isEditable &&
@@ -292,7 +296,7 @@ export default function SongDetailsPage() {
                       tabIndex={isEditable ? 0 : -1}
                       suppressContentEditableWarning
                       className={cn(
-                        "min-w-1 px-2 py-1 border-0 transition-[border-color, border-radius, border-width, outline] outline-0",
+                        "min-w-[10ch] min-h-[1ch] px-2 py-1 border-0 transition-[border-color, border-radius, border-width, outline] outline-0",
                         m3ExpressiveDuration.effect.fast.className,
                         m3ExpressiveSpring.effect.fast.className,
                         isEditable &&
@@ -315,7 +319,7 @@ export default function SongDetailsPage() {
                       tabIndex={isEditable ? 0 : -1}
                       suppressContentEditableWarning
                       className={cn(
-                        "min-w-1 px-2 py-1 border-0 transition-[border-color, border-radius, border-width, outline] outline-0",
+                        "min-w-[10ch] min-h-[1ch] px-2 py-1 border-0 transition-[border-color, border-radius, border-width, outline] outline-0",
                         m3ExpressiveDuration.effect.fast.className,
                         m3ExpressiveSpring.effect.fast.className,
                         isEditable &&
