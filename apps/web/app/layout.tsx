@@ -35,9 +35,9 @@ export const metadata: Metadata = {
     url: "https://github.com/FallenPhoenix8",
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
   },
   openGraph: {
     type: "website",
@@ -47,11 +47,11 @@ export const metadata: Metadata = {
       "Upload lyrics of your favorite songs and translate them to your language.",
     images: [
       {
-        url: `${selfURL}/logo.svg`,
-        width: 1200,
-        height: 432,
-        alt: "Lyricca Logo",
-        type: "image/svg+xml",
+        url: `${selfURL}/demo/library.png`,
+        width: 3018,
+        height: 1820,
+        alt: "Lyricca Library Screenshot",
+        type: "image/png",
       },
     ],
   },
