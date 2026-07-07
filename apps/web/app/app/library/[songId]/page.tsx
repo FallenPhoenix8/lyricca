@@ -50,7 +50,7 @@ export default function SongDetailsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // * MARK: - State
-  const [_, setTitle] = useQueryState("title", { defaultValue: "" })
+  const [_title, setTitle] = useQueryState("title", { defaultValue: "" })
   const [artist, setArtist] = useState<string | null>(song?.artist || null)
   const [album, setAlbum] = useState<string | null>(song?.album || null)
   const [originalLyrics, setOriginalLyrics] = useState<string[]>([])
@@ -60,6 +60,10 @@ export default function SongDetailsPage() {
   const [coverURL, setCoverURL] = useState<string>(
     song?.cover?.url || "/cover-default.svg",
   )
+  const [_lyricsViewBackgroundColor, setLyricsViewBackgroundColor] =
+    useQueryState("lv-bg", {
+      defaultValue: "var(--secondary)",
+    })
 
   function handleAlbumChange(event: React.KeyboardEvent<HTMLDivElement>) {
     const target = event.target as HTMLDivElement
@@ -237,7 +241,11 @@ export default function SongDetailsPage() {
                   const target = event.target as HTMLImageElement
                   target.classList.remove("animate-pulse")
                   if (!window) return
-                  applyThemeFromImage(target)
+                  applyThemeFromImage(target).then((theme) => {
+                    if (theme) {
+                      setLyricsViewBackgroundColor(theme["--secondary"])
+                    }
+                  })
                   console.log("Cover loaded.")
                   setIsCoverLoading(false)
                 }}

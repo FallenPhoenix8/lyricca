@@ -32,6 +32,7 @@ import { Switch } from "./switch"
 import { QueryClient, QueryClientProvider, useQuery } from "react-query"
 import { Romanization } from "@/lib/data/Romanization"
 import { LoadingSpinner } from "./loading-spinner"
+import { useQueryState } from "nuqs"
 
 gsap.registerPlugin(useGSAP)
 
@@ -211,6 +212,9 @@ function Content({
   const [isFirstRender, setIsFirstRender] = useState(true)
   const [isRomanized, setIsRomanized] = useState(false)
   const [debouncedOriginalLyrics] = useDebounce(originalLyrics, 500)
+  const [lyricsViewBackgroundColor] = useQueryState("lv-bg", {
+    defaultValue: "var(--secondary)",
+  })
 
   const lyricsContainerRef = useRef<HTMLDivElement>(null)
   const originalLyricsRef = useRef(originalLyrics.join("\n"))
@@ -299,6 +303,20 @@ function Content({
     [romanizedLyrics, translatedLyrics],
   )
 
+  const maximizedOrMinimizedPathName = useMemo((): string => {
+    if (isEditable || !maximizedURL || !minimizedURL) return ""
+    const pathname = isMaximized ? minimizedURL! : maximizedURL!
+    const query = new URLSearchParams(window.location.search)
+    query.set("lv-bg", lyricsViewBackgroundColor)
+    return `${pathname}?${query.toString()}`
+  }, [
+    isEditable,
+    isMaximized,
+    maximizedURL,
+    minimizedURL,
+    lyricsViewBackgroundColor,
+  ])
+
   return (
     <ViewTransition name="lyrics-view">
       <VStack
@@ -312,11 +330,14 @@ function Content({
       >
         <div
           className={cn(
-            "absolute bg-secondary/90 rounded-xl inset-0 -z-20 transition-[border-radius] drop-shadow-sm drop-shadow-black/50",
+            "absolute rounded-xl inset-0 -z-20 transition-[border-radius] drop-shadow-sm drop-shadow-black/50",
             m3ExpressiveDuration.effect.fast.className,
             m3ExpressiveSpring.effect.fast.className,
             isMaximized && "rounded-none",
           )}
+          style={{
+            backgroundColor: `color-mix(in oklab, ${lyricsViewBackgroundColor} 90%, transparent)`,
+          }}
         ></div>
         <HStack className="gap-2 w-full" alignItems="center">
           <h3 className="text-xl font-extrabold font-heading">Lyrics</h3>
@@ -361,10 +382,15 @@ function Content({
 
           <Activity
             mode={
-              !isEditable && maximizedURL && minimizedURL ? "visible" : "hidden"
+              maximizedOrMinimizedPathName &&
+              !isEditable &&
+              maximizedURL &&
+              minimizedURL
+                ? "visible"
+                : "hidden"
             }
           >
-            <Link href={isMaximized ? minimizedURL! : maximizedURL!}>
+            <Link href={maximizedOrMinimizedPathName}>
               <Button variant="secondary" type="button">
                 {isMaximized ? <Minimize2Icon /> : <Maximize2Icon />}
               </Button>

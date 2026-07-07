@@ -5,6 +5,7 @@ import {
   transformM3ToShadcn,
   animateThemeTransitions,
   clearShadcnTheme,
+  ShadcnThemeVariables,
 } from "@/lib/client/theme-engine"
 import { useM3Motion } from "./useM3Motion"
 import { usePathname } from "next/navigation"
@@ -22,7 +23,9 @@ import { useTheme } from "next-themes"
  * applyThemeFromImage(imageElement)
  */
 export function useDynamicTheme(): {
-  applyThemeFromImage: (imageElement: HTMLImageElement | null) => Promise<void>
+  applyThemeFromImage: (
+    imageElement: HTMLImageElement | null,
+  ) => Promise<ShadcnThemeVariables | null>
   isProcessing: boolean
   error: Error | null
   setDefaultTheme: () => void
@@ -53,10 +56,12 @@ export function useDynamicTheme(): {
   }, [resolvedTheme])
 
   const applyThemeFromImage = useCallback(
-    async (imageElement: HTMLImageElement | null) => {
-      if (!imageElement) return
-      if (document === undefined) return
-      if (!window) return
+    async (
+      imageElement: HTMLImageElement | null,
+    ): Promise<ShadcnThemeVariables | null> => {
+      if (!imageElement) return null
+      if (document === undefined) return null
+      if (!window) return null
 
       setIsProcessing(true)
       setError(null)
@@ -75,6 +80,7 @@ export function useDynamicTheme(): {
         // 4. Animate the transition via GSAP
         animateThemeTransitions(shadcnTheme)
         setSourceImage(imageElement)
+        return shadcnTheme
       } catch (err) {
         console.error("Failed to extract and apply dynamic theme:", err)
         setError(
@@ -82,6 +88,7 @@ export function useDynamicTheme(): {
             ? err
             : new Error("Unknown theme generation error"),
         )
+        return null
       } finally {
         setIsProcessing(false)
         setIsApplied(true)
