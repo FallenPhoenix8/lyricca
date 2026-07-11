@@ -10,6 +10,8 @@ export class CoversService {
   private readonly bucketName = "covers"
   private readonly logger = new Logger(CoversService.name)
 
+  private readonly lyriccaStableUserAgent = `Lyricca/1.0 (+${process.env.FRONTEND_URL}; lukw8@proton.me)`
+
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly databaseService: DatabaseService,
@@ -86,12 +88,10 @@ export class CoversService {
     title,
     artist,
     album,
-    userAgent,
   }: {
     title: string
     artist: string | null
     album: string | null
-    userAgent: string
   }): Promise<URL | null> {
     const queryParts: string[] = []
 
@@ -115,7 +115,7 @@ export class CoversService {
 
     const response = await fetch(url, {
       headers: {
-        "user-agent": userAgent,
+        "user-agent": this.lyriccaStableUserAgent,
         accept: "application/json",
       },
       signal: AbortSignal.timeout(8_000),
@@ -300,15 +300,27 @@ export class CoversService {
     })
 
     if (duckDuckGoResult) {
+      this.logger.log("Suggestion URL retrieved from DuckDuckGo successfully.")
       return duckDuckGoResult
+    } else {
+      this.logger.warn(
+        "Failed to retrieve suggestion URL from DuckDuckGo, falling back to Apple Music...",
+      )
     }
 
     const appleResult = await this.getAppleArtworkURL({
       title,
       artist,
       album,
-      userAgent,
     })
-    return appleResult
+    if (appleResult) {
+      this.logger.log("Suggestion URL retrieved from Apple Music successfully.")
+      return appleResult
+    } else {
+      this.logger.warn("Failed to retrieve suggestion URL from Apple Music.")
+    }
+
+    this.logger.error("Failed to retrieve cover suggestion URL")
+    return null
   }
 }
