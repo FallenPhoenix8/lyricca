@@ -50,6 +50,10 @@ type SongCheckAllOutput = {
   toBeDeleted: SongIDType[]
 }
 
+type SongLyricsSuggestionDTO = {
+  originalLyrics: string
+}
+
 export type {
   SongDTO,
   SongCreateDTO,
@@ -60,4 +64,5 @@ export type {
   SongCheckAllOutput,
   SongCheckAllInputItem,
   SongCheckAllInput,
+  SongLyricsSuggestionDTO,
 }

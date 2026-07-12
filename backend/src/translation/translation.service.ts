@@ -12,30 +12,50 @@ import type {
   TranslationUsageDTO,
 } from "@shared/ts-types"
 import { Cache, CACHE_MANAGER } from "@nestjs/cache-manager"
-// import * as deepl from "deepl-node"
+import { OpenAI } from "openai"
+
+type LLMConfig = {
+  baseURL: string
+  apiKey: string
+}
 
 @Injectable()
 export class TranslationService {
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
-    if (this.key.length === 0) {
-      throw new Error(
-        "DEEPL_TRANSLATION_API_KEY environment variable is not set.",
-      )
-    }
-    // this.client = new deepl.DeepLClient(this.key)
+  private readonly llmConfig: LLMConfig = {
+    baseURL: process.env.OPENAI_BASE_URL || "",
+    apiKey: process.env.OPENAI_API_KEY || "",
   }
 
-  private readonly logger = new Logger(TranslationService.name)
-  /**
-   * Maximum size of a chunk in characters.
-   */
-  private readonly maxChunkSize = 3000
+  private readonly openAIClient = new OpenAI({
+    baseURL: this.llmConfig.baseURL,
+    apiKey: this.llmConfig.apiKey,
+  })
 
-  private readonly key: string = process.env.DEEPL_TRANSLATION_API_KEY || ""
-  // private readonly client: deepl.DeepLClient
+  private readonly logger = new Logger(TranslationService.name)
+  private readonly maxChunkSize = 2000
   private readonly googleTranslateURLBase = "https://translate.googleapis.com/"
 
-  //translate_a/single?client=gtx&sl=auto&tl=pl&dt=t&q=something
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
+    if (!this.llmConfig.apiKey) {
+      throw new Error("OPENAI_API_KEY environment variable is not set.")
+    }
+    if (!this.llmConfig.baseURL) {
+      throw new Error("OPENAI_BASE_URL environment variable is not set.")
+    }
+  }
+
+  private getOpenAIModel(text: string) {
+    const generalTranslationModel = "nousresearch/hermes-3-llama-3.1-405b"
+
+    if (/\p{Script=Hangul}/u.test(text)) return generalTranslationModel
+    if (/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u.test(text))
+      return generalTranslationModel
+    if (/\p{Script=Cyrillic}/u.test(text)) return generalTranslationModel
+    if (/\p{Script=Latin}/u.test(text)) return generalTranslationModel
+
+    return generalTranslationModel
+  }
+
   private async getGoogleTranslateFullURL(
     sourceLanguage: string,
     targetLanguage: string,
@@ -51,9 +71,8 @@ export class TranslationService {
   }
 
   private makeLineMarker(index: number): string {
-    return `⟬${String(index).padStart(6, "0")}⟭`
+    return `@@L${String(index).padStart(6, "0")}@@`
   }
-
   private encodeLinesForTranslation(text: string): {
     text: string
     lineCount: number
@@ -62,19 +81,15 @@ export class TranslationService {
 
     return {
       lineCount: lines.length,
-
-      // Marker before every original line.
-      // Keep the original line content untouched.
       text: lines
-        .map((line, index) => `${this.makeLineMarker(index)}${line}`)
+        .map((line, index) => `${this.makeLineMarker(index)} ${line}`)
         .join("\n"),
     }
   }
 
   private decodeTranslatedLines(text: string, lineCount: number): string[] {
-    const markerRegex = /⟬\s*(\d{6})\s*⟭/g
+    const markerRegex = /@@L(\d{6})@@/g
     const matches = [...text.matchAll(markerRegex)]
-
     const result = new Array<string>(lineCount).fill("")
 
     if (matches.length === 0) {
@@ -111,42 +126,75 @@ export class TranslationService {
   }): Promise<TranslationOutputDTO> {
     const lines = properties.text.split("\n")
 
+    // * MARK: - Try OpenAI translation
+    const openAITranslation = await this.translateWithOpenAI({
+      text: properties.text,
+      targetLanguage: properties.to,
+    })
+
+    const isLineCountMatch =
+      openAITranslation &&
+      openAITranslation.translatedTextLines.length === lines.length
+
+    if (openAITranslation && isLineCountMatch) {
+      this.logger.log("Successfully completed translation with OpenAI.")
+      return openAITranslation
+    } else if (openAITranslation) {
+      this.logger.error(
+        "OpenAI translation line count mismatch.",
+        lines,
+        openAITranslation.translatedTextLines,
+      )
+    }
+
+    // * MARK: - Fallback to Google Translate if OpenAI failed
+    this.logger.warn(
+      "OpenAI failed or timed out. Falling back to Google Translate...",
+    )
+    const encodedPayload = this.encodeLinesForTranslation(properties.text)
+
     const result = await this.translateWithGoogleTranslate({
       from: properties.from || "auto",
       to: properties.to,
-      text: lines.map((l) => (!l ? " " : l)).join("\n"),
+      text: encodedPayload.text,
       userAgent: properties.userAgent,
-      lineCount: lines.length,
+      lineCount: encodedPayload.lineCount,
     })
 
+    this.logger.log("Successfully completed translation with Google Translate.")
     return {
       ...result,
       withGoogleTranslate: true,
     }
   }
 
-  private covertTextToChunks(text: string): string[] {
-    if (text.length <= this.maxChunkSize) {
+  private covertTextToChunks(
+    text: string,
+    maxChunkSize = this.maxChunkSize,
+  ): string[] {
+    if (text.length <= maxChunkSize) {
       return [text]
-    } else {
-      const chunks: string[] = []
-      let currentChunk: string = ""
-      const lines = text.split("\n")
-      for (const line of lines) {
-        if (currentChunk.length + line.length <= this.maxChunkSize) {
-          currentChunk += line + "\n"
-        } else {
-          chunks.push(currentChunk)
-          currentChunk = line + "\n"
-        }
-      }
-      return chunks
     }
+
+    const chunks: string[] = []
+    let currentChunk: string = ""
+    const lines = text.split("\n")
+
+    for (const line of lines) {
+      if (currentChunk.length + line.length <= maxChunkSize) {
+        currentChunk += line + "\n"
+      } else {
+        chunks.push(currentChunk)
+        currentChunk = line + "\n"
+      }
+    }
+
+    if (currentChunk.length > 0) {
+      chunks.push(currentChunk)
+    }
+    return chunks
   }
 
-  /**
-   * @throws
-   */
   private async translateWithGoogleTranslate(parameters: {
     text: string
     from: string
@@ -156,7 +204,6 @@ export class TranslationService {
   }): Promise<TranslationOutputDTO> {
     const chunks = this.covertTextToChunks(parameters.text)
     const translatedTextChunks: string[] = []
-
     const detectedLanguagesOptional: LanguageDTO[] = []
 
     for (const chunk of chunks) {
@@ -171,11 +218,12 @@ export class TranslationService {
       })
 
       if (!response.ok) {
-        throw new Error("Google Translate API request failed.")
+        throw new Error(
+          `Google Translate API request failed with status ${response.status}`,
+        )
       }
 
       const data = await response.json()
-
       const detectedLanguageCode = data?.[2]
       if (
         detectedLanguageCode &&
@@ -188,9 +236,8 @@ export class TranslationService {
       }
 
       const dataLines = data?.[0] as any[][] | undefined
-
       if (!Array.isArray(dataLines)) {
-        throw new Error("Invalid Google Translate API response.")
+        throw new Error("Invalid Google Translate API response structure.")
       }
 
       const translatedChunk = dataLines
@@ -201,15 +248,11 @@ export class TranslationService {
     }
 
     const detectedLanguages = detectedLanguagesOptional.filter(Boolean)
-
     if (!detectedLanguages.length) {
-      throw new Error(
-        "Invalid Google Translate API response (detected languages).",
-      )
+      detectedLanguages.push({ code: parameters.from, name: parameters.from })
     }
 
     const translatedText = translatedTextChunks.join("")
-
     const translatedTextLines = this.decodeTranslatedLines(
       translatedText,
       parameters.lineCount,
@@ -221,248 +264,125 @@ export class TranslationService {
     }
   }
 
-  /**
-   * Cache key for available languages
-   */
-  // private readonly availableSourceLanguagesCacheKey = "availableSourceLanguages"
-  // private readonly availableTargetLanguagesCacheKey = "availableTargetLanguages"
-  /**
-   * Cache TTL in milliseconds (7 days in this case)
-   */
-  // private readonly availableLanguagesCacheTTL = 24 * 60 * 60 * 7 * 1000 // 7 days
+  private async translateWithOpenAI(parameters: {
+    text: string
+    targetLanguage: string
+  }): Promise<TranslationOutputDTO | null> {
+    // * MARK: - Prepare translation instructions
+    const translationInstructions = [
+      `Translate every lyric line completely into language with code "${parameters.targetLanguage}".`,
+      "For mixed-language or mixed-script lines, identify each fragment separately and translate all fragments.",
+      "Treat Latin-script words inside non-Latin lines as source text, not as proper nouns.",
+      "If a line is grammatically irregular, infer its intended meaning from the surrounding lyrics instead of copying it.",
+      "Preserve meaning, tone, repetition, order, and empty lines.",
+      "IMPORTANT: Use only the target language in the result, except proper names and non-lexical sounds.",
+      "CRITICAL RULE: Output ONLY the translated lines. Never include introductions like 'Here is the translation:' or markdown fences like ```.",
+      "CRITICALLY IMPORTANT RULE: Do not add or remove lines. Number of lines must be the same as the original. Don't add any explanations, notes or additional lines.",
+      `CRITICAL: Return response in following format:
+lyrics line 1
+lyrics line 2
+lyrics line 3
+...
+      `,
+    ].join("\n")
 
-  // async availableLanguages(): Promise<AvailableLanguages> {
-  //   // * MARK: - Try to retrieve languages from cache
+    // * MARK: - Handle timeout
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000)
 
-  //   if (
-  //     languages?.sourceLanguages.length &&
-  //     languages?.targetLanguages.length
-  //   ) {
-  //     return languages
-  //   }
+    // * MARK: - Convert to chunks and translate
+    const chunks = this.covertTextToChunks(parameters.text, 500)
+    /**
+     * Helper function to translate a chunk of text
+     */
+    const translate = async (chunk: string) => {
+      const response = await this.openAIClient.chat.completions.create(
+        {
+          model: this.getOpenAIModel(chunk),
+          temperature: 0.2,
+          max_tokens: 2048,
+          messages: [
+            {
+              role: "system",
+              content: translationInstructions,
+            },
+            {
+              role: "user",
+              content: chunk,
+            },
+          ],
+        },
+        { signal: controller.signal },
+      )
 
-  //   languages = {
-  //     sourceLanguages: (await this.client.getSourceLanguages())
+      const messageContent = response.choices[0].message?.content
+      if (!messageContent?.trim()) {
+        this.logger.error(
+          "Failed to get translation response.",
+          messageContent,
+          response,
+        )
+        return []
+      }
 
-  //       .map((l) => ({
-  //         code: l.code,
-  //         name: l.name,
-  //       })),
-  //     targetLanguages: (await this.client.getTargetLanguages())
-  //       .filter((l) => l.code != "en")
-  //       .map((l) => ({
-  //         code: l.code,
-  //         name: l.name,
-  //       })),
-  //   }
+      const translationContent = messageContent
+        .replace(/<think>[\s\S]*?<\/think>/g, "")
+        .replace("```", "")
+        .replace("```json", "")
+        .replace("```lyrics", "")
 
-  //   await this.storeAvailableLanguagesInCache(languages)
-  //   return languages
-  // }
+      const translated: string[] = translationContent
+        .replace("- ", "")
+        .split("\n")
+        .map((l) => l.trim())
+      if (!translated) {
+        this.logger.error("Failed to parse translation response.", translated)
+        return []
+      }
 
-  // async getUsage(): Promise<TranslationUsageDTO> {
-  //   try {
-  //     const { character } = await this.client.getUsage()
-  //     if (!character) {
-  //       throw new InternalServerErrorException(
-  //         "Translation usage request failed.",
-  //       )
-  //     }
-  //     return character
-  //   } catch (error) {
-  //     console.error("Translation usage request failed:", error)
-  //     throw new InternalServerErrorException(
-  //       "Translation usage request failed.",
-  //     )
-  //   }
-  // }
+      return translated
+    }
+    try {
+      const translatedTextChunksPromises: Promise<string[]>[] = chunks.map(
+        async (chunk) => translate(chunk),
+      )
+      const translatedTextChunks = await Promise.all(
+        translatedTextChunksPromises,
+      )
+      let translatedLines: string[] = []
 
-  // async translate(properties: {
-  //   text: string
-  //   to: deepl.TargetLanguageCode
-  //   from?: deepl.SourceLanguageCode
-  //   userAgent: string
-  // }): Promise<TranslationOutputDTO> {
-  //   // * MARK: - Check if language code exists
-  //   if (!(await this.isLanguageCodeExists(properties.to, "target"))) {
-  //     throw new BadRequestException(
-  //       `Language code "${properties.to}" does not exist in target languages.`,
-  //     )
-  //   }
+      for (const translatedTextChunk of translatedTextChunks) {
+        if (translatedTextChunk.length === 0) {
+          return null
+        }
+        translatedLines = translatedLines.concat(translatedTextChunk)
+      }
 
-  //   if (
-  //     properties.from &&
-  //     !(await this.isLanguageCodeExists(properties.from, "source"))
-  //   ) {
-  //     throw new BadRequestException(
-  //       `Language code "${properties.from}" does not exist in source languages.`,
-  //     )
-  //   }
-  //   const lines = properties.text.split("\n")
-  //   // * MARK: - Make request to Google Translate API
-  //   try {
-  //     const result = await this.translateWithGoogleTranslate({
-  //       from: properties.from || "auto",
-  //       to: properties.to,
-  //       text: lines.map((l) => (!l ? " " : l)).join("\n"),
-  //       userAgent: properties.userAgent,
-  //     })
-  //     return {
-  //       ...result,
-  //       withGoogleTranslate: true,
-  //     }
-  //   } catch (error) {
-  //     console.error(
-  //       "Google Translate API request failed, falling back to DeepL:",
-  //       error,
-  //     )
-  //   }
+      return {
+        detectedLanguages: [
+          {
+            code: parameters.targetLanguage,
+            name: parameters.targetLanguage,
+          },
+        ],
+        translatedTextLines: translatedLines.map((line) => line.trim()),
+        withOpenAI: true,
+      }
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        this.logger.error(
+          "OpenAI-compatible translation request timed out after 30 seconds.",
+        )
+      } else {
+        this.logger.error(
+          "OpenAI-compatible translation request failed:",
+          error,
+        )
+      }
 
-  //   // * MARK: - Make request to DeepL API
-  //   console.log("Translating with DeepL...")
-  //   let result: deepl.TextResult[] | null = null
-  //   try {
-  //     result = await this.client.translateText(
-  //       lines.map((l) => (!l ? " " : l)), // Deepl API does not accept empty strings, so we replace them with a space
-  //       properties.from ?? null,
-  //       properties.to,
-  //     )
-  //   } catch (error) {
-  //     if (error.toString().toLowerCase().includes("bad request")) {
-  //       throw new BadRequestException(
-  //         "Invalid translation request, probably due to invalid language codes.",
-  //       )
-  //     }
-  //   }
-
-  //   if (result === null) {
-  //     throw new InternalServerErrorException("Translation failed.")
-  //   }
-
-  //   // * MARK: - Parse and return response
-  //   const detectedLanguageCodes = new Set<deepl.SourceLanguageCode>(
-  //     result.map((r) => r.detectedSourceLang),
-  //   )
-  //   const detectedLanguages = await Promise.all(
-  //     Array.from(detectedLanguageCodes).map((code) =>
-  //       this.getLanguageDetails(code),
-  //     ),
-  //   )
-  //   const filteredDetectedLanguages = detectedLanguages.filter(
-  //     (l) => l !== null,
-  //   ) as LanguageDTO[]
-  //   const translatedTextLines = result.map((r) => r.text)
-
-  //   return {
-  //     translatedTextLines,
-  //     detectedLanguages: filteredDetectedLanguages,
-  //   }
-  // }
-
-  // private async retrieveAvailableLanguagesFromCache(): Promise<AvailableLanguages | null> {
-  //   const cachedSourceLanguages: LanguageDTO[] | null =
-  //     (await this.cacheManager.get(this.availableSourceLanguagesCacheKey)) as
-  //       | LanguageDTO[]
-  //       | null
-
-  //   const cachedTargetLanguages: LanguageDTO[] | null =
-  //     (await this.cacheManager.get(this.availableTargetLanguagesCacheKey)) as
-  //       | LanguageDTO[]
-  //       | null
-
-  //   return {
-  //     sourceLanguages: cachedSourceLanguages ?? [],
-  //     targetLanguages: cachedTargetLanguages ?? [],
-  //   }
-  // }
-  // private async storeAvailableLanguagesInCache(languages: AvailableLanguages) {
-  //   this.logger.log(
-  //     `Storing ${languages.sourceLanguages.length} source languages and ${languages.targetLanguages.length} target languages in cache...`,
-  //   )
-
-  //   // * MARK: - Store languages in cache
-  //   await this.cacheManager.set(
-  //     this.availableSourceLanguagesCacheKey,
-  //     languages.sourceLanguages,
-  //     this.availableLanguagesCacheTTL,
-  //   )
-  //   await this.cacheManager.set(
-  //     this.availableTargetLanguagesCacheKey,
-  //     languages.targetLanguages,
-  //     this.availableLanguagesCacheTTL,
-  //   )
-  // }
-
-  // private async getLanguageDetails(code: string): Promise<LanguageDTO | null> {
-  //   // * MARK: - Try to retrieve languages from cache, if not, update cache
-  //   let availableLanguages = await this.retrieveAvailableLanguagesFromCache()
-  //   if (
-  //     !availableLanguages?.sourceLanguages.length ||
-  //     !availableLanguages?.targetLanguages.length
-  //   ) {
-  //     await this.availableLanguages()
-  //   }
-  //   availableLanguages = await this.retrieveAvailableLanguagesFromCache()
-  //   if (
-  //     !availableLanguages ||
-  //     !availableLanguages.sourceLanguages.length ||
-  //     !availableLanguages.targetLanguages.length
-  //   ) {
-  //     // It should never happen, but just in case
-  //     this.logger.error(
-  //       "No languages found in cache, probably an issue with the API (getLanguageDetails)",
-  //     )
-  //     this.logger.log(availableLanguages)
-  //   }
-
-  //   // * MARK: - Find language in cache
-  //   let language = availableLanguages?.sourceLanguages.find(
-  //     (l) => l.code === code,
-  //   )
-  //   if (!language) {
-  //     language = availableLanguages?.targetLanguages.find(
-  //       (l) => l.code === code,
-  //     )
-  //   }
-
-  //   return language || null
-  // }
-
-  // private async isLanguageCodeExists(
-  //   languageCode: string,
-  //   origin: "source" | "target",
-  // ): Promise<boolean> {
-  //   // * MARK: - Try to retrieve languages from cache, if not, update cache
-  //   let availableLanguages = await this.retrieveAvailableLanguagesFromCache()
-  //   if (
-  //     !availableLanguages?.sourceLanguages.length ||
-  //     !availableLanguages?.targetLanguages.length
-  //   ) {
-  //     await this.availableLanguages()
-  //   }
-  //   availableLanguages = await this.retrieveAvailableLanguagesFromCache()
-  //   if (
-  //     !availableLanguages ||
-  //     !availableLanguages.sourceLanguages.length ||
-  //     !availableLanguages.targetLanguages.length
-  //   ) {
-  //     // It should never happen, but just in case
-  //     this.logger.error(
-  //       "No languages found in cache, probably an issue with the API (isLanguageCodeExists)",
-  //     )
-  //     this.logger.log(availableLanguages)
-  //     return false
-  //   }
-
-  //   // * MARK: - Check if language code exists in cache
-  //   if (origin === "source") {
-  //     return availableLanguages.sourceLanguages.some(
-  //       (l) => l.code === languageCode,
-  //     )
-  //   } else {
-  //     return availableLanguages.targetLanguages.some(
-  //       (l) => l.code === languageCode,
-  //     )
-  //   }
-  // }
+      return null
+    } finally {
+      clearTimeout(timeoutId)
+    }
+  }
 }

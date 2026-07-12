@@ -16,9 +16,11 @@ import { useDebounce } from "use-debounce"
 import { Button } from "./button"
 import {
   CheckIcon,
+  Frown,
   Maximize2Icon,
   Minimize2Icon,
   PlusIcon,
+  Search,
   TrashIcon,
 } from "lucide-react"
 import Link from "next/link"
@@ -29,10 +31,17 @@ import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
 import { ButtonGroupItem } from "./animated-button-group"
 import { Switch } from "./switch"
-import { QueryClient, QueryClientProvider, useQuery } from "react-query"
+import {
+  QueryClient,
+  QueryClientProvider,
+  useMutation,
+  useQuery,
+} from "react-query"
 import { Romanization } from "@/lib/data/Romanization"
 import { LoadingSpinner } from "./loading-spinner"
 import { useQueryState } from "nuqs"
+import APIClient from "@/lib/data/APIClient"
+import { SongLyricsSuggestionDTO } from "@shared/ts-types"
 
 gsap.registerPlugin(useGSAP)
 
@@ -45,6 +54,8 @@ function SkeletonLyricsPair() {
   )
 }
 
+const sharedLyricsPairClassName =
+  "font-bold leading-2 px-2 bg-transparent py-1 border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0 text-lg md:text-xl md:font-extrabold"
 function LyricsPair({
   translated,
   original,
@@ -80,8 +91,7 @@ function LyricsPair({
       translatedElementRef.current?.blur()
     }
   }, [isEditable])
-  const sharedClassName =
-    "font-bold leading-2 px-2 bg-transparent py-1 border-0 rounded-xs transition-[border-color, border-radius, border-width, outline] outline-0 text-lg md:text-xl md:font-extrabold"
+
   return (
     <HStack className="gap-2 items-center">
       {isInteractive && (
@@ -108,7 +118,7 @@ function LyricsPair({
         <div
           className={cn(
             "text-foreground",
-            sharedClassName,
+            sharedLyricsPairClassName,
             m3ExpressiveDuration.effect.fast.className,
             m3ExpressiveSpring.effect.fast.className,
             isEditable &&
@@ -129,7 +139,7 @@ function LyricsPair({
           <div
             className={cn(
               "text-muted-foreground",
-              sharedClassName,
+              sharedLyricsPairClassName,
               m3ExpressiveDuration.effect.fast.className,
               m3ExpressiveSpring.effect.fast.className,
               isEditable &&
@@ -155,6 +165,23 @@ function LyricsPair({
   )
 }
 
+function PendingTranslationLyricsPair(props: { original: string }) {
+  const originalElementRef = useRef<HTMLDivElement>(null)
+  return (
+    <VStack className="gap-2">
+      <div
+        className={cn("text-foreground", sharedLyricsPairClassName)}
+        ref={originalElementRef}
+      >
+        {props.original}
+      </div>
+      <div className={cn("w-full", sharedLyricsPairClassName)}>
+        <Skeleton className="h-5 w-full rounded-full" />
+      </div>
+    </VStack>
+  )
+}
+
 type LyricsViewProps = {
   translatedLyrics: string[]
   originalLyrics: string[]
@@ -176,6 +203,7 @@ type LyricsViewProps = {
   minimizedURL?: string
   canShowRomanization?: boolean
   isPreventEnterKey?: boolean
+  isPendingTranslation?: boolean
   ref?: React.Ref<HTMLDivElement>
 }
 
@@ -185,6 +213,93 @@ export function LyricsView(props: LyricsViewProps) {
     <QueryClientProvider client={queryClient}>
       <Content {...props} />
     </QueryClientProvider>
+  )
+}
+
+async function handleGetLyricsSuggestion(params: {
+  title: string
+  artist: string
+}) {
+  const getSuggestionURL = `/songs/lyrics/suggestion?title=${params.title}&artist=${params.artist}`
+  const result = await APIClient.shared.get<SongLyricsSuggestionDTO>(
+    getSuggestionURL.toString(),
+  )
+  return result
+}
+function LyricsSuggestionPrompt(props: {
+  handleLyricsChange: ({
+    translatedLyrics,
+    originalLyrics,
+  }: {
+    translatedLyrics: string
+    originalLyrics: string
+  }) => void
+}) {
+  const [title] = useQueryState("t")
+  const [artist] = useQueryState("art")
+  const [isLoading, setIsLoading] = useState(false)
+  const [textData, setTextData] = useState({
+    label: <>Search for original lyrics</>,
+    icon: <Search className="size-10" />,
+  })
+  function setFailureTextData() {
+    setTextData({
+      label: (
+        <>Failed to get lyrics suggestion. See browser console for details.</>
+      ),
+      icon: <Frown className="size-10" />,
+    })
+  }
+  const getLyricsSuggestionMutation = useMutation(handleGetLyricsSuggestion, {
+    onMutate: () => {
+      setIsLoading(true)
+    },
+    onSuccess: (response) => {
+      if (!response.ok) {
+        setFailureTextData()
+        console.error("Failed to get lyrics suggestion:", response.error)
+        return
+      }
+      const suggestion = response.value
+      const emptyTranslatedLyrics = new Array(suggestion.originalLyrics.length)
+        .fill("")
+        .join("\n")
+      props.handleLyricsChange({
+        translatedLyrics: emptyTranslatedLyrics,
+        originalLyrics: suggestion.originalLyrics,
+      })
+    },
+    onError: (error) => {
+      setFailureTextData()
+      console.error("Failed to get lyrics suggestion:", error)
+    },
+    onSettled: () => {
+      setIsLoading(false)
+    },
+  })
+  const handleClick = () =>
+    getLyricsSuggestionMutation.mutate({
+      title: title || "",
+      artist: artist || "",
+    })
+  return (
+    <div className="h-full w-full grid place-items-center">
+      <div className="flex flex-col jusify-center gap-2 w-full">
+        <div className="flex justify-center">{textData.icon}</div>
+        <div className="font-semibold text-center text-lg">
+          {textData.label}
+        </div>
+        <Button
+          size="lg"
+          type="button"
+          disabled={!title || !artist || isLoading}
+          onClick={handleClick}
+        >
+          {isLoading ? <LoadingSpinner /> : <Search fontWeight={"3px"} />}
+          Search
+        </Button>
+      </div>
+    </div>
   )
 }
 
@@ -202,6 +317,7 @@ function Content({
   canShowRomanization = true,
   maximizedURL,
   minimizedURL,
+  isPendingTranslation,
   isPreventEnterKey = false,
   ref,
 }: LyricsViewProps) {
@@ -317,6 +433,11 @@ function Content({
     lyricsViewBackgroundColor,
   ])
 
+  const isEmptyOriginalLyrics = useMemo(
+    () => originalLyrics.join("\n").trim() === "",
+    [originalLyrics],
+  )
+
   return (
     <ViewTransition name="lyrics-view">
       <VStack
@@ -367,7 +488,7 @@ function Content({
               size="lg"
               isChecked={isEditable}
               onCheckedChange={setIsEditable}
-              disabled={isRomanized}
+              disabled={isRomanized || isEmptyOriginalLyrics}
               icon="eye"
               activeIcon="pencil-sparkles"
             />
@@ -409,6 +530,8 @@ function Content({
         >
           {!isLoading &&
             !isRomanized &&
+            !isPendingTranslation &&
+            !isEmptyOriginalLyrics &&
             lyricsPairs.map((pair, index) => {
               return (
                 <LyricsPair
@@ -427,7 +550,9 @@ function Content({
               )
             })}
           {!isLoading &&
+            !isPendingTranslation &&
             isRomanized &&
+            !isEmptyOriginalLyrics &&
             romanizedLyricPairs.map((pair, index) => {
               return (
                 <LyricsPair
@@ -449,6 +574,16 @@ function Content({
             skeletonLyricsPairs.map((_, index) => (
               <SkeletonLyricsPair key={`skeleton-lyrics-pair-${index}`} />
             ))}
+          {!isLoading &&
+            isPendingTranslation &&
+            !isEmptyOriginalLyrics &&
+            originalLyrics.map((originalLyric, index) => (
+              <PendingTranslationLyricsPair
+                key={`pending-translation-lyrics-pair-${index}`}
+                original={originalLyric}
+              />
+            ))}
+
           {isEditable && (
             <Button
               size="lg"
@@ -459,6 +594,10 @@ function Content({
             >
               <PlusIcon strokeWidth="2px" />
             </Button>
+          )}
+
+          {!isLoading && isEmptyOriginalLyrics && (
+            <LyricsSuggestionPrompt handleLyricsChange={handleLyricsChange} />
           )}
         </VStack>
       </VStack>

@@ -157,6 +157,7 @@ export function AddPageClientWrapper({
 
   const [isTranslatedWithGoogleTranslate, setIsTranslatedWithGoogleTranslate] =
     useState(false)
+  const [isTranslatedWithOpenAI, setIsTranslatedWithOpenAI] = useState(false)
   const [errors, setErrors] = useState<{
     originalLyrics?: string[]
     translatedLyrics?: string[]
@@ -202,34 +203,33 @@ export function AddPageClientWrapper({
   }
 
   function handleTranslate() {
-    startTransition(() => {
-      const fromLanguage = sourceLanguage === "auto" ? null : sourceLanguage
-      let isHasErrors = false
-      if (!targetLanguage) {
-        setErrors((prev) => ({
-          ...prev,
-          targetLanguage: ["Target language is required."],
-        }))
-        isHasErrors = true
-      }
-      if (originalLyrics.trim() === "") {
-        setErrors((prev) => ({
-          ...prev,
-          originalLyrics: ["Original lyrics cannot be empty."],
-        }))
-        isHasErrors = true
-      }
+    // startTransition(() => {
+    const fromLanguage = sourceLanguage === "auto" ? null : sourceLanguage
+    let isHasErrors = false
+    if (!targetLanguage) {
+      setErrors((prev) => ({
+        ...prev,
+        targetLanguage: ["Target language is required."],
+      }))
+      isHasErrors = true
+    }
+    if (originalLyrics.trim() === "") {
+      setErrors((prev) => ({
+        ...prev,
+        originalLyrics: ["Original lyrics cannot be empty."],
+      }))
+      isHasErrors = true
+    }
 
-      if (isHasErrors) {
-        return
-      }
-      setOriginalLyrics(originalLyrics.trim())
-      setErrors({})
-      translateMutation.mutate({
-        text: originalLyrics.trim(),
-        from: fromLanguage,
-        to: targetLanguage!,
-      })
+    if (isHasErrors) {
+      return
+    }
+    setOriginalLyrics(originalLyrics.trim())
+    setErrors({})
+    translateMutation.mutate({
+      text: originalLyrics.trim(),
+      from: fromLanguage,
+      to: targetLanguage!,
     })
   }
   function handleLyricsChange({
@@ -244,6 +244,12 @@ export function AddPageClientWrapper({
   }
 
   const translateMutation = useMutation(translateAction, {
+    onMutate: () => {
+      setIsPendingTranslation(true)
+    },
+    onSettled: () => {
+      setIsPendingTranslation(false)
+    },
     onSuccess: (response) => {
       if (!response.ok) {
         console.error("Failed to translate lyrics:", response.error)
@@ -258,6 +264,7 @@ export function AddPageClientWrapper({
         setIsTranslatedWithGoogleTranslate(
           response.value.withGoogleTranslate || false,
         )
+        setIsTranslatedWithOpenAI(response.value.withOpenAI || false)
       })
       originalLyrics.split("\n").map((l, index) => {
         console.log({
@@ -270,6 +277,7 @@ export function AddPageClientWrapper({
       console.error("Failed to translate lyrics:", error)
     },
   })
+  const [isPendingTranslation, setIsPendingTranslation] = useState(false)
 
   // * MARK: - Cover Art State
   const coverImageRef = useRef<HTMLImageElement>(null)
@@ -724,11 +732,11 @@ export function AddPageClientWrapper({
                       <span className="text-muted-foreground text-xs">
                         (Powered by{" "}
                         <a
-                          href="https://www.deepl.com/en/translator"
+                          href="https://openrouter.ai/"
                           target="_blank"
                           className="underline underline-offset-2"
                         >
-                          DeepL
+                          OpenRouter AI
                         </a>{" "}
                         &{" "}
                         <a
@@ -753,12 +761,12 @@ export function AddPageClientWrapper({
                     <Field>
                       <Button
                         className="w-full"
-                        disabled={translateMutation.isLoading}
+                        disabled={isPendingTranslation}
                         onClick={handleTranslate}
                         type="button"
                         size="lg"
                       >
-                        {translateMutation.isLoading && <LoadingSpinner />}
+                        {isPendingTranslation && <LoadingSpinner />}
                         Translate
                       </Button>
                     </Field>
@@ -767,12 +775,18 @@ export function AddPageClientWrapper({
                         Translated with Google Translate.
                       </p>
                     )}
+                    {isTranslatedWithOpenAI && (
+                      <p className="text-sm bg-[linear-gradient(90deg,#4285F4_0%,#EA4335_30%,#FBBC04_55%,#34A853_75%,#4285F4_100%)] bg-clip-text text-transparent font-semibold">
+                        Translated with OpenAI.
+                      </p>
+                    )}
                   </FieldGroup>
                   <LyricsView
                     translatedLyrics={translatedLyrics.split("\n")}
                     originalLyrics={originalLyrics.split("\n")}
                     handleLyricsChange={handleLyricsChange}
                     isReadyTranslation={!translateMutation.isLoading}
+                    isPendingTranslation={isPendingTranslation}
                     isEditable={isEditableLyrics}
                     setIsEditable={setIsEditableLyrics}
                     aria-describedby="translation-description"

@@ -31,6 +31,7 @@ import type {
   SongCheckAllInputItem,
   SongCheckAllOutput,
   SongCheckOutput,
+  SongLyricsSuggestionDTO,
 } from "@shared/ts-types/song-dto"
 import { SongsService } from "./songs.service"
 import { FileInterceptor } from "@nestjs/platform-express"
@@ -204,5 +205,21 @@ export class SongsController {
   ): Promise<SongCheckAllOutput> {
     const user = await req.user()
     return this.songsService.checkAll(input, user.id)
+  }
+
+  @UseGuards(AuthGuard)
+  @Get("lyrics/suggestion")
+  async suggestLyrics(
+    @Query("artist") artist: string,
+    @Query("title") title: string,
+  ): Promise<SongLyricsSuggestionDTO> {
+    const result = await this.songsService.searchOriginalLyrics({
+      artist,
+      title,
+    })
+    if (!result) {
+      throw new NotFoundException("Lyrics not found.")
+    }
+    return result
   }
 }

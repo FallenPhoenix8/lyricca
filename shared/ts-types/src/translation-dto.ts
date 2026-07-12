@@ -18,6 +18,7 @@ type TranslationOutputDTO = {
   translatedTextLines: string[]
   detectedLanguages: LanguageDTO[]
   withGoogleTranslate?: boolean
+  withOpenAI?: boolean
 }
 
 type TranslationUsageDTO = {

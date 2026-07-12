@@ -4,6 +4,7 @@ import { joinAsPathForUrl } from "@/lib/util/string"
 
 const ALLOWED_PREFIXES = [
   "/songs",
+  "/songs/lyrics/suggestion",
   "/auth/sign-in",
   "/auth/sign-up",
   "/auth/forgot-password",

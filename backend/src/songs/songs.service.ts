@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { DatabaseService } from "../database/database.service"
 import {
   SongCheckAllInputImpl,
@@ -9,10 +9,19 @@ import {
 } from "./dto/song-dto"
 import { SongCreateDTO, SongUpdateDTO } from "@shared/ts-types"
 import { CoverDTOImpl } from "../covers/dto/cover-dto"
+import { Client as GeniusClient } from "genius-lyrics"
 
 @Injectable()
 export class SongsService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  private readonly geniusLyricsClient: GeniusClient
+  private readonly logger = new Logger(SongsService.name)
+  constructor(private readonly databaseService: DatabaseService) {
+    const geniusTokenSecret = process.env.GENIUS_TOKEN_SECRET
+    if (!geniusTokenSecret) {
+      throw new Error("GENIUS_TOKEN_SECRET environment variable is not set.")
+    }
+    this.geniusLyricsClient = new GeniusClient(geniusTokenSecret)
+  }
 
   async create(
     createSongDto: SongCreateDTO & { user_id: string; cover_id?: string },
@@ -118,5 +127,45 @@ export class SongsService {
       toBeCreated,
       toBeDeleted,
     })
+  }
+
+  /**
+   * Searches for original lyrics on Genius.com
+   * @returns original lyrics or null if not found
+   */
+  async searchOriginalLyrics({
+    artist,
+    title,
+  }: {
+    artist: string
+    title: string
+  }): Promise<{ originalLyrics: string } | null> {
+    try {
+      const searches = await this.geniusLyricsClient.songs.search(
+        `${artist} ${title}`,
+      )
+      if (searches.length === 0) {
+        return null
+      }
+      let lyrics = await searches[0].lyrics()
+      /**
+       * Matches for [...]
+       */
+      const squaredBracketsRegex = /\[(.*?)\]/g
+      /**
+       * Matches for two or more consecutive newlines
+       */
+      const repeatingNewLinesRegex = /\n{2,}/g
+      lyrics = lyrics
+        .replace(repeatingNewLinesRegex, "\n")
+        .split("\n")
+        .splice(1)
+        .map((l) => l.replace(squaredBracketsRegex, "").trim())
+        .join("\n")
+      return { originalLyrics: lyrics }
+    } catch (error) {
+      this.logger.error("GeniusLyrics API request failed:", error)
+      return null
+    }
   }
 }
