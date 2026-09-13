@@ -309,12 +309,7 @@ export function SongCardList() {
 
       <ViewTransition name="content">
         <ViewTransition name="song-card-list">
-          <div
-            className={cn(
-              "flex flex-wrap gap-2 place-items-center my-3 mx-auto px-2",
-              countToShow === 0 && "justify-center",
-            )}
-          >
+          <div className={cn("song-card-list fluid-grid my-3 px-2 gap-2")}>
             {songsToShow.length === 0 &&
               referralSong &&
               skeletonCardsWithReferralSong.map((song, index) =>

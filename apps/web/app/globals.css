@@ -6,6 +6,7 @@
 
 @custom-variant dark (&:is(.dark *));
 @custom-variant light (&:not(.dark *));
+@custom-variant can-hover (@media (hover: hover));
 
 @theme inline {
   --color-background: var(--background);
@@ -166,7 +167,7 @@ html.dark {
     @apply bg-background text-foreground;
   }
   .squircle {
-    border-shape: squircle;
+    corner-shape: squircle;
   }
   .z-stack {
     display: grid;
@@ -175,6 +176,12 @@ html.dark {
     & > * {
       grid-area: stack;
     }
+  }
+
+  .fluid-grid {
+    --dim: 176px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--dim), 1fr));
   }
 
   .media-touch-hidden {
@@ -413,5 +420,13 @@ html.dark {
 
   button {
     @apply cursor-pointer;
+  }
+
+  .song-card-list {
+    --dim: 176px;
+
+    @media (width >= 300px) and (width <= 375px) {
+      --dim: calc(50dvw - 1rem);
+    }
   }
 }

@@ -4,13 +4,13 @@ import { Badge } from "./badge"
 import { Card, CardTitle, CardHeader, CardDescription } from "./card"
 import { SongDTO } from "@shared/ts-types"
 import Image from "next/image"
-import { DotIcon, MoreHorizontal, Trash2, TrashIcon } from "lucide-react"
+import { DotIcon, MoreHorizontal, Trash2, TrashIcon, View } from "lucide-react"
 import { XIcon } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { m3ExpressiveDuration, m3ExpressiveSpring } from "./constants"
 import { HStack, VStack } from "./layout"
-import { Ref, useState } from "react"
+import { Ref, useRef, useState } from "react"
 import { Skeleton } from "./skeleton"
 import { ViewTransition } from "react"
 import { useGSAP } from "@gsap/react"
@@ -46,6 +46,9 @@ import {
 } from "./drawer"
 import { useM3Motion } from "@/lib/client/hook/useM3Motion"
 import { useMediaQuery } from "@/lib/client/hook/useMediaQuery"
+import { ActionButton } from "./action-button"
+import { useDynamicTheme } from "@/lib/client/hook/useDynamicTheme"
+import { ShadcnThemeVariables } from "@/lib/client/theme-engine"
 
 gsap.registerPlugin(useGSAP)
 
@@ -517,6 +520,222 @@ export function SongCard(props: {
     </div>
   )
 }
+
+export function UpdatedSongCard(props: {
+  song: SongDTO
+  isArtistTagActive: boolean
+  isAlbumTagActive: boolean
+  onTagClick(type: "artist" | "album", tag: string): void
+  className?: string
+  style?: React.CSSProperties
+  index?: number
+}) {
+  useM3Motion()
+  const [searchParams] = useQueryState("q", { defaultValue: "" })
+  const encodedSearchParams = encodeURIComponent(searchParams)
+
+  const { setReferralSongId, setReferralSongListIndex } =
+    useReferralSongContext()
+  const router = useRouter()
+  const href = `/app/library/${props.song.id}?q=${encodedSearchParams}`
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false)
+  const { remove } = useSongsContext()
+
+  // * MARK: - Individual song card theming
+  const { generateThemeFromImage } = useDynamicTheme()
+  const [shadcnTheme, setShadcnTheme] = useState<ShadcnThemeVariables | null>(
+    null,
+  )
+
+  return (
+    <ViewTransition>
+      <div
+        className={cn(
+          "relative group aspect-square z-stack max-w-[calc(50dvw - 1rem)] drop-shadow-md dark:border dark:border-border drop-shadow-black/25 rounded-lg overflow-clip",
+          "can-hover:hover:scale-95 can-hover:hover:drop-shadow-xl can-hover:hover:drop-shadow-primary/30 can-hover:hover:-translate-y-1",
+          "active:scale-95 active:drop-shadow-xl active:drop-shadow-primary/30",
+          m3ExpressiveDuration.spatial.fast.className,
+          m3ExpressiveSpring.spatial.fast.className,
+          props.className,
+        )}
+        style={{ ...props.style, ...shadcnTheme }}
+      >
+        // * MARK: - Cover Image
+        <ViewTransition
+          name={`${props.song.id}-cover`}
+          share="song-card-cover"
+          update="song-cover"
+        >
+          <Image
+            src={props.song.cover?.url ?? "/cover-default.svg"}
+            alt={`${props.song.title} song cover`}
+            className="size-full aspect-square object-cover squircle bg-accent rounded-lg"
+            onLoad={(event) => {
+              const target = event.target as HTMLImageElement
+              target.classList.remove("animate-pulse")
+              generateThemeFromImage(target).then((theme) => {
+                if (theme) setShadcnTheme(theme)
+                console.log(
+                  `Theme generated for ${props.song.id} (${props.song.title}):`,
+                  theme,
+                )
+              })
+            }}
+            loading="eager"
+            width={176}
+            height={176}
+          />
+        </ViewTransition>
+        // * MARK: - Song Details
+        <div className="flex flex-col justify-end size-full">
+          <ViewTransition
+            name={`${props.song.id}-title`}
+            share="song-card-title"
+          >
+            <div className="bg-linear-to-b from-transparent to-background px-2 pb-2 pt-4 w-full">
+              <div className="flex flex-wrap gap-2">
+                {props.song.artist && (
+                  <Badge
+                    variant={props.isArtistTagActive ? "default" : "secondary"}
+                  >
+                    {props.song.artist}
+                  </Badge>
+                )}
+                {props.song.album && (
+                  <Badge
+                    variant={props.isAlbumTagActive ? "default" : "secondary"}
+                  >
+                    {props.song.album}
+                  </Badge>
+                )}
+              </div>
+
+              <p className="text-lg font-bold group-hover:underline underline-offset-2">
+                {props.song.title}
+              </p>
+            </div>
+          </ViewTransition>
+        </div>
+        <Link
+          href={href}
+          className="size-full"
+          onNavigate={(event) => {
+            event.preventDefault()
+            setReferralSongId(props.song.id)
+            setReferralSongListIndex(props.index ?? 0)
+            router.push(href)
+          }}
+        ></Link>
+        // * MARK: - More Menu Trigger Button
+        <ActionButton
+          className="absolute top-2 right-2 z-10 rounded-full"
+          icon="more-horizontal"
+          activeShape="6-sided cookie"
+          onClick={() => setIsMoreMenuOpen(true)}
+        />
+        // * MARK: - Delete Dialog
+        <AlertDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel
+                onClick={() => {
+                  console.log("Delete action canceled.")
+                }}
+              >
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                variant="destructive"
+                onClick={() => {
+                  remove.mutate(
+                    {
+                      id: props.song.id,
+                    },
+                    {
+                      onSuccess: () => {
+                        console.log(
+                          `Successfully deleted song with id = ${props.song.id}`,
+                        )
+                        setIsDeleteDialogOpen(false)
+                      },
+                      onError: (error) => {
+                        console.error("Failed to delete song:", error)
+                        setIsDeleteDialogOpen(false)
+                      },
+                    },
+                  )
+                }}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        // * MARK: - More Menu
+        <Drawer open={isMoreMenuOpen} onOpenChange={setIsMoreMenuOpen}>
+          <DrawerContent className="px-2 pb-10">
+            <DrawerHeader>
+              <div className="flex">
+                <Image
+                  src={props.song.cover?.url ?? "/cover-default.svg"}
+                  alt={props.song.title}
+                  className="h-full aspect-square object-cover rounded-xs squircle bg-accent animate-pulse"
+                  onLoad={(event) => {
+                    const target = event.target as HTMLImageElement
+                    target.classList.remove("animate-pulse")
+                  }}
+                  width={40}
+                  height={40}
+                />
+                <DrawerTitle>
+                  <VStack className="px-2 justify-around">
+                    <div className="text-sm font-semibold line-clamp-1">
+                      {props.song.title}
+                    </div>
+
+                    <div className="text-xs text-muted-foreground line-clamp-1">
+                      <span>{props.song.artist || "Unknown Artist"}</span>
+                      <DotIcon className="inline" size={16} />
+                      <span>{props.song.album || "Unknown Album"}</span>
+                    </div>
+                  </VStack>
+                </DrawerTitle>
+              </div>
+            </DrawerHeader>
+            <DrawerDescription>
+              What do you want to do with this song?
+            </DrawerDescription>
+            <div className="flex flex-col gap-2 pt-2">
+              <Button
+                variant="outline"
+                className="text-destructive w-full"
+                onClick={() => {
+                  console.log(`Asking to delete ${props.song.id}...`)
+                  setIsMoreMenuOpen(false)
+                  setIsDeleteDialogOpen(true)
+                }}
+              >
+                <Trash2 />
+                Delete
+              </Button>
+            </div>
+          </DrawerContent>
+        </Drawer>
+      </div>
+    </ViewTransition>
+  )
+}
 /**
  * A responsive song card with a cover image, title, artist, and album to be displayed in a card layout. The card layout can be compact or regular depending on the screen size.
  * DO NOT USE THIS COMPONENT DIRECTLY. Use the `SongCardResponsive` component exported by `./song-card-responsive.tsx` instead. Otherwise, the view transitions will break.
@@ -533,16 +752,27 @@ export default function ResponsiveSongCard(props: {
   const isCompact = useMediaQuery("(max-width: 460px)")
 
   return (
-    <SongCard
-      isAlbumTagActive={props.isAlbumTagActive}
-      isArtistTagActive={props.isArtistTagActive}
-      onTagClick={props.onTagClick}
-      song={props.song}
-      className={props.className}
-      isCompact={isCompact}
-      style={props.style}
-      index={props.index}
-    />
+    <>
+      <UpdatedSongCard
+        isAlbumTagActive={props.isAlbumTagActive}
+        isArtistTagActive={props.isArtistTagActive}
+        onTagClick={props.onTagClick}
+        song={props.song}
+        className={props.className}
+        style={props.style}
+        index={props.index}
+      />
+      {/* <SongCard
+        isAlbumTagActive={props.isAlbumTagActive}
+        isArtistTagActive={props.isArtistTagActive}
+        onTagClick={props.onTagClick}
+        song={props.song}
+        className={props.className}
+        isCompact={isCompact}
+        style={props.style}
+        index={props.index}
+      /> */}
+    </>
   )
 }
 
@@ -552,28 +782,7 @@ export default function ResponsiveSongCard(props: {
 export function SkeletonSongCard() {
   return (
     <>
-      <Card className="hidden xs:flex relative w-52 min-h-96 pt-0 shadow-sm dark:shadow-muted/50 shadow-foreground/10">
-        <Skeleton className="aspect-square bg-foreground/10 dark:bg-background/50 rounded-t-xl" />
-        <CardTitle className="leading-normal">
-          <Skeleton className="max-w-full h-6 rounded-sm mx-2" />
-        </CardTitle>
-        <CardDescription className="flex flex-wrap gap-2 px-2">
-          <Badge variant="secondary">
-            <Skeleton className="h-4 w-20 rounded-full" />
-          </Badge>
-          <Badge variant="secondary">
-            <Skeleton className="h-4 w-24 rounded-full" />
-          </Badge>
-        </CardDescription>
-      </Card>
-
-      <HStack className="flex xs:hidden w-full p-1">
-        <Skeleton className="h-10 aspect-square bg-secondary rounded-xs squircle shadow-sm" />
-        <VStack className="px-2 justify-around w-full h-10">
-          <Skeleton className="h-4 w-full rounded-xs" />
-          <Skeleton className="h-4 w-3/4 rounded-xs" />
-        </VStack>
-      </HStack>
+      <Skeleton className="aspect-square max-w-[calc(50dvw - 1rem)] drop-shadow-md dark:border dark:border-border drop-shadow-black/25 rounded-lg bg-secondary"></Skeleton>
     </>
   )
 }

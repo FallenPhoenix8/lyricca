@@ -26,6 +26,9 @@ export function useDynamicTheme(): {
   applyThemeFromImage: (
     imageElement: HTMLImageElement | null,
   ) => Promise<ShadcnThemeVariables | null>
+  generateThemeFromImage: (
+    imageElement: HTMLImageElement | null,
+  ) => Promise<ShadcnThemeVariables | null>
   isProcessing: boolean
   error: Error | null
   setDefaultTheme: () => void
@@ -55,6 +58,38 @@ export function useDynamicTheme(): {
     }
   }, [resolvedTheme])
 
+  const generateThemeFromImage = async (
+    imageElement: HTMLImageElement | null,
+  ): Promise<ShadcnThemeVariables | null> => {
+    if (!imageElement) return null
+
+    setIsProcessing(true)
+    setError(null)
+
+    try {
+      // 1. Determine dark mode dynamically based on the HTML element's class
+      const isDark = document.documentElement.className.includes("dark")
+
+      // 2. Extract strictly-typed M3 Theme
+      const m3Theme = await createM3Theme(imageElement, isDark)
+
+      // 3. Transform to shadcn compatible object
+      const shadcnTheme = transformM3ToShadcn(m3Theme)
+
+      return shadcnTheme
+    } catch (err) {
+      console.error("Failed to extract and apply dynamic theme:", err)
+      setError(
+        err instanceof Error
+          ? err
+          : new Error("Unknown theme generation error"),
+      )
+      return null
+    } finally {
+      setIsProcessing(false)
+      setIsApplied(true)
+    }
+  }
   const applyThemeFromImage = useCallback(
     async (
       imageElement: HTMLImageElement | null,
@@ -67,16 +102,9 @@ export function useDynamicTheme(): {
       setError(null)
 
       try {
-        // 1. Determine dark mode dynamically based on the HTML element's class
-        const isDark = document.documentElement.className.includes("dark")
+        const shadcnTheme = await generateThemeFromImage(imageElement)
 
-        // 2. Extract strictly-typed M3 Theme
-        const m3Theme = await createM3Theme(imageElement, isDark)
-
-        // 3. Transform to shadcn compatible object
-        const shadcnTheme = transformM3ToShadcn(m3Theme)
-        console.log("Current Shadcn Theme", shadcnTheme)
-
+        if (!shadcnTheme) return null
         // 4. Animate the transition via GSAP
         animateThemeTransitions(shadcnTheme)
         setSourceImage(imageElement)
@@ -103,5 +131,11 @@ export function useDynamicTheme(): {
     clearShadcnTheme()
   }, [resolvedTheme])
 
-  return { applyThemeFromImage, isProcessing, error, setDefaultTheme }
+  return {
+    applyThemeFromImage,
+    isProcessing,
+    error,
+    setDefaultTheme,
+    generateThemeFromImage,
+  }
 }

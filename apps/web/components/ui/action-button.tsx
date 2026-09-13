@@ -117,7 +117,7 @@ export function ActionButton({
         ref={containerRef}
         {...props}
         className={cn(
-          "w-9 h-9 aspect-square place-items-center cursor-pointer",
+          "w-9 h-9 aspect-square place-items-center cursor-pointer drop-shadow-sm drop-shadow-black/50",
           props.className,
         )}
         onClick={(event) => {
@@ -152,7 +152,7 @@ export function ActionButton({
           }}
           className={cn(
             "flex justify-center items-center cursor-pointer text-secondary-foreground h-full w-full",
-            shape === activeShape && "text-primary-foreground -translate-y-0.5",
+            shape === activeShape && "text-primary-foreground",
             m3ExpressiveDuration.effect.default.className,
           )}
           type="button"
