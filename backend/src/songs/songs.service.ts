@@ -10,6 +10,7 @@ import {
 import { SongCreateDTO, SongUpdateDTO } from "@shared/ts-types"
 import { CoverDTOImpl } from "../covers/dto/cover-dto"
 import { Client as GeniusClient } from "genius-lyrics"
+import { v7 } from "uuid"
 
 @Injectable()
 export class SongsService {
@@ -28,6 +29,7 @@ export class SongsService {
   ): Promise<SongImpl> {
     const song = await this.databaseService.song.create({
       data: {
+        id: createSongDto.id ?? v7(),
         title: createSongDto.title,
         artist: createSongDto.artist,
         album: createSongDto.album,

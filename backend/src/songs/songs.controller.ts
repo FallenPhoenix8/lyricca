@@ -86,6 +86,17 @@ export class SongsController {
       ...body,
       translated_lyrics: translatedLyrics,
     }
+
+    // * MARK: - Check, whether the song already exists
+    let existingSong: SongImpl | null = null
+
+    if (songToBeCreated.id) {
+      existingSong = await this.songsService.findOne({ id: songToBeCreated.id })
+    }
+
+    if (existingSong) {
+      throw new BadRequestException("Song already exists.")
+    }
     // * MARK: - Convert `Express.Multer.File` to `File` object
     if (coverFile && coverFile.size > 0) {
       const file = await this.imageService.convertToOptimizedFile(coverFile)

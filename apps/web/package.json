@@ -39,6 +39,7 @@
     "tailwind-merge": "^3.5.0",
     "transliteration": "^2.6.1",
     "use-debounce": "^10.1.0",
+    "uuid": "14.0.1",
     "vaul": "^1.1.2",
     "web-haptics": "^0.0.6",
     "zod": "^4.4.3"

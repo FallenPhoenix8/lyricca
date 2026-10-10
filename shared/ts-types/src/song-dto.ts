@@ -25,8 +25,9 @@ type SongDTO = Omit<Song, "user_id" | "user" | "cover_id">
 type SongCreateDTO = Omit<
   SongDTO,
   "id" | "created_at" | "updated_at" | "user" | "cover" | "cover_id"
->
-type SongUpdateDTO = Partial<SongCreateDTO>
+> & { id?: SongIDType }
+
+type SongUpdateDTO = Partial<Omit<SongCreateDTO, "id">>
 
 // Schemas for checking if the data is up to date
 type SongCheckOutput =

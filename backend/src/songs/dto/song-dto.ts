@@ -54,6 +54,10 @@ class SongImpl implements Song {
 }
 
 class SongCreateDTOImpl implements SongCreateDTO {
+  @IsOptional()
+  @IsUUID()
+  id?: string
+
   @IsNotEmpty()
   @IsString()
   title: string

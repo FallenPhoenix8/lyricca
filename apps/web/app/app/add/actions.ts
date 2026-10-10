@@ -5,6 +5,7 @@ import { AvailableLanguages } from "@shared/ts-types"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { z } from "zod"
+import { v7 as uuid } from "uuid"
 
 const apiURL = process.env.NEXT_PUBLIC_API_URL
 if (!apiURL) {
@@ -146,6 +147,10 @@ export async function addSongAction(prevState: SongState, formData: FormData) {
         dataToSend.append(key, value)
       }
     })
+
+    // * MARK: - Create song ID
+    const id = uuid()
+    dataToSend.append("id", id)
 
     // * MARK: - Append file to `FormData`
     const isFileValid = file && file instanceof File
