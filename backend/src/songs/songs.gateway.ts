@@ -61,7 +61,6 @@ export class SongsGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * @param userId - UUID of the user whose songs changed.
    */
   notifyUserSync(userId: string): void {
-    console.log(`Notifying user ${userId} of song sync.`)
     this.server.to(`user_${userId}`).emit("sync-now")
   }
 }
