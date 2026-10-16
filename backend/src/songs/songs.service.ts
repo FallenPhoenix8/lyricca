@@ -11,12 +11,16 @@ import { SongCreateDTO, SongUpdateDTO } from "@shared/ts-types"
 import { CoverDTOImpl } from "../covers/dto/cover-dto"
 import { Client as GeniusClient } from "genius-lyrics"
 import { v7 } from "uuid"
+import { SongsGateway } from "./songs.gateway"
 
 @Injectable()
 export class SongsService {
   private readonly geniusLyricsClient: GeniusClient
   private readonly logger = new Logger(SongsService.name)
-  constructor(private readonly databaseService: DatabaseService) {
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly songsGateway: SongsGateway,
+  ) {
     const geniusTokenSecret = process.env.GENIUS_TOKEN_SECRET
     if (!geniusTokenSecret) {
       throw new Error("GENIUS_TOKEN_SECRET environment variable is not set.")
@@ -41,6 +45,9 @@ export class SongsService {
       include: { user: true, cover: true },
     })
 
+    // Notify about the change
+    this.songsGateway.notifyUserSync(createSongDto.user_id)
+
     return new SongImpl(song)
   }
 
@@ -49,6 +56,10 @@ export class SongsService {
       where: { id },
       include: { user: true, cover: true },
     })
+
+    // Notify about the change
+    this.songsGateway.notifyUserSync(song.user_id)
+
     return new SongImpl(song)
   }
 
@@ -72,6 +83,10 @@ export class SongsService {
       },
       include: { user: true, cover: true },
     })
+
+    // Notify about the change
+    this.songsGateway.notifyUserSync(song.user_id)
+
     return new SongImpl(song)
   }
 

@@ -12,6 +12,7 @@ import { ImageService } from "../image/image.service"
 import { ImageModule } from "../image/image.module"
 import { EmailService } from "../email/email.service"
 import { EmailModule } from "../email/email.module"
+import { SongsGateway } from "./songs.gateway"
 
 @Module({
   providers: [
@@ -22,6 +23,7 @@ import { EmailModule } from "../email/email.module"
     SupabaseService,
     ImageService,
     EmailService,
+    SongsGateway,
   ],
   controllers: [SongsController],
   imports: [AuthModule, UserModule, CoversModule, ImageModule, EmailModule],

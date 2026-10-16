@@ -13,6 +13,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Err, Ok, Result } from "@/types/Result"
 import { useMutation, useQuery, useQueryClient } from "react-query"
 import { useQueryState } from "nuqs"
+import { useSocket } from "./useSocket"
 
 async function getDetails(id: string): Promise<SongDTO | null> {
   const endpoint = `songs/${id}`
@@ -218,6 +219,9 @@ export function useSongs(
   searchQuery: string,
   filterTags: { type: "artist" | "album"; value: string }[],
 ) {
+  // * MARK: - Real-time socket connection
+  const socket = useSocket("/songs")
+
   const songs = useLiveQuery(
     async () => {
       let collection
@@ -326,6 +330,22 @@ export function useSongs(
     }
   }, [songsRef, isLoading])
 
+  useEffect(() => {
+    const syncHandler = () => {
+      console.log("Sync requested by gateway.")
+      syncNow()
+    }
+    if (socket) {
+      socket.connect()
+      socket.on("sync-now", syncHandler)
+      console.log("Songs gateway connected.")
+      return () => {
+        socket.off("sync-now", syncHandler)
+        socket.disconnect()
+        console.log("Songs gateway disconnected.")
+      }
+    }
+  }, [socket])
   /**
    * Initialize by checking all songs in the API and updating local database accordingly. This ensures that the local database is always in sync with the API, even if there are changes made from other clients or the server itself.
    */

@@ -34,7 +34,7 @@ const SongUpdateSchema: z.ZodType<SongUpdateDTO> = z
   .object({
     title: nonEmptyString,
     original_lyrics: nonEmptyString,
-    translated_lyrics: nonEmptyString,
+    translated_lyrics: z.string(),
     artist: z.string().nullable(),
     album: z.string().nullable(),
   })

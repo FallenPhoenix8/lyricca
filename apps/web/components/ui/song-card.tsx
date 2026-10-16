@@ -553,7 +553,7 @@ export function UpdatedSongCard(props: {
     <ViewTransition>
       <div
         className={cn(
-          "relative group aspect-square z-stack max-w-[calc(50dvw - 1rem)] drop-shadow-md dark:border dark:border-border drop-shadow-black/25 rounded-lg overflow-clip",
+          "relative group aspect-square z-stack drop-shadow-md dark:border dark:border-border drop-shadow-black/25 rounded-lg overflow-clip",
           "can-hover:hover:scale-95 can-hover:hover:drop-shadow-xl can-hover:hover:drop-shadow-primary/30 can-hover:hover:-translate-y-1",
           "active:scale-95 active:drop-shadow-xl active:drop-shadow-primary/30",
           m3ExpressiveDuration.spatial.fast.className,
@@ -562,7 +562,7 @@ export function UpdatedSongCard(props: {
         )}
         style={{ ...props.style, ...shadcnTheme }}
       >
-        // * MARK: - Cover Image
+        {/* // * MARK: - Cover Image */}
         <ViewTransition
           name={`${props.song.id}-cover`}
           share="song-card-cover"
@@ -588,7 +588,7 @@ export function UpdatedSongCard(props: {
             height={176}
           />
         </ViewTransition>
-        // * MARK: - Song Details
+        {/* // * MARK: - Song Details */}
         <div className="flex flex-col justify-end size-full">
           <ViewTransition
             name={`${props.song.id}-title`}
@@ -628,14 +628,14 @@ export function UpdatedSongCard(props: {
             router.push(href)
           }}
         ></Link>
-        // * MARK: - More Menu Trigger Button
+        {/* // * MARK: - More Menu Trigger Button */}
         <ActionButton
           className="absolute top-2 right-2 z-10 rounded-full"
           icon="more-horizontal"
           activeShape="6-sided cookie"
           onClick={() => setIsMoreMenuOpen(true)}
         />
-        // * MARK: - Delete Dialog
+        {/* // * MARK: - Delete Dialog */}
         <AlertDialog
           open={isDeleteDialogOpen}
           onOpenChange={setIsDeleteDialogOpen}
@@ -682,7 +682,7 @@ export function UpdatedSongCard(props: {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        // * MARK: - More Menu
+        {/* // * MARK: - More Menu */}
         <Drawer open={isMoreMenuOpen} onOpenChange={setIsMoreMenuOpen}>
           <DrawerContent className="px-2 pb-10">
             <DrawerHeader>

@@ -36,6 +36,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-query": "^3.39.3",
+    "socket.io-client": "^4.8.4",
     "tailwind-merge": "^3.5.0",
     "transliteration": "^2.6.1",
     "use-debounce": "^10.1.0",
